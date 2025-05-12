@@ -1,0 +1,1594 @@
+<template>
+    <v-container>
+        <v-row v-show="empresaLoggeada()<=0">
+            <v-col class="pt-1 pb-0">
+                <SelectorEmpresa @eligioEmpresa="eligioEmpresa($event)"  :idEmpresaInicialmenteSeleccionada="idEmpresa"  ></SelectorEmpresa>
+            </v-col>
+        </v-row>
+        <v-row v-if="idEmpresa>0" class="py-0">
+            <v-col class="py-0 my-0">
+                <v-checkbox class="my-0" @change="changeVerSoloConStock" v-model="verSoloConStock" label="Ver solo artículos con stock"></v-checkbox>
+            </v-col>
+            <v-col class="py-0" v-show="empresaElegida.StockPosicionado">
+                <v-checkbox class="my-0" @change="changeVerSoloStockSinPosicionar" v-model="verSoloConStockSinPosicionar" label="Ver solo artículos con stock sin posicionar"></v-checkbox>
+            </v-col>
+        </v-row>
+        <v-row v-show="empresaLoggeada()>0" justify="center" class="p-1">
+            <v-row v-if="listaArticulosCompleta.length>0" justify="center">
+                <v-col class="p-1" cols="12" sm="6" md="4">
+                    <v-btn @click="clickDescargarExcel" color="success" block>Descargar Excel <v-icon>mdi-microsoft-excel</v-icon></v-btn>
+                </v-col>
+                <v-col class="p-1" cols="12" sm="6" md="4">
+                    <v-btn @click="popularListaProductos" color="success" block>Actualizar información <v-icon>mdi-refresh</v-icon></v-btn>
+                </v-col>
+            </v-row>
+        </v-row>
+        <v-row v-show="empresaLoggeada()<=0" justify="center" class="p-3">
+            <v-row v-if="listaArticulosCompleta.length>0" justify="center">
+                <v-row justify="center">
+                    <v-col class="p-1" cols="12" sm="6" md="4">
+                        <v-btn @click="clickDescargarExcel" color="success" block>Descargar Excel <v-icon>mdi-microsoft-excel</v-icon></v-btn>
+                    </v-col>
+                    <v-col class="p-1" cols="12" sm="6" md="4">
+                        <v-btn @click="popularListaProductos" color="success" block>Actualizar información <v-icon>mdi-refresh</v-icon></v-btn>
+                    </v-col>
+                </v-row>
+                <v-row justify="center" v-show="!tieneLOTE">
+                    <v-col class="p-1" v-show="estoyEnFuente" cols="12" sm="6" md="4">
+                        <v-btn @click="repararTodosLosArticulos" color="red" block dark>Reparar <v-icon>mdi-tool</v-icon></v-btn>
+                    </v-col>
+                    <v-col class="p-1" cols="12" sm="6" md="4">
+                        <v-btn @click="verificarDiferenciasStockMovimiento" color="purple" block dark>Diferencias <v-icon>mdi-tool</v-icon></v-btn>
+                    </v-col>
+                </v-row>
+            </v-row>
+        </v-row>
+       <!-- tarjetas resumen de stock -->
+<v-row class="py-0" v-if="cards.length">
+  <v-col
+    v-for="card in cards"
+    :key="card.label"
+    cols="12" sm="6" md="3"
+    class="pa-2"
+  >
+    <v-card outlined tile class="d-flex flex-column">
+      <!-- Mitad superior: usa v-sheet para el color de tema-->
+      <v-sheet
+        :color="card.color"
+        dark
+        height="120"
+        class="d-flex align-center justify-center"
+      >
+        <v-icon x-large>{{ card.icon }}</v-icon>
+      </v-sheet>
+
+      <!-- Mitad inferior: fondo blanco + texto en color -->
+      <v-card-text class="text-center py-4" style="flex: 1;">
+        <div class="text-subtitle-2" :style="{ color: $vuetify.theme.themes.light[card.color] || card.color }">
+          {{ card.label }}
+        </div>
+        <div class="text-h5 font-weight-bold" :style="{ color: $vuetify.theme.themes.light[card.color] || card.color }">
+          {{ card.value.toLocaleString('es-AR') }}
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-col>
+</v-row>
+
+        <v-row v-show="listaArticulosMostrar.length>0" class="pb-0 mb-0">
+            <v-col class="py-0 my-0"  >
+                <v-card-title class="py-1 my-0">
+                    <v-text-field
+                        v-model="textoBusqueda"
+                        append-icon="mdi-magnify"
+                        label="Búsqueda"
+                        single-line
+                        dense
+                        hide-details
+                    ></v-text-field>
+                    </v-card-title>
+                </v-col>
+        </v-row>
+        <v-row v-show="!tieneLOTE">
+            <v-col class="py-0" v-if="listaArticulosMostrar.length>0">
+                <v-data-table 
+                    :headers="cabeceras" 
+                    :items="listaArticulosMostrar"  
+                    :footer-props="{itemsPerPageOptions:[10,30,100,-1]}"   
+                    :items-per-page="30" 
+                    :search="textoBusqueda"
+                    class="elevation-3" 
+                >
+                <template v-slot:item.Stock="{item}">
+                    <v-chip :color="getColorStock(item)" dark>{{ item.Stock}}</v-chip>
+                </template>
+                <template v-slot:item.StockPosicionado="{item}">
+                    <v-chip :color="getColorStockPosicionado(item)" dark>{{ item.StockPosicionado}}</v-chip>
+                </template>
+                <template v-slot:item.StockSinPosicionar="{item}">
+                    <v-chip :color="getColorStockSinPosicionar(item)" dark>{{ item.StockSinPosicionar}}</v-chip>
+                </template>
+                <template v-slot:item.StockComprometido="{item}">
+                    <v-chip @click="verOrdenesPendientes(item)" :color="getColorStockComprometido(item)" dark>{{ item.StockComprometido}}</v-chip>
+                </template>
+                <template v-slot:item.Acciones="{ item }">
+                     <v-icon @click="repararArticulo(item)" color="red" v-show="estoyEnFuente">mdi-tools</v-icon>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon color="blue" @click="verPosicionesDelArticulo(item)" v-bind="attrs" v-on="on">mdi-library-shelves</v-icon>
+                        </template>
+                        <span>Ver posiciones del artículo: {{item.Id}} - {{item.Nombre}}</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon color="blue" @click="actualizarArticulo(item)" v-bind="attrs" v-on="on">mdi-refresh</v-icon>
+                        </template>
+                        <span>Actualizar información</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon color="blue" @click="verMovimientosDelArticulo(item)" v-bind="attrs" v-on="on">mdi-clipboard-list-outline</v-icon>
+                        </template>
+                        <span>Ver movimientos del artículo: {{item.Id}} - {{item.Nombre}}</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon color="blue" @click="verDetallesDelArticulo(item)" v-bind="attrs" v-on="on">mdi-magnify</v-icon>
+                        </template>
+                        <span>Ver detalles del artículo: {{item.Id}} - {{item.Nombre}}</span>
+                    </v-tooltip>
+
+
+
+
+                </template>
+                </v-data-table>
+            </v-col>
+        </v-row>
+        <v-row v-show="tieneLOTE" v-if="!verDetalleLote">
+            <v-col class="py-0" v-if="listaArticulosMostrar.length>0">
+                <v-data-table 
+                    :headers="cabecerasLote" 
+                    :items="listaArticulosMostrar"  
+                    :footer-props="{itemsPerPageOptions:[10,30,100,-1]}"   
+                    :items-per-page="30" 
+                    :search="textoBusqueda"
+                    class="elevation-3" 
+                >
+                <template v-slot:item.StockComprometido="{item}">
+                    <v-chip @click="verOrdenesPendientesLote(item)" :color="getColorStockComprometidoLote(item)" dark>{{ item.StockComprometido}}</v-chip>
+                </template>
+                <template v-slot:item.Acciones="{ item }">
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon color="blue" @click="actualizarLotes(item)" v-bind="attrs" v-on="on">mdi-refresh</v-icon>
+                        </template>
+                        <span>Actualizar información</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon color="blue" @click="verLoteDetalle(item)" v-bind="attrs" v-on="on">mdi-magnify</v-icon>
+                        </template>
+                        <span>Ver detalles del Lote: {{item.Lote}}</span>
+                    </v-tooltip>
+                </template>
+                </v-data-table>
+            </v-col>
+        </v-row>
+        <v-card v-show="verDetalleLote">
+                <v-card-title>
+                    <span class="text-h5">{{"Productos"}}</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container>
+                        <v-row v-if="listaArticulosProductos.length>0">
+                            <v-col class="py-0" >
+                                <v-data-table v-if="!this.textil"
+                                    :headers="cabecerasLoteDetalle" 
+                                    :items="listaArticulosProductos"  
+                                    :footer-props="{itemsPerPageOptions:[10,30,100,-1]}"   
+                                    :items-per-page="30" 
+                                    class="elevation-3" >
+                                    <template v-slot:item.Acciones="{ item, index }">
+                                        <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-icon color="blue" @click="verDetallesDelArticulo(item)" v-bind="attrs" v-on="on">mdi-magnify</v-icon>
+                                        </template>
+                                        <span>Ver detalle del artículo</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-icon color="blue" @click="verPosicionesDelArticulo(item)" v-bind="attrs" v-on="on">mdi-library-shelves</v-icon>
+                                        </template>
+                                        <span>Ver posiciones del artículo</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-icon color="blue" @click="actualizarArticulo(item)" v-bind="attrs" v-on="on">mdi-refresh</v-icon>
+                                        </template>
+                                        <span>Actualizar articulo</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-icon color="blue" @click="verMovimientosDelArticulo(item)" v-bind="attrs" v-on="on">mdi-clipboard-list-outline</v-icon>
+                                        </template>
+                                        <span>Ver movimientos del artículo</span>
+                                    </v-tooltip>
+                                    </template>
+                                </v-data-table>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="verDetalleLote=false; textoBusqueda=''">Cerrar</v-btn>
+                </v-card-actions>
+            </v-card>
+
+        <v-dialog
+            v-model="mostrarVentanaEdicion"
+            persistent
+            max-width="800px"
+        >
+        <v-card>
+            <v-card-title>
+                <span class="text-h5">Producto: {{itemEnEdicion.Id}} - Barcode: {{itemEnEdicion.Barcode}}</span>
+            </v-card-title>
+            <v-card-text>
+                <v-container>
+                    <v-row>
+                        <v-col>
+                            <v-text-field :disabled="empresaLoggeada()>=0" label="Nombre" required v-model="itemEnEdicion.Nombre"></v-text-field>
+                        </v-col>
+                        <v-col>
+                            <v-text-field :disabled="empresaLoggeada()>=0" label="CodeEmpresa" required v-model="itemEnEdicion.CodeEmpresa"></v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row v-if="!this.textil">
+                        <v-col v-show="!tieneLOTE">
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Ancho" required v-model="itemEnEdicion.Ancho"></v-text-field>
+                        </v-col >
+                        <v-col v-show="tieneLOTE">
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Largo" required v-model="itemEnEdicion.Ancho"></v-text-field>
+                        </v-col>
+                        <v-col>
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row v-if="!this.textil">
+                        <v-col v-show="!tieneLOTE">
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Largo" required v-model="itemEnEdicion.Largo"></v-text-field>
+                        </v-col>
+                        <v-col v-show="tieneLOTE">
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Ancho" required v-model="itemEnEdicion.Largo"></v-text-field>
+                        </v-col>
+                        <v-col>
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Peso" required v-model="itemEnEdicion.Peso"></v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row v-if="this.textil">
+                        <v-col>
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Metros" required v-model="itemEnEdicion.Ancho"></v-text-field>
+                        </v-col>
+                        <v-col>
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row v-if="this.textil">
+                        <v-col>
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Ancho" required v-model="itemEnEdicion.Largo"></v-text-field>
+                        </v-col>
+                        <v-col>
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Peso" required v-model="itemEnEdicion.Peso"></v-text-field>
+                        </v-col>
+                        <v-col>
+                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Calidad" required v-model="itemEnEdicion.Precio"></v-text-field>
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="cancelarEdicionItem()">{{empresaLoggeada()<0 ? 'Cancelar' : 'Cerrar'}}</v-btn>
+                <v-btn color="blue darken-1" text @click="confirmarEdicionItem()" v-if="empresaLoggeada()<0">Guardar</v-btn>
+            </v-card-actions>
+        </v-card>
+        </v-dialog>
+
+
+
+    </v-container>
+</template>
+
+<script>
+
+import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
+import store from '@/store'
+import productos from '@/store/productos'
+import posiciones from '@/store/posiciones'
+import posicionesV3 from '@/store/posicionesV3'
+import productosV3 from '@/store/productosV3'
+import {xlsx, read, utils, writeFile} from 'xlsx'
+import ordenes from "@/store/ordenes"
+import ordenesV3 from "@/store/ordenesV3"
+import empresas from "@/store/empresasV3"
+import excel from "exceljs"
+import {saveAs} from "file-saver"
+import fechas from 'vue-lsi-util/fechas'
+
+
+export default {
+    name: "Stock",
+
+    data() {
+        return  {
+            itemEnEdicion: {},
+            mostrarVentanaEdicion: false,
+            idEmpresa: -1,
+            empresaElegida: 0,
+            listaArticulosCompleta: [],
+            listaArticulosMostrar: [],
+            listaArticulosProductos: [],
+            tieneLOTE: false,
+            tienePART: false,
+            verSoloConStockSinPosicionar: false,
+            verSoloConStock: false,
+            stockTotal: 0,
+            stockSinPosicionar: 0,
+            stockPosicionado: 0,
+            metrosTotales: 0,
+            kilosTotales: 0,
+            cabeceras: [],
+            cabecerasLote: [],
+            verDetalleLote: false,
+            cabecerasStockPartidasPosicionado: [
+                    {text: 'Id', value: 'id'},
+                    {text: 'Nombre', value: 'Nombre'},
+                    {text: 'Partida', value: 'Partida'},
+                    {text: 'Barcode', value: 'Barcode'},
+                    {text: 'Un.Xcaja', value: 'UnXCaja'},
+                    {text: 'Alto', value: 'Alto'},
+                    {text: 'Ancho', value: 'Largo'},
+                    {text: 'Largo', value: 'Ancho'},
+                    {text: 'Peso', value: 'Peso'},
+                    {text: 'Stock', align: 'end', value: 'Stock'},
+                    {text: 'Posicionado', align: 'end', value: 'StockPosicionado'},
+                    {text: 'Sin posicionar', align: 'end', value: 'StockSinPosicionar'},
+                    {text: 'Comprometido', align: 'end', value: 'StockComprometido'},
+                    {text: '', value: 'Acciones'},
+            ],
+            cabecerasLote: [
+                {text: 'BoxNumber', value: 'Lote'},
+                {text: 'SerialNumber', value: 'SerialNumber'},
+                {text: 'PartNumber', value: 'PartNumber'},
+                {text: 'Stock', value: 'Stock'},
+                {text: 'StockDisponible', align: 'center', value: 'StockDisponible'},
+                {text: 'StockComprometido', align: 'center', value: 'StockComprometido'},
+                {text: '', value: 'Acciones'},
+            ],
+            cabecerasLoteDetalle: [
+                {text: 'SerialNumber', value: 'Barcode'},
+                {text: 'PartNumber', value: 'PartNumber'},
+                {text: 'Stock', value: 'Unidades'},
+                {text: 'StockDisponible', align: 'center', value: 'StockDisponible'},
+                {text: 'StockComprometido', align: 'center', value: 'StockComprometido'},
+                {text: '', value: 'Acciones'},
+            ],
+            cabecerasStockPosicionado: [
+                    {text: 'Id', value: 'Id'},
+                    {text: 'Nombre', value: 'Nombre'},
+                    {text: 'Barcode', value: 'Barcode'},
+                    {text: 'CodeEmpresa', value: 'CodeEmpresa'},
+                    {text: 'Un.Xcaja', value: 'UnXCaja'},
+                    {text: 'Alto', value: 'Alto'},
+                    {text: 'Ancho', value: 'Largo'},
+                    {text: 'Largo', value: 'Ancho'},
+                    {text: 'Peso', value: 'Peso'},
+                    {text: 'Stock', align: 'end', value: 'Stock'},
+                    {text: 'Posicionado', align: 'end', value: 'StockPosicionado'},
+                    {text: 'Sin posicionar', align: 'end', value: 'StockSinPosicionar'},
+                    {text: 'Comprometido', align: 'end', value: 'StockComprometido'},
+                    {text: '', value: 'Acciones'},
+            ],
+            cabecerasStockNoPosicionado: [
+                    {text: 'Id', value: 'Id'},
+                    {text: 'Nombre', value: 'Nombre'},
+                    {text: 'Barcode', value: 'Barcode'},
+                    {text: 'CodeEmpresa', value: 'CodeEmpresa'},
+                    {text: 'Un.Xcaja', value: 'UnXCaja'},
+                    {text: 'Alto', value: 'Alto'},
+                    {text: 'Ancho', value: 'Largo'},
+                    {text: 'Largo', value: 'Ancho'},
+                    {text: 'Peso', value: 'Peso'},
+                    {text: 'Stock', align: 'end', value: 'Stock'},
+                    {text: 'Comprometido', align: 'end', value: 'StockComprometido'},
+                    {text: '', value: 'Acciones'},
+            ],
+            cabecerasStockPosicionadoTextil: [
+                    {text: 'Id', value: 'Id'},
+                    {text: 'Nombre', value: 'Nombre'},
+                    {text: 'Barcode', value: 'Barcode'},
+                    {text: 'CodeEmpresa', value: 'CodeEmpresa'},
+                    {text: 'Alto', value: 'Alto'},
+                    {text: 'Metros', value: 'Ancho'},
+                    {text: 'Ancho', value: 'Largo'},
+                    {text: 'Kilos', value: 'Peso'},
+                    {text: 'Calidad', value: 'Precio'},
+                    {text: 'Stock', align: 'end', value: 'Stock'},
+                    {text: 'Posicionado', align: 'end', value: 'StockPosicionado'},
+                    {text: 'Sin posicionar', align: 'end', value: 'StockSinPosicionar'},
+                    {text: 'Comprometido', align: 'end', value: 'StockComprometido'},
+                    {text: '', value: 'Acciones'},
+            ],
+            cabecerasStockNoPosicionadoTextil: [
+                    {text: 'Id', value: 'Id'},
+                    {text: 'Nombre', value: 'Nombre'},
+                    {text: 'Barcode', value: 'Barcode'},
+                    {text: 'CodeEmpresa', value: 'CodeEmpresa'},
+                    {text: 'Alto', value: 'Alto'},
+                    {text: 'Metros', value: 'Ancho'},
+                    {text: 'Ancho', value: 'Largo'},
+                    {text: 'Kilos', value: 'Peso'},
+                    {text: 'Calidad', value: 'Precio'},
+                    {text: 'Stock', align: 'end', value: 'Stock'},
+                    {text: 'Comprometido', align: 'end', value: 'StockComprometido'},
+                    {text: '', value: 'Acciones'},
+            ],
+            textoBusqueda: '',
+            textil: false,
+            // stock comprometido :
+    stockComprometido: 0,
+    cards: []
+        }
+    },
+
+    methods: {
+        cancelarEdicionItem() {
+            this.mostrarVentanaEdicion=false
+        },
+        confirmarEdicionItem() {
+
+            delete this.itemEnEdicion.Stock
+            delete this.itemEnEdicion.StockComprometido
+            delete this.itemEnEdicion.StockPosicionado
+            delete this.itemEnEdicion.StockDisponible
+            delete this.itemEnEdicion.StockUnitario
+            delete this.itemEnEdicion.StockSinPosicionar
+            delete this.itemEnEdicion.Posiciones
+            delete this.itemEnEdicion.Barcode
+
+            productosV3.editOne(this.itemEnEdicion)
+                .then( response => {
+                    const posicionListaCompleta=this.listaArticulosCompleta.findIndex(elemento => elemento.Id==response.Id)
+                    this.listaArticulosCompleta[posicionListaCompleta]=response
+                    this.filtrarLista()
+                })
+                .catch( error => {
+                    console.log(error)
+                })
+                .finally( () => {
+                    this.mostrarVentanaEdicion=false
+                })
+
+
+
+        },
+        verDetallesDelArticulo(item) {
+            if(this.tieneLOTE){
+                this.itemEnEdicion={...item.Producto}
+                this.mostrarVentanaEdicion=true
+            } else {
+                this.itemEnEdicion={...item}
+                this.mostrarVentanaEdicion=true
+            }
+        },
+
+       async verLoteDetalle(item) {
+            this.verDetalleLote = true
+            if(this.listaArticulosProductos.length <= 0 || this.listaArticulosProductos[0].Lote != item.Lote){
+                this.listaArticulosProductos = []
+                // await productosV3.getLotesDetalle(this.idEmpresa, item.Lote)
+                await productosV3.getLotesDetalleV2(this.idEmpresa, item.Lote)
+                .then(response => {
+                        response.forEach(itemResponse => {
+                            itemResponse.Lote = item.Lote
+                            this.listaArticulosProductos.push(itemResponse)
+                        })
+                    })
+                    .catch(error => {
+                        this.listaArticulos=[]
+                        this.mostrarError(error)
+                    })
+            }
+        },
+
+        empresaLoggeada() {
+            if (!store.state.usuarios.usuarioActual.IdEmpresa) { 
+                return -1
+            } else {
+                return store.state.usuarios.usuarioActual.IdEmpresa
+
+            }
+        },
+        verMovimientosDelArticulo(item) {
+            if(this.tieneLOTE){
+                productosV3.getMovimientosByPeriodoAndEmpresaAndArticuloAndLote(this.idEmpresa, '2010-01-01', fechas.getHoy(), item.IdProducto, item.Lote) 
+                    .then (response => {
+                        if (response.length>0) {
+                            let totalIngresos=0
+                            let totalEgresos=0
+                            let totalStock=0
+                            let stockExcel=0
+                            let mensaje=`<table border="0" width="100%"><tr><td width="15%"><b>Fecha</b></td><td><b>Comprobante</b></td><td width="10%" align="right"><b>Ingreso</b></td><td width="10%" align="right"><b>Egreso</b></td><td width="10%" align="right"><b>Stock</b></td></tr>`
+                                
+                            for (const unMovimiento of response) {
+                                mensaje += "<tr>"
+                                mensaje += `<td>${unMovimiento.fecha.substr(0,10)}</td>`
+                                mensaje += `<td>&nbsp${unMovimiento.orden.substr(0,150)}</td>`
+                                if (unMovimiento.signo===-1) {
+                                    mensaje += `<td>&nbsp</td>`
+                                    mensaje += `<td align="right">${unMovimiento.unidades}</td>`
+                                    totalEgresos += unMovimiento.unidades
+                                    totalStock -= unMovimiento.unidades
+                                } else {
+                                    mensaje += `<td align="right">${unMovimiento.unidades}</td>`
+                                    mensaje += `<td>&nbsp</td>`
+                                    totalIngresos += unMovimiento.unidades
+                                    totalStock += unMovimiento.unidades
+                                }
+    
+                                mensaje += `<td align="right">${totalStock}</td>`
+                                mensaje += "</tr>"
+                            }
+    
+                            totalStock = totalIngresos - totalEgresos
+                               
+                            mensaje += "</table>"
+                            const textoPrimario="Aceptar"
+                            const textoSecundario="Descargar Excel" 
+                            const movimientos={
+                                titulo: `Tabla de Movimientos <br>Artículo: ${item.Descripcion} ( ${item.IdProducto} )<br>Barcode: ${item.Barcode}`,
+                                mensaje: `${mensaje}`,
+                                botonSecundario: textoSecundario,
+                                botonPrimario: textoPrimario,
+                                callback: ((respuesta) => {
+                                    if (respuesta===textoSecundario) {
+                                        const workbook = utils.book_new()
+                           
+                                        const nombreHoja="Movimientos - " + item.Barcode
+                                        workbook.SheetNames.push(nombreHoja)
+                                        const datosPlanilla = []
+                                        datosPlanilla.push(["Fecha", "Comprobante", "Ingreso", "Egreso", "Stock"])
+                                        let unRenglon = []
+    
+                                        response.forEach(unItem => {
+    
+                                            if (unItem.signo===-1) {
+                                                stockExcel -= unItem.unidades
+                                                unRenglon=[unItem.fecha.substr(0,10), unItem.orden.substr(0,150), '', unItem.unidades, stockExcel]
+                                                
+                                            } else {
+                                                stockExcel += unItem.unidades
+                                                unRenglon=[unItem.fecha.substr(0,10), unItem.orden.substr(0,150), unItem.unidades, '',stockExcel]
+                                            }
+                                            
+                                            datosPlanilla.push(unRenglon)
+                                        })
+                                        
+                                        var worksheet = utils.aoa_to_sheet(datosPlanilla);
+                                        workbook.Sheets[nombreHoja] = worksheet;
+                                       
+                                        writeFile(workbook, "Movimientos_"+item.Descripcion+".xlsx");
+                                    }
+                                })
+                            }
+                            store.dispatch("alertDialog/mostrar",  movimientos)
+                        } else {
+                            store.dispatch("alertDialog/mostrar", {titulo: "Artículo: "+item.Nombre + " ("+item.Id+")<br>Barcode: "+item.Barcode, mensaje: "No hay movimientos registrados"})
+                        }
+                    })
+            } else if(this.tienePART){
+                productosV3.getMovimientosByPeriodoAndEmpresaAndArticuloAndPartida(this.idEmpresa, '2010-01-01', fechas.getHoy(),item.IdProducto,item.Id)
+                .then(response => {
+                    
+                    if (response.length>0) {
+                        let totalIngresos=0
+                        let totalEgresos=0
+                        let totalStock=0
+                        let stockExcel=0
+                        let mensaje=`<table border="0" width="100%"><tr><td width="15%"><b>Fecha</b></td><td><b>Comprobante</b></td><td width="10%" align="right"><b>Ingreso</b></td><td width="10%" align="right"><b>Egreso</b></td><td width="10%" align="right"><b>Stock</b></td></tr>`
+    
+                        for (const unMovimiento of response) {
+                                mensaje += "<tr>"
+                                mensaje += `<td>${unMovimiento.fecha.substr(0,10)}</td>`
+                                mensaje += `<td>&nbsp${unMovimiento.orden.substr(0,150)}</td>`
+                                if (unMovimiento.signo===-1) {
+                                    mensaje += `<td>&nbsp</td>`
+                                    mensaje += `<td align="right">${unMovimiento.unidades}</td>`
+                                    totalEgresos += unMovimiento.unidades
+                                    totalStock -= unMovimiento.unidades
+                                } else {
+                                    mensaje += `<td align="right">${unMovimiento.unidades}</td>`
+                                    mensaje += `<td>&nbsp</td>`
+                                    totalIngresos += unMovimiento.unidades
+                                    totalStock += unMovimiento.unidades
+                                }
+    
+                                mensaje += `<td align="right">${totalStock}</td>`
+                                mensaje += "</tr>"
+                            }
+    
+                            totalStock = totalIngresos - totalEgresos
+    
+                            mensaje += "</table>"
+                            const textoPrimario="Aceptar"
+                            const textoSecundario="Descargar Excel" 
+                            const movimientos={
+                                titulo: `Tabla de Movimientos <br>Artículo: ${item.Nombre} ( ${item.Id} )<br>Partida: ${item.Partida} Barcode: ${item.Barcode}`,
+                                mensaje: `${mensaje}`,
+                                botonSecundario: textoSecundario,
+                                botonPrimario: textoPrimario,
+                                callback: ((respuesta) => {
+                                    if (respuesta===textoSecundario) {
+                                        const workbook = utils.book_new()
+                           
+                                        const nombreHoja="Movimientos - " + item.Barcode
+                                        workbook.SheetNames.push(nombreHoja)
+                                        const datosPlanilla = []
+                                        datosPlanilla.push(["Fecha", "Comprobante", "Ingreso", "Egreso", "Stock"])
+                                        let unRenglon = []
+    
+                                        response.forEach(unItem => {
+    
+                                            if (unItem.signo===-1) {
+                                                stockExcel -= unItem.unidades
+                                                unRenglon=[unItem.fecha.substr(0,10), unItem.orden.substr(0,150), '', unItem.unidades, stockExcel]
+                                                
+                                            } else {
+                                                stockExcel += unItem.unidades
+                                                unRenglon=[unItem.fecha.substr(0,10), unItem.orden.substr(0,150), unItem.unidades, '',stockExcel]
+                                            }
+                                            
+                                            datosPlanilla.push(unRenglon)
+                                        })
+                                        
+                                        var worksheet = utils.aoa_to_sheet(datosPlanilla);
+                                        workbook.Sheets[nombreHoja] = worksheet;
+                                       
+                                        writeFile(workbook, "Movimientos_"+item.Nombre+".xlsx");
+                                    
+                                    }
+                                })
+                            }
+                            store.dispatch("alertDialog/mostrar",  movimientos)
+                        } else {
+                            store.dispatch("alertDialog/mostrar", {titulo: "Artículo: "+item.Nombre + " ("+item.Id+")<br>Barcode: "+item.Barcode, mensaje: "No hay movimientos registrados"})
+                        }
+                })
+            }else{
+                
+                productosV3.getMovimientosByPeriodoAndEmpresaAndArticulo(this.idEmpresa, '2010-01-01', fechas.getHoy(), item.Id) 
+                    .then (response => {
+                        if (response.length>0) {
+                            let totalIngresos=0
+                            let totalEgresos=0
+                            let totalStock=0
+                            let stockExcel=0
+                            let mensaje=`<table border="0" width="100%"><tr><td width="15%"><b>Fecha</b></td><td><b>Comprobante</b></td><td width="10%" align="right"><b>Ingreso</b></td><td width="10%" align="right"><b>Egreso</b></td><td width="10%" align="right"><b>Stock</b></td></tr>`
+    
+                            for (const unMovimiento of response) {
+                                mensaje += "<tr>"
+                                mensaje += `<td>${unMovimiento.fecha.substr(0,10)}</td>`
+                                mensaje += `<td>&nbsp${unMovimiento.orden.substr(0,150)}</td>`
+                                if (unMovimiento.signo===-1) {
+                                    mensaje += `<td>&nbsp</td>`
+                                    mensaje += `<td align="right">${unMovimiento.unidades}</td>`
+                                    totalEgresos += unMovimiento.unidades
+                                    totalStock -= unMovimiento.unidades
+                                } else {
+                                    mensaje += `<td align="right">${unMovimiento.unidades}</td>`
+                                    mensaje += `<td>&nbsp</td>`
+                                    totalIngresos += unMovimiento.unidades
+                                    totalStock += unMovimiento.unidades
+                                }
+    
+                                mensaje += `<td align="right">${totalStock}</td>`
+                                mensaje += "</tr>"
+                            }
+    
+                            totalStock = totalIngresos - totalEgresos
+    
+                            mensaje += "</table>"
+                            const textoPrimario="Aceptar"
+                            const textoSecundario="Descargar Excel" 
+                            const movimientos={
+                                titulo: `Tabla de Movimientos <br>Artículo: ${item.Nombre} ( ${item.Id} )<br>Barcode: ${item.Barcode}`,
+                                mensaje: `${mensaje}`,
+                                botonSecundario: textoSecundario,
+                                botonPrimario: textoPrimario,
+                                callback: ((respuesta) => {
+                                    if (respuesta===textoSecundario) {
+                                        const workbook = utils.book_new()
+                           
+                                        const nombreHoja="Movimientos - " + item.Barcode
+                                        workbook.SheetNames.push(nombreHoja)
+                                        const datosPlanilla = []
+                                        datosPlanilla.push(["Fecha", "Comprobante", "Ingreso", "Egreso", "Stock"])
+                                        let unRenglon = []
+    
+                                        response.forEach(unItem => {
+    
+                                            if (unItem.signo===-1) {
+                                                stockExcel -= unItem.unidades
+                                                unRenglon=[unItem.fecha.substr(0,10), unItem.orden.substr(0,150), '', unItem.unidades, stockExcel]
+                                                
+                                            } else {
+                                                stockExcel += unItem.unidades
+                                                unRenglon=[unItem.fecha.substr(0,10), unItem.orden.substr(0,150), unItem.unidades, '',stockExcel]
+                                            }
+                                            
+                                            datosPlanilla.push(unRenglon)
+                                        })
+                                        
+                                        var worksheet = utils.aoa_to_sheet(datosPlanilla);
+                                        workbook.Sheets[nombreHoja] = worksheet;
+                                       
+                                        writeFile(workbook, "Movimientos_"+item.Nombre+".xlsx");
+                                    
+                                    }
+                                })
+                            }
+                            store.dispatch("alertDialog/mostrar",  movimientos)
+                        } else {
+                            store.dispatch("alertDialog/mostrar", {titulo: "Artículo: "+item.Nombre + " ("+item.Id+")<br>Barcode: "+item.Barcode, mensaje: "No hay movimientos registrados"})
+                        }
+                    })
+            }
+
+        },
+        async verOrdenesPendientes(item) {
+            let detalleOrdenes=""
+            let cantidadComprometido = 0
+            const mensaje={titulo: "Artículo: "+item.Nombre + "<br>Barcode: "+item.Barcode}            
+            if (item.StockComprometido==null) {
+                mensaje.mensaje="Sin stock comprometido"
+                store.dispatch("alertDialog/mostrar", mensaje)
+            } else {
+                //trae todas las ordenes pendientes
+                let listaFiltrada = await ordenesV3.getPendientes()
+                //filtra las ordenes pendientes por empresa
+                if(this.idEmpresa>0){
+                    listaFiltrada=listaFiltrada.filter(e=>e.Empresa.Id===this.idEmpresa)
+                }else{
+                    listaFiltrada=listaFiltrada.filter(e=>e.Empresa.Id===(this.idEmpresa===-1 ? e.Empresa.Id : this.idEmpresa))
+                }
+                //recorre las ordenes pendientes filtradas
+                for(const listaOrdenes of listaFiltrada){
+                    //busca el detalle de la orden
+                    await ordenesV3.getDetalleOrdenAndProductoById(listaOrdenes.Id)
+                    .then(response =>{
+                        //revisa la cantidad que tiene ese detalle con el Barcode del producto elegido y la va sumando 
+                        for(const productos of response){
+                            if(productos.Barcode == item.Barcode){
+                                cantidadComprometido += productos.Unidades
+                            }
+                        }
+                        if(cantidadComprometido > 0){
+                            detalleOrdenes+="Orden: "+listaOrdenes.Numero+" - Unidades: "+cantidadComprometido+"<br><br>"
+                        }
+                        cantidadComprometido=0
+                    })
+                }
+                
+                mensaje.mensaje=detalleOrdenes
+                store.dispatch("alertDialog/mostrar", mensaje)
+            }
+        },
+
+        async verOrdenesPendientesLote(item) {
+            let mensaje={titulo:"SerialNumber: "+item.SerialNumber}            
+            // const mensaje={}            
+            if (item.StockComprometido==null) {
+                mensaje.mensaje="Sin stock comprometido"
+                store.dispatch("alertDialog/mostrar", mensaje)
+            } else {
+                // ordenes.actions.getByIdArticulo(this.idEmpresa, parseInt(item.IdProducto))
+                //     .then(respuesta => {
+                //         console.log(respuesta)
+                //         let detalleOrdenes=""
+                //         respuesta.forEach(unaOrden => {
+                    //             detalleOrdenes+="Orden: "+unaOrden.Numero+" - Unidades: "+unaOrden.Unidades+"<br><br>"
+                    //         })
+                    //         mensaje.mensaje=detalleOrdenes
+                    //         store.dispatch("alertDialog/mostrar", mensaje)
+                    //     })
+                    //     .catch(puteada => {
+                        //         this.mostrarError(puteada)
+                        //     })
+                        
+                await productosV3.getOnlyLoteDetalle(this.idEmpresa, item.Lote)
+                        .then(async response => {
+                            
+                            await response.forEach(async producto => {
+                                await ordenesV3.getOrdenDetalleByIdProducto(producto.IdProducto)
+                                // ordenes.actions.getByIdArticulo(this.idEmpresa, parseInt(producto.IdProducto))
+                                .then(async respuesta => {
+                                    let detalleOrdenes=""
+                                        await respuesta.forEach(unaOrden => {
+                                            detalleOrdenes+="Orden: "+unaOrden.Numero+" - Unidades: "+unaOrden.Unidades+" - SerialNumber: " + unaOrden.barcode + "<br>"
+                                        })
+                                        
+                                        if(mensaje.mensaje != null){
+                                            mensaje.mensaje += detalleOrdenes
+                                        } else {
+                                            mensaje.mensaje = detalleOrdenes
+                                        }
+                                        
+                                        store.dispatch("alertDialog/mostrar", mensaje)
+                                    })
+                                    .catch(puteada => {
+                                        this.mostrarError(puteada)
+                                    })
+                                    
+                                })
+                        })
+                        .catch(error => {
+                            console.log(error)
+                        })
+                        
+                        // let detalleOrdenes=""
+                        // respuesta.forEach(unaOrden => {
+                        //     detalleOrdenes+="Orden: "+unaOrden.Numero+" - Unidades: "+unaOrden.Unidades+"<br><br>"
+                        // })
+                        // mensaje.mensaje=detalleOrdenes
+            }
+        },
+
+        getColorStockComprometido(item) {
+            if(item.StockComprometido==null){
+                item.StockComprometido=0
+            }
+            if (item.Stock != item.StockSinPosicionar + item.StockPosicionado ||  item.StockComprometido>item.Stock) {
+                //Inconsistencia
+                return "red"
+            } else {
+                //No hay inconsistencia
+                if (item.StockComprometido==0) {
+                    return "green"
+                } else {
+                    return "orange"
+                }
+            }
+        },
+
+        getColorStockComprometidoLote(item) {
+            if(item.StockComprometido==null){
+                item.StockComprometido=0
+            }
+            if (item.StockComprometido > item.Stock) {
+                //Inconsistencia
+                return "red"
+            } else {
+                //No hay inconsistencia
+                if (item.StockComprometido==0) {
+                    return "green"
+                } else {
+                    return "orange"
+                }
+            }
+        },
+
+        getColorStockSinPosicionar(item) {
+            if (item.Stock != item.StockSinPosicionar + item.StockPosicionado ||  item.StockComprometido>item.Stock) {
+                //Inconsistencia
+                return "red"
+            } else {
+                //No hay inconsistencia
+                if (item.Stock==0) {
+                    return "green"
+                } else {
+                    if (item.StockSinPosicionar>0) {
+                        return "orange"
+                    } else {
+                        return "green"
+                    }
+                }
+            }
+        },
+        getColorStockPosicionado(item) {
+            if (item.Stock != item.StockSinPosicionar + item.StockPosicionado ||  item.StockComprometido>item.Stock) {
+                //Inconsistencia
+                return "red"
+            } else {
+                //No hay inconsistencia
+                if (item.Stock==0) {
+                    return "green"
+                } else {
+                    if (item.StockSinPosicionar>0) {
+                        return "orange"
+                    } else {
+                        return "green"
+                    }
+                }
+            }
+        },
+        getColorStock(item) {
+            if (!this.empresaElegida.StockPosicionado) {
+                return "green"
+            } else {
+                if (item.Stock != item.StockSinPosicionar + item.StockPosicionado ||  item.StockComprometido>item.Stock) {
+                    //Inconsistencia
+                    return "red"
+                } else {
+                    //No hay inconsistencia
+                    if (item.StockSinPosicionar>0) {
+                        return "orange"
+                    } else {
+                        return "green"
+                    }
+                }
+            }
+        },
+
+        actualizarLotes(item){
+            const listaReboot = this.listaArticulosMostrar
+            this.listaArticulosMostrar = []
+            productosV3.getLote(this.idEmpresa, item.Lote)
+                .then(response => {
+                    const posicionListaCompleta=listaReboot.findIndex(elemento => elemento.Lote==item.Lote)
+                    listaReboot[posicionListaCompleta] = response[0]
+                    this.listaArticulosMostrar = listaReboot
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+        },
+
+        actualizarArticulo(unArticulo){
+            //Pasamos listaArticulosProductos a otra variable para dejar vacio el array, asi podemos volver a cargarlo y se refresca la vista
+            const listaReboot = this.listaArticulosProductos
+            this.listaArticulosProductos = []
+            //productos.actions.getById(unArticulo.Id)
+            if(this.tieneLOTE){
+                productosV3.getLoteDetalleProducto(this.idEmpresa, unArticulo.Lote, unArticulo.IdProducto)
+                    .then(respuesta => {
+                        const posicionListaCompleta=listaReboot.findIndex(elemento => elemento.IdProducto==unArticulo.IdProducto)
+                        listaReboot[posicionListaCompleta] = respuesta[0]
+                        this.listaArticulosProductos = listaReboot
+                        // this.filtrarLista()
+                        // this.actualizarTotales()
+                    })
+                    .catch(puteada => {
+                        this.mostrarError(puteada)
+                    })
+            } else {
+                productosV3.getByIdAndEmpresa(unArticulo.Id, this.idEmpresa)
+                    .then(respuesta => {
+                        const posicionListaCompleta=this.listaArticulosCompleta.findIndex(elemento => elemento.Id==unArticulo.Id)
+                        this.listaArticulosCompleta[posicionListaCompleta]=respuesta
+                        this.filtrarLista()
+                        this.actualizarTotales()
+                    })
+                    .catch(puteada => {
+                        this.mostrarError(puteada)
+                    })
+            }
+
+        },
+        async verPosicionesDelArticulo(unArticulo) {
+            if(this.tieneLOTE){
+                let posicion = await posicionesV3.getPosicionesByIdAndEmpresaAndLote(unArticulo.IdProducto, unArticulo.IdEmpresa, unArticulo.Lote)
+                let contenido='<table border="0" width="20%"><tr><td><b>Posición</b><td align="right"><b>Unidades</b></tr>'
+                let totalUnidades=0
+                if (posicion.length>0) {
+                    posicion.forEach(unaPosicion => {
+                    contenido+="<tr>"
+                    contenido+='<td>'+unaPosicion.Descripcion+"</td>"
+                    contenido+='<td align="right">'+Number(unaPosicion.Unidades)+"</td>"
+                    contenido+="</tr>"
+                    totalUnidades+=Number(unaPosicion.Unidades)    
+                    })
+                    contenido+=`<tr><td><b>Total</b></td><td align="right"><b>${totalUnidades}</b></td></tr></table`
+                } else {
+                    contenido="<b>No tiene stock posicionado</b>"
+                }
+    
+                store.dispatch("alertDialog/mostrar", {titulo: "Artículo: "+unArticulo.Descripcion + " ("+unArticulo.IdProducto+")<br>Barcode: "+unArticulo.Barcode, mensaje: contenido, botonSecundario: 'descargar excel',
+                callback: (async respuesta => {
+                    //descargar excel de posiciones del articulo
+                    if(respuesta==="descargar excel") {
+                        const workbook=new excel.Workbook()
+                        const worksheet=workbook.addWorksheet("Poscicion - " + unArticulo.IdProducto)
+                        //Agrega las dos primeras filas con el nombre y el barcode del producto
+                        worksheet.getRow(1).values=[`Articulo: ${unArticulo.Descripcion}`]
+                        worksheet.getRow(2).values=[`Barcode: ${unArticulo.Barcode}`]
+                        //le da el tamaño a las columnas
+                        worksheet.columns=[
+                            {width: 25}, 
+                            {width: 15}
+                        ]
+                        //pone la cuarta fila con los encabezados deseados
+                        worksheet.getRow(4).values=["Posicion", "Unidades"]
+                        //marca desde donde va a iniciar a colocarse los datos
+                        let unRenglon = 4
+                        //carga los datos fila por fila
+                        posicion.forEach(e => {
+                            unRenglon++
+                            worksheet.getRow(unRenglon).values=[
+                            e.Descripcion,
+                            e.Unidades
+                            ]
+                        })
+                        unRenglon++
+                        //agrega una ultima fila con el total
+                        worksheet.getRow(unRenglon).values = ["Total ", totalUnidades]
+                        //modifica la fuente de las filas
+                        worksheet.eachRow ( (row, rowNumber) => {
+                            row.eachCell ( (cell, colNumber) => {
+                                if (rowNumber===1 || rowNumber==unRenglon) {
+                                    cell.font={size: 16, bold: true}
+                                } else if (rowNumber===2 || rowNumber===4) {
+                                    cell.font={size: 14, bold: true}
+                                } else {
+                                    cell.font={size: 14}
+                                }
+                            })
+                        })
+                        //Guarda el archivo excel
+                        const buf= await workbook.xlsx.writeBuffer()
+                        saveAs(new Blob([buf]), "Posiciones -" + unArticulo.IdProducto +".xlsx")
+                    }
+                })
+                })
+
+            } else if(this.tienePART){
+                let posicion = await posicionesV3.getPosicionesByIdAndEmpresa(unArticulo.Id, unArticulo.IdEmpresa)
+                let contenido='<table border="0" width="20%"><tr><td><b>Posición</b><td align="right"><b>Unidades</b></tr>'
+                let totalUnidades=0
+                if (posicion.length>0) {
+                    posicion.forEach(unaPosicion => {
+                    contenido+="<tr>"
+                    contenido+='<td>'+unaPosicion.Descripcion+"</td>"
+                    contenido+='<td align="right">'+Number(unaPosicion.Unidades)+"</td>"
+                    contenido+="</tr>"
+                    totalUnidades+=Number(unaPosicion.Unidades)    
+                    })
+                    contenido+=`<tr><td><b>Total</b></td><td align="right"><b>${totalUnidades}</b></td></tr></table`
+                } else {
+                    contenido="<b>No tiene stock posicionado</b>"
+                }
+    
+                store.dispatch("alertDialog/mostrar", {titulo: "Artículo: "+unArticulo.Nombre + " ("+unArticulo.IdProducto+")<br>Partida: "+unArticulo.Partida+" Barcode: "+unArticulo.Barcode, mensaje: contenido, botonSecundario: 'descargar excel',
+                callback: (async respuesta => {
+                    //descargar excel de posiciones del articulo
+                    if(respuesta==="descargar excel") {
+                        const workbook=new excel.Workbook()
+                        const worksheet=workbook.addWorksheet("Poscicion - " + unArticulo.Id)
+                        //Agrega las dos primeras filas con el nombre y el barcode del producto
+                        worksheet.getRow(1).values=[`Articulo: ${unArticulo.Nombre}`]
+                        worksheet.getRow(2).values=[`Barcode: ${unArticulo.Barcode} Partida: ${unArticulo.Partida}`]
+                        //le da el tamaño a las columnas
+                        worksheet.columns=[
+                            {width: 25}, 
+                            {width: 15}
+                        ]
+                        //pone la cuarta fila con los encabezados deseados
+                        worksheet.getRow(4).values=["Posicion", "Unidades"]
+                        //marca desde donde va a iniciar a colocarse los datos
+                        let unRenglon = 4
+                        //carga los datos fila por fila
+                        posicion.forEach(e => {
+                            unRenglon++
+                            worksheet.getRow(unRenglon).values=[
+                            e.Descripcion,
+                            e.Unidades
+                            ]
+                        })
+                        unRenglon++
+                        //agrega una ultima fila con el total
+                        worksheet.getRow(unRenglon).values = ["Total ", totalUnidades]
+                        //modifica la fuente de las filas
+                        worksheet.eachRow ( (row, rowNumber) => {
+                            row.eachCell ( (cell, colNumber) => {
+                                if (rowNumber===1 || rowNumber==unRenglon) {
+                                    cell.font={size: 16, bold: true}
+                                } else if (rowNumber===2 || rowNumber===4) {
+                                    cell.font={size: 14, bold: true}
+                                } else {
+                                    cell.font={size: 14}
+                                }
+                            })
+                        })
+                        //Guarda el archivo excel
+                        const buf= await workbook.xlsx.writeBuffer()
+                        saveAs(new Blob([buf]), "Posiciones -" + unArticulo.id +".xlsx")
+                    }
+                })
+                })
+
+            
+            }else{
+                let posicion = await posicionesV3.getPosicionesByIdAndEmpresa(unArticulo.Id, unArticulo.IdEmpresa)
+    
+                let contenido='<table border="0" width="20%"><tr><td><b>Posición</b><td align="right"><b>Unidades</b></tr>'
+                let totalUnidades=0
+                if (posicion.length>0) {
+                    posicion.forEach(unaPosicion => {
+                    contenido+="<tr>"
+                    contenido+='<td>'+unaPosicion.Descripcion+"</td>"
+                    contenido+='<td align="right">'+Number(unaPosicion.Unidades)+"</td>"
+                    contenido+="</tr>"
+                    totalUnidades+=Number(unaPosicion.Unidades)    
+                    })
+                    contenido+=`<tr><td><b>Total</b></td><td align="right"><b>${totalUnidades}</b></td></tr></table`
+                } else {
+                    contenido="<b>No tiene stock posicionado</b>"
+                }
+    
+                store.dispatch("alertDialog/mostrar", {titulo: "Artículo: "+unArticulo.Nombre + " ("+unArticulo.Id+")<br>Barcode: "+unArticulo.Barcode, mensaje: contenido, botonSecundario: 'descargar excel',
+                callback: (async respuesta => {
+                    //descargar excel de posiciones del articulo
+                    if(respuesta==="descargar excel") {
+                        const workbook=new excel.Workbook()
+                        const worksheet=workbook.addWorksheet("Poscicion - " + unArticulo.Id)
+                        //Agrega las dos primeras filas con el nombre y el barcode del producto
+                        worksheet.getRow(1).values=[`Articulo: ${unArticulo.Nombre}`]
+                        worksheet.getRow(2).values=[`Barcode: ${unArticulo.Barcode}`]
+                        //le da el tamaño a las columnas
+                        worksheet.columns=[
+                            {width: 25}, 
+                            {width: 15}
+                        ]
+                        //pone la cuarta fila con los encabezados deseados
+                        worksheet.getRow(4).values=["Posicion", "Unidades"]
+                        //marca desde donde va a iniciar a colocarse los datos
+                        let unRenglon = 4
+                        //carga los datos fila por fila
+                        posicion.forEach(e => {
+                            unRenglon++
+                            worksheet.getRow(unRenglon).values=[
+                            e.Descripcion,
+                            e.Unidades
+                            ]
+                        })
+                        unRenglon++
+                        //agrega una ultima fila con el total
+                        worksheet.getRow(unRenglon).values = ["Total ", totalUnidades]
+                        //modifica la fuente de las filas
+                        worksheet.eachRow ( (row, rowNumber) => {
+                            row.eachCell ( (cell, colNumber) => {
+                                if (rowNumber===1 || rowNumber==unRenglon) {
+                                    cell.font={size: 16, bold: true}
+                                } else if (rowNumber===2 || rowNumber===4) {
+                                    cell.font={size: 14, bold: true}
+                                } else {
+                                    cell.font={size: 14}
+                                }
+                            })
+                        })
+                        //Guarda el archivo excel
+                        const buf= await workbook.xlsx.writeBuffer()
+                        saveAs(new Blob([buf]), "Posiciones -" + unArticulo.Id +".xlsx")
+                    }
+                })
+                })
+
+            }
+        },
+        async clickDescargarExcel() {
+            const workbook=new excel.Workbook()
+            const worksheet=workbook.addWorksheet("Stock")
+
+            let renglon
+
+            if (this.empresaElegida.StockPosicionado) {
+                worksheet.views = [{state: 'frozen', ySplit: 1}]
+                worksheet.autoFilter = 'A1:E1'
+                if(this.tieneLOTE){
+                    worksheet.columns=[
+                        {header: 'Producto', width: 100}, 
+                        {header: 'BoxNumber', width: 40}, 
+                        {header: 'SerialNumber', width: 40}, 
+                        {header: 'ProductNumber', width: 40},
+                        {header: 'Posición', width: 30},
+                        {header: 'Unidades', width: 25},
+                    ]
+                } else {
+                    worksheet.columns=[
+                        {header: 'Producto', width: 100}, 
+                        {header: 'Barcode', width: 40}, 
+                        {header: 'CodeEmpresa', width: 40},
+                        {header: 'Posición', width: 30},
+                        {header: 'Unidades', width: 25},
+                        {header: 'Id', width: 25},
+                    ]
+                }
+
+                renglon=1
+                if(this.tieneLOTE){
+                    for(const articulo of this.listaArticulosCompleta) {
+                        const loteDetalleJSON = JSON.parse(articulo.LoteDetalle)[0]
+                        renglon++
+                        worksheet.getRow(renglon).values=[loteDetalleJSON.productoNombre, loteDetalleJSON.lote, loteDetalleJSON.barcode, loteDetalleJSON.codeEmpresa, loteDetalleJSON.posicion, loteDetalleJSON.unidades]
+                    }
+                }else{
+                    this.listaArticulosCompleta.forEach(unArticulo => {
+                        renglon++
+                        worksheet.getRow(renglon).values=[unArticulo.Nombre, unArticulo.Barcode, unArticulo.CodeEmpresa, unArticulo.Posiciones, unArticulo.Stock, unArticulo.Id]
+                    })
+                    renglon++
+                    const filaTotalPosicionado=renglon
+                    let celdaSuma=worksheet.getCell(`D${renglon}`)
+                    celdaSuma.value={formula: `SUM(D2:D${renglon-1})`}
+                    celdaSuma.font={bold: true}
+    
+                    renglon++
+                    renglon++
+                    this.listaArticulosCompleta.forEach(unArticulo => {
+                        if (unArticulo.StockSinPosicionar>0) {
+                            renglon++
+                            worksheet.getRow(renglon).values=[unArticulo.Nombre, unArticulo.Barcode, "", unArticulo.StockSinPosicionar, unArticulo.Id]
+                        }
+                    })
+                    renglon++
+                    celdaSuma=worksheet.getCell(`D${renglon}`)
+                    celdaSuma.value={formula: `SUM(D${filaTotalPosicionado+3}:D${renglon-1})`}
+                    celdaSuma.font={bold: true}
+                }
+
+
+            } else {
+
+                worksheet.views = [{state: 'frozen', ySplit: 1}]
+                worksheet.autoFilter = 'A1:D1'
+                worksheet.columns=[
+                    {header: 'Producto', width: 100}, 
+                    {header: 'Barcode', width: 40}, 
+                    {header: 'CodeEmpresa', width: 40},
+                    {header: 'Unidades', width: 25},
+                    {header: 'Id', width: 25},
+                ]
+                worksheet.getRow(1).font={bold: true, size: 14}
+
+                renglon=1
+                this.listaArticulosCompleta.forEach(unArticulo => {
+                    renglon++
+                    worksheet.getRow(renglon).values=[unArticulo.Nombre, unArticulo.Barcode, unArticulo.CodeEmpresa, unArticulo.Stock, unArticulo.Id]
+                })
+
+                renglon++
+                const celdaSuma=worksheet.getCell(`C${renglon}`)
+                celdaSuma.value={formula: `SUM(C2:C${renglon-1})`}
+                celdaSuma.font={bold: true}
+
+            }
+
+            worksheet.eachRow ( (row, rowNumber) => {
+                row.eachCell ( (cell, colNumber) => {
+                    if (rowNumber==1) {
+                        cell.font={size: 16, bold: true}
+                    } else {
+                        if (rowNumber==renglon) {
+                            cell.font={size: 16, bold: true}
+                        } else {
+                            cell.font={size: 14}
+                        }
+                    }
+                })
+            } )
+            const buf=await workbook.xlsx.writeBuffer()
+            saveAs(new Blob([buf]), `${this.empresaElegida.Nombre}_Stock.xlsx`)
+        },
+        repararTodosLosArticulos() {
+            let cantidadAReparar=0
+            for (const unArticulo of this.listaArticulosMostrar) {
+                if (unArticulo.StockSinPosicionar===-1 && unArticulo.Stock===0) {
+                    cantidadAReparar++
+                    this.repararArticuloConfirmado(unArticulo)
+                }
+            }
+        },
+
+        async verificarDiferenciasStockMovimiento(){
+            let stockTotal = 0
+            const textoPrimario="Aceptar"
+            const textoSecundario="Descargar Excel" 
+
+            let mensaje = `<table border="0" width="100%">
+                            <tr>
+                                <td width="50%"><b>Producto</b></td>
+                                <td width="30%"><b>Barcode</b></td>
+                                <td width="20%"><b>Code Empresa</b></td>
+                            </tr>`
+
+            for(const unArticulo of this.listaArticulosMostrar){
+               await productosV3.getMovimientosByPeriodoAndEmpresaAndArticulo(unArticulo.IdEmpresa, '2010-01-01', fechas.getHoy(), unArticulo.Id) 
+                    .then(movimientos => {
+                        stockTotal = 0
+                        for(const movimiento of movimientos){
+                            if(movimiento.signo == -1){
+                                stockTotal -= movimiento.unidades
+                            } else {
+                                stockTotal += movimiento.unidades
+                            }
+                        }           
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+                
+                if(stockTotal != unArticulo.Stock){
+                    unArticulo.stockDiferencia = true
+                } else {
+                    unArticulo.stockDiferencia = false
+                }
+            }
+
+            for await(const unArticulo of this.listaArticulosMostrar) {
+                if(unArticulo.stockDiferencia){
+                    mensaje += "<tr>"
+                    mensaje += `<td>${unArticulo.Nombre.substr(0,90)}</td>`
+                    mensaje += `<td>${unArticulo.Barcode}</td>`
+                    mensaje += `<td>${unArticulo.CodeEmpresa}</td>`
+                    mensaje += "</tr>"
+                }
+            }
+
+            mensaje += "</table>"
+            const diferenciasPopUp={
+                titulo: `Diferencias entre Stock y Movimientos`,
+                mensaje: `${mensaje}`,
+                botonSecundario: textoSecundario,
+                botonPrimario: textoPrimario,
+
+                callback: ((respuesta) => {
+                    if (respuesta===textoSecundario) {
+                        const workbook = utils.book_new()                    
+                        const nombreHoja="Diferencias Stock - Movimientos"
+                        workbook.SheetNames.push(nombreHoja)
+                        const datosPlanilla = []
+                        datosPlanilla.push(["Producto","Barcode", "Code Empresa"])
+                        let unRenglon = []
+
+                        this.listaArticulosMostrar.forEach(unItem => {
+                            if(unItem.stockDiferencia){
+                                unRenglon = [unItem.Nombre, unItem.Barcode, unItem.CodeEmpresa]
+                                datosPlanilla.push(unRenglon)
+                            }                                     
+                        })
+                        
+                        var worksheet = utils.aoa_to_sheet(datosPlanilla);
+                        workbook.Sheets[nombreHoja] = worksheet;
+                        writeFile(workbook, "Diferencias_Stock_Movimientos.xlsx");
+                    }
+                })
+            }
+            store.dispatch("alertDialog/mostrar",  diferenciasPopUp)
+        },
+
+        repararArticulo(articuloAReparar) {
+            if (articuloAReparar.StockSinPosicionar==0 && false) {
+                this.mostrarMensaje("No se requiere reparación", "El artículo seleccionado no tiene stock sin posicionar")
+            } else {
+                this.repararArticuloConfirmado(articuloAReparar)
+
+            }
+        },
+        async repararArticuloConfirmado(articuloAReparar) {         
+                const posProd = await posicionesV3.getPosicionesByIdAndEmpresa(articuloAReparar.Id, articuloAReparar.IdEmpresa)
+                try{
+                    const response=await posiciones.desposicionar(articuloAReparar.Id, posProd[0].IdPosicion, posProd[0].Unidades)                 
+                } catch(error) {
+                    store.dispatch("snackbar/mostrar", "Error al reparar articulos")
+                }  
+        },
+        
+ actualizarTotales() {
+    // 1) Reseteamos
+    this.stockTotal         = 0
+    this.stockPosicionado   = 0
+    this.stockSinPosicionar = 0
+
+    // 2) Sumamos de la lista
+    this.listaArticulosCompleta.forEach(p => {
+      this.stockTotal         += Number(p.Stock              || 0)
+      this.stockPosicionado   += Number(p.StockPosicionado   || 0)
+      this.stockSinPosicionar += Number(p.StockSinPosicionar || 0)
+    })
+
+    // 3) Calculamos comprometido
+    this.stockComprometido = this.listaArticulosCompleta
+      .reduce((sum, p) => sum + Number(p.StockComprometido || 0), 0)
+
+    // 4) Construimos el array de tarjetas
+    const pctPos  = this.stockPosicionado  / (this.stockTotal   || 1)
+    const pctComp = this.stockComprometido / (this.stockTotal   || 1)
+
+    this.cards = [
+      {
+        label: 'Stock total',
+        value: this.stockTotal,
+        color: 'primary',              // clave de tu tema
+        icon:  'mdi-package-variant'   // icono MDI
+      },
+      {
+        label: 'Posicionado',
+        value: this.stockPosicionado,
+        color: pctPos < 0.5 ? 'orange' : 'green',
+        icon:  'mdi-warehouse'
+      },
+      {
+        label: 'Sin posicionar',
+        value: this.stockSinPosicionar,
+        color: this.stockSinPosicionar > 1000 ? 'orange' : 'green',
+        icon:  'mdi-package-variant-closed'
+      },
+      {
+        label: 'Comprometido',
+        value: this.stockComprometido,
+        color: this.stockComprometido > 0 ? 'red' : 'primary',
+        icon:  'mdi-handshake-outline'
+      }
+    ]
+  },
+        actualizarTotalesPartida() {
+            this.stockTotal=0
+            this.stockSinPosicionar=0
+            this.stockPosicionado=0
+            this.metrosTotales=0
+            this.kilosTotales=0
+            this.listaArticulosCompleta.forEach(unArticulo => {
+                this.stockTotal += unArticulo.Stock
+                this.stockPosicionado += parseInt(unArticulo.StockPosicionado)
+                this.stockSinPosicionar += unArticulo.Stock - parseInt(unArticulo.StockPosicionado) 
+            })
+        },
+
+        filtrarLista(){
+            if (this.verSoloConStockSinPosicionar) {
+                this.listaArticulosMostrar = this.listaArticulosCompleta.filter(element => element.StockSinPosicionar>0)
+            } else {
+                this.listaArticulosMostrar = this.listaArticulosCompleta.filter(element => true)
+            }
+            if (this.verSoloConStock) {
+                this.listaArticulosMostrar = this.listaArticulosMostrar.filter(element => element.Stock>0)
+            }
+        },
+        changeVerSoloStockSinPosicionar() {
+            this.filtrarLista()
+        },
+        changeVerSoloConStock() {
+            this.filtrarLista()
+        },
+        popularListaProductos() {
+            this.listaArticulosCompleta=[]
+            this.listaArticulosMostrar=[]
+            
+            if(this.tieneLOTE){
+                productosV3.getAllLotesStock(this.idEmpresa)
+                .then(response => {
+                    this.listaArticulosCompleta = response  
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+                .finally( () => {
+                    this.actualizarTotales()
+                    this.filtrarLista()
+                })
+            } else if(this.tienePART){
+                productosV3.getAllPartidas(this.idEmpresa)
+                .then(respuesta => {
+                    this.listaArticulosMostrar  = respuesta
+                    this.listaArticulosCompleta = respuesta
+                    this.actualizarTotalesPartida()
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            }else{
+                productosV3.getAllProductosByEmpresa(this.idEmpresa)
+                    .then(respuesta => {
+                        respuesta.forEach(unProducto => {
+                            if(unProducto.StockComprometido == null){
+                                unProducto.StockComprometido = 0
+                            }
+                            if(unProducto.StockPosicionado == null){
+                                unProducto.StockPosicionado=0
+                            }
+                        
+                            unProducto.StockSinPosicionar = unProducto.Stock - parseInt(unProducto.StockPosicionado) 
+                        })
+                        this.listaArticulosCompleta=respuesta
+                        this.actualizarTotales()
+                        this.filtrarLista()
+                    })
+                    .catch(error => {
+                        console.log("error", error)
+                        this.listaArticulosCompleta=[]
+                        this.listaArticulosMostrar=[]
+                        this.mostrarError(error)
+                    })
+                }
+            // productosV3.getAllByEmpresa(this.idEmpresa)
+            //     .then(respuesta => {
+            //         this.listaArticulosCompleta=respuesta
+            //         this.actualizarTotales()
+            //         this.filtrarLista()
+            //     })
+            //     .catch(puteada => {
+            //         this.listaArticulosCompleta=[]
+            //         this.listaArticulosMostrar=[]
+            //         this.mostrarError(puteada)
+            //     })
+        },
+        eligioEmpresa(idEmpresaElegida) {
+            this.tieneLOTE = false
+            this.tienePART = false
+            this.idEmpresa=idEmpresaElegida
+            empresas.getOne(idEmpresaElegida)
+                .then(response => {
+                    this.verDetalleLote = false
+                    if(response.LOTE == true){
+                        this.tieneLOTE = true  
+                        this.tienePART = false
+                    } else if(response.PART){
+                        this.tieneLOTE = false
+                        this.tienePART = true
+                    }else{
+                        this.tieneLOTE = false   
+                        this.tienePART = false     
+                    }
+
+                    this.empresaElegida=response
+                    if (this.empresaElegida.ClienteTextil){
+                        this.textil = true
+                        this.cabeceras = this.empresaElegida.StockPosicionado ? this.cabecerasStockPosicionadoTextil :  this.cabecerasStockNoPosicionadoTextil
+                    }
+                    else {
+                        if(this.empresaElegida.PART){
+                            this.cabeceras = this.cabecerasStockPartidasPosicionado
+                            this.textil = false
+                        }else{
+                            this.cabeceras = this.empresaElegida.StockPosicionado ? this.cabecerasStockPosicionado :  this.cabecerasStockNoPosicionado
+                            this.textil = false
+                            this.tienePART = false
+                        }
+                    }
+                    this.popularListaProductos()
+                })
+        },
+        mostrarMensaje(titulo, mensaje){
+            store.dispatch("alertDialog/mostrar", {titulo, mensaje})
+        },
+        mostrarError(mensaje) {
+            store.dispatch("snackbar/mostrar", mensaje)
+        },
+
+    },
+
+    computed: {
+        estoyEnFuente() {
+            return process.env.NODE_ENV=="development"
+        }
+    },
+
+    components: {
+        SelectorEmpresa
+    },
+
+    created() {
+        store.dispatch('actualizarTituloPrincipal', 'Stock')
+        // store.dispatch('empresas/cargarListaEmpresas', "SoloStockPosicionado")
+        store.dispatch('empresas/cargarListaEmpresas', "SoloActivas")
+
+        if (store.state.usuarios.usuarioActual.IdEmpresa>0) {
+            this.idEmpresa=store.state.usuarios.usuarioActual.IdEmpresa
+            this.eligioEmpresa(store.state.usuarios.usuarioActual.IdEmpresa)
+        }
+    }
+
+}
+</script>
