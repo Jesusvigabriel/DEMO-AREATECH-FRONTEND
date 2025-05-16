@@ -5,24 +5,23 @@
     <v-main class="login-bg">
       <v-container fill-height>
         <v-row align="center" justify="center">
-          <!-- Columnas responsivas para diferentes tamaños de pantalla -->
           <v-col cols="12" sm="8" md="6" lg="4">
-            <!-- Tarjeta de login con sombra elevada -->
             <v-card class="elevation-6 login-card">
-              <!-- Barra de herramientas superior -->
+              <!-- Barra superior con título e icono -->
               <v-toolbar color="primary" dark flat>
-                <!-- Título sin negrita como solicitaste -->
                 <v-toolbar-title class="text-h5">Bienvenido</v-toolbar-title>
                 <v-spacer />
-                <!-- Icono de montacargas en lugar del de usuario -->
                 <v-icon large>mdi-forklift</v-icon>
               </v-toolbar>
 
-              <!-- Contenido del formulario -->
+              <!-- Cuerpo de la tarjeta con el formulario -->
               <v-card-text class="pa-6">
-                <!-- Formulario con validación -->
-                <v-form v-model="datosValidos" ref="form" @submit.prevent="iniciarSesion">
-                  <!-- Campo de usuario con icono de casco de obrero -->
+                <v-form
+                  v-model="datosValidos"
+                  ref="form"
+                  @submit.prevent="iniciarSesion"
+                >
+                  <!-- Campo de usuario -->
                   <v-text-field
                     outlined
                     class="mb-4 input-field"
@@ -34,7 +33,7 @@
                     single-line
                     rounded
                   />
-                  
+
                   <!-- Campo de contraseña con toggle para mostrar/ocultar -->
                   <v-text-field
                     outlined
@@ -51,7 +50,7 @@
                     rounded
                   />
 
-                  <!-- Botón de ingreso con efectos hover -->
+                  <!-- Botón de Ingresar -->
                   <v-btn
                     block
                     x-large
@@ -68,12 +67,14 @@
                   <!-- Divisor visual -->
                   <v-divider class="my-6" />
 
-                  <!-- Opciones alternativas de login -->
+                  <!-- Opciones alternativas -->
                   <div class="text-center">
-                    <p class="text-caption mb-3 secondary--text">O ingresa con</p>
-                    <!-- Componente para login con Google -->
+                    <p class="text-caption mb-3 secondary--text">
+                      O ingresa con
+                    </p>
+                    <!-- Componente de login con Google -->
                     <LoginGoogle />
-                    <!-- Enlace para recuperar contraseña -->
+                    <!-- Enlace para recuperación de contraseña -->
                     <v-btn
                       text
                       small
@@ -95,114 +96,148 @@
 </template>
 
 <script>
-// Importación de dependencias
-import store from '../store'
+// Importaciones
+import store from '@/store'
 import LoginGoogle from '@/components/LoginGoogle.vue'
 import { auth, sendPasswordResetEmail } from '@/firebase-config'
 
 export default {
   name: 'Login',
-  components: {
-    LoginGoogle
-  },
+  components: { LoginGoogle },
   data() {
     return {
-      username: '',     // Almacena el nombre de usuario
-      password: '',     // Almacena la contraseña
-      show1: false,     // Controla si se muestra la contraseña
-      loading: false,   // Estado de carga del botón
-      // Reglas de validación
-      rules: {
+      username: '',       // Usuario ingresado
+      password: '',       // Contraseña ingresada
+      show1: false,       // Toggle para mostrar/ocultar contraseña
+      loading: false,     // Estado de carga del botón
+      datosValidos: false,// Estado de validación del formulario
+      rules: {            // Reglas de validación
         required: v => !!v || 'Obligatorio',
-        min: v => v.length >= 3 || 'Mínimo 3 caracteres'
-      },
-      datosValidos: false // Estado de validación del formulario
+        min:      v => v.length >= 3 || 'Mínimo 3 caracteres'
+      }
     }
   },
   methods: {
-    // Método para iniciar sesión
+    /**
+     * 1) Valida el formulario
+     * 2) Intenta despachar acción de login
+     * 3) Si hay error, muestra modal con "Reintentar"/"Cancelar"
+     */
     async iniciarSesion() {
-      this.validar()
+      this.$refs.form.validate()
       if (!this.datosValidos) {
-        store.dispatch("snackbar/mostrar", "Datos incompletos")
+        store.dispatch('snackbar/mostrar', 'Datos incompletos')
         return
       }
-      
+
       this.loading = true
       try {
         await store.dispatch('usuarios/intentarLoggearse', {
           Username: encodeURIComponent(this.username),
           Password: encodeURIComponent(this.password)
         })
+      } catch (err) {
+        console.error('Error al iniciar sesión:', err)
+        // Mostrar diálogo de alerta para reintentar el login
+        this.$store.dispatch('alertDialog/mostrar', {
+          titulo:          'Error al iniciar sesión',
+          mensaje:         err.message || 'No fue posible iniciar sesión.',
+          botonPrimario:   'Reintentar',
+          botonSecundario: 'Cancelar',
+          callback: respuesta => {
+            if (respuesta === 'Reintentar') {
+              this.iniciarSesion()
+            }
+          }
+        })
       } finally {
         this.loading = false
       }
     },
-    // Valida el formulario
-    validar() {
-      this.$refs.form.validate()
-    },
-    // Método para manejar olvido de contraseña
+
+    /**
+     * Flujo "Olvidaste tu contraseña":
+     * a) Solicitar email con prompt
+     * b) Enviar correo de restablecimiento
+     * c) Mostrar diálogo con opciones Abrir Gmail / Volver al login
+     * d) Si falla, mostrar diálogo con Reintentar/Cancelar
+     */
     async olvidePassword() {
-      // Pedir al usuario su email
-      const email = prompt("Por favor, ingresa tu correo registrado y luego revisa tu bandeja de mail")
+      // a) Pedir el email al usuario
+      const email = prompt(
+        'Por favor, ingresa tu correo registrado y luego revisa tu bandeja de mail'
+      )
       if (!email) return
 
+      // b) Configuración para Firebase
       const actionCodeSettings = {
-        url: `${window.location.origin}/reset-password`,
+        url: window.location.origin + '/reset-password',
         handleCodeInApp: true
       }
 
       try {
+        // c) Intentar enviar el mail
         await sendPasswordResetEmail(auth, email, actionCodeSettings)
-        this.$store.dispatch('snackbar/mostrar', {
-          texto: 'Revisa tu correo para restablecer tu contraseña',
-          color: 'success',
-          timeout: 5000
+
+        // Mostrar diálogo de éxito con opción de abrir Gmail
+        this.$store.dispatch('alertDialog/mostrar', {
+          titulo:          'Revisa tu bandeja de entrada',
+          mensaje:         `Hemos enviado un correo a <b>${email}</b>.<br>¿Quieres abrir tu Gmail ahora?`,
+          botonPrimario:   'Abrir Gmail',
+          botonSecundario: 'Volver al login',
+          callback: respuesta => {
+            if (respuesta === 'Abrir Gmail') {
+              window.open('https://mail.google.com', '_blank')
+            }
+            this.$router.push('/login')
+          }
         })
       } catch (err) {
-        console.error("Error al enviar mail de restablecimiento:", err)
-        this.$store.dispatch('snackbar/mostrar', {
-          texto: err.code === 'auth/user-not-found'
-            ? 'Email no registrado'
-            : 'Error al enviar el mail de restablecimiento',
-          color: 'error',
-          timeout: 5000
+        console.error('Error al enviar mail de restablecimiento:', err)
+        // d) Si falla, mostrar diálogo de reintento
+        this.$store.dispatch('alertDialog/mostrar', {
+          titulo:          'Error al enviar correo',
+          mensaje:         err.code === 'auth/user-not-found'
+                             ? 'Email no registrado'
+                             : 'Error al enviar el mail de restablecimiento',
+          botonPrimario:   'Reintentar',
+          botonSecundario: 'Cancelar',
+          callback: respuesta => {
+            if (respuesta === 'Reintentar') {
+              this.olvidePassword()
+            }
+          }
         })
       }
     }
   },
-  // Hook de ciclo de vida
   created() {
+    // Ajustar título principal en el store
     store.dispatch('actualizarTituloPrincipal', 'Inicio de sesión')
   }
 }
 </script>
 
-<!-- Estilos con scope para este componente -->
 <style scoped>
-/* Fondo gris claro para el área de login */
+/* Estilos Login.vue */
+
 .login-bg {
   background-color: #f5f5f5;
 }
 
-/* Estilos para la tarjeta de login */
 .login-card {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
 }
 
-/* Estilos para los campos de entrada */
 .input-field {
   border-radius: 8px !important;
 }
-
 .input-field >>> .v-input__slot {
   min-height: 48px !important;
 }
 
-/* Estilos para el botón de login */
 .login-btn {
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -211,35 +246,24 @@ export default {
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   height: 48px !important;
 }
-
-/* Efecto hover para el botón */
 .login-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 8px rgba(0,0,0,0.15);
 }
-
-/* Efecto al hacer click */
 .login-btn:active {
   transform: translateY(0);
 }
 
-/* Texto dentro del botón */
-.login-btn .btn-text {
-  letter-spacing: 0.8px;
-}
-
-/* Estilo para el enlace de "Olvidaste tu contraseña" */
 .forgot-password {
   letter-spacing: 0.3px;
 }
 
-/* Ajuste para el título de la toolbar */
 .v-toolbar__title {
   letter-spacing: 0.5px;
 }
 </style>
 
-<!-- Importación de la fuente Roboto -->
+<!-- Fuente Roboto -->
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 </style>
