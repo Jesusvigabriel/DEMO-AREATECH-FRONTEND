@@ -219,6 +219,7 @@ export default {
     },
 
     clickEnEliminarPosicion(item) {
+      console.log('>> clickEnEliminarPosicion:', item.Id);
       const textoPrimario="Si, borrarla"
       const textoSecundario="No borrarla"
       const ad={
@@ -232,6 +233,7 @@ export default {
           }
         })
       }
+      console.log('>> dispatch alertDialog/mostrar con payload:', ad);
       store.dispatch("alertDialog/mostrar", ad)
     },
     async eliminarPosicion(item) {

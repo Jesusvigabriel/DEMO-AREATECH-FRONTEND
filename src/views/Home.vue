@@ -29,6 +29,7 @@
       </v-col>
 
       <!-- Stock Crítico -->
+      <!--
       <v-col cols="12" sm="6" md="4" lg="3" xl="2">
         <v-card
           outlined
@@ -47,8 +48,10 @@
           </v-card-text>
         </v-card>
       </v-col>
+      -->
 
       <!-- Rotación 7 días -->
+      <!--
       <v-col cols="12" sm="6" md="4" lg="3" xl="2">
         <v-card outlined class="card-card rotation-card">
           <v-card-title class="blue--text align-center pa-4">
@@ -62,8 +65,10 @@
           </v-card-text>
         </v-card>
       </v-col>
+      -->
 
       <!-- Días de Inventario -->
+      <!--
       <v-col cols="12" sm="6" md="4" lg="3" xl="2">
         <v-card outlined class="card-card dio-card">
           <v-card-title class="purple--text align-center pa-4">
@@ -77,6 +82,7 @@
           </v-card-text>
         </v-card>
       </v-col>
+      -->
     </v-row>
   </v-container>
 </template>
@@ -185,10 +191,10 @@ export default {
     }
     this.lastUpdated = new Date().toLocaleTimeString()
     await Promise.all([
-      this.cargarPendientes(),
-      this.cargarStockCritico(),
-      this.cargarRotacion7d(),
-      this.cargarDio()
+      this.cargarPendientes()
+      // , this.cargarStockCritico()
+      // , this.cargarRotacion7d()
+      // , this.cargarDio()
     ])
   }
 }
