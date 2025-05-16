@@ -81,7 +81,7 @@ export default {
         })
 
         this.$store.dispatch('snackbar/mostrar', {
-          texto: errorMessage,
+          mensaje: errorMessage,
           color: 'error',
           timeout: 5000
         })
