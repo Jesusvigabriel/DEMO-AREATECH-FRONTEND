@@ -9,6 +9,10 @@ import axios from 'axios'
 // Vue.use(VueConfirmDialog)
 // Vue.component('vue-confirm-dialog', VueConfirmDialog.default)
 
+// Importa e instala vue-lsi-util para LSIMensajes y LSIDialog
+import LSIUtil from 'vue-lsi-util'
+Vue.use(LSIUtil)
+
 Vue.config.productionTip = false
 
 // Configuración global de Axios usando la variable limpia
@@ -18,7 +22,6 @@ if (!apiUrl) {
 } else {
   axios.defaults.baseURL = apiUrl.replace(/^http:/, 'https:')
 }
-
 
 new Vue({
   router,
