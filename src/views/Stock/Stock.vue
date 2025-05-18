@@ -1178,109 +1178,129 @@ export default {
             }
         },
         async clickDescargarExcel() {
-            const workbook=new excel.Workbook()
-            const worksheet=workbook.addWorksheet("Stock")
+    // Creo el workbook y worksheet
+    const workbook = new excel.Workbook();
+    const worksheet = workbook.addWorksheet("Stock");
+    let renglon;
 
-            let renglon
-
-            if (this.empresaElegida.StockPosicionado) {
-                worksheet.views = [{state: 'frozen', ySplit: 1}]
-                worksheet.autoFilter = 'A1:E1'
-                if(this.tieneLOTE){
-                    worksheet.columns=[
-                        {header: 'Producto', width: 100}, 
-                        {header: 'BoxNumber', width: 40}, 
-                        {header: 'SerialNumber', width: 40}, 
-                        {header: 'ProductNumber', width: 40},
-                        {header: 'Posición', width: 30},
-                        {header: 'Unidades', width: 25},
-                    ]
-                } else {
-                    worksheet.columns=[
-                        {header: 'Producto', width: 100}, 
-                        {header: 'Barcode', width: 40}, 
-                        {header: 'CodeEmpresa', width: 40},
-                        {header: 'Posición', width: 30},
-                        {header: 'Unidades', width: 25},
-                        {header: 'Id', width: 25},
-                    ]
-                }
-
-                renglon=1
-                if(this.tieneLOTE){
-                    for(const articulo of this.listaArticulosCompleta) {
-                        const loteDetalleJSON = JSON.parse(articulo.LoteDetalle)[0]
-                        renglon++
-                        worksheet.getRow(renglon).values=[loteDetalleJSON.productoNombre, loteDetalleJSON.lote, loteDetalleJSON.barcode, loteDetalleJSON.codeEmpresa, loteDetalleJSON.posicion, loteDetalleJSON.unidades]
-                    }
-                }else{
-                    this.listaArticulosCompleta.forEach(unArticulo => {
-                        renglon++
-                        worksheet.getRow(renglon).values=[unArticulo.Nombre, unArticulo.Barcode, unArticulo.CodeEmpresa, unArticulo.Posiciones, unArticulo.Stock, unArticulo.Id]
-                    })
-                    renglon++
-                    const filaTotalPosicionado=renglon
-                    let celdaSuma=worksheet.getCell(`D${renglon}`)
-                    celdaSuma.value={formula: `SUM(D2:D${renglon-1})`}
-                    celdaSuma.font={bold: true}
-    
-                    renglon++
-                    renglon++
-                    this.listaArticulosCompleta.forEach(unArticulo => {
-                        if (unArticulo.StockSinPosicionar>0) {
-                            renglon++
-                            worksheet.getRow(renglon).values=[unArticulo.Nombre, unArticulo.Barcode, "", unArticulo.StockSinPosicionar, unArticulo.Id]
-                        }
-                    })
-                    renglon++
-                    celdaSuma=worksheet.getCell(`D${renglon}`)
-                    celdaSuma.value={formula: `SUM(D${filaTotalPosicionado+3}:D${renglon-1})`}
-                    celdaSuma.font={bold: true}
-                }
-
-
-            } else {
-
-                worksheet.views = [{state: 'frozen', ySplit: 1}]
-                worksheet.autoFilter = 'A1:D1'
-                worksheet.columns=[
-                    {header: 'Producto', width: 100}, 
-                    {header: 'Barcode', width: 40}, 
-                    {header: 'CodeEmpresa', width: 40},
-                    {header: 'Unidades', width: 25},
-                    {header: 'Id', width: 25},
-                ]
-                worksheet.getRow(1).font={bold: true, size: 14}
-
-                renglon=1
-                this.listaArticulosCompleta.forEach(unArticulo => {
-                    renglon++
-                    worksheet.getRow(renglon).values=[unArticulo.Nombre, unArticulo.Barcode, unArticulo.CodeEmpresa, unArticulo.Stock, unArticulo.Id]
-                })
-
-                renglon++
-                const celdaSuma=worksheet.getCell(`C${renglon}`)
-                celdaSuma.value={formula: `SUM(C2:C${renglon-1})`}
-                celdaSuma.font={bold: true}
-
+    if (this.empresaElegida.StockPosicionado) {
+        // Para empresas que manejan posiciones (stock posicionado)
+        worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+        worksheet.autoFilter = 'A1:F1'; // filtro en todas las columnas importantes
+        if (this.tieneLOTE) {
+            // Si la empresa usa lotes (dejo igual, ajustar según necesidad)
+            worksheet.columns = [
+                { header: 'Producto', width: 100 },
+                { header: 'BoxNumber', width: 40 },
+                { header: 'SerialNumber', width: 40 },
+                { header: 'ProductNumber', width: 40 },
+                { header: 'Posición', width: 30 },
+                { header: 'Unidades', width: 25 },
+            ];
+            renglon = 1;
+            for (const articulo of this.listaArticulosCompleta) {
+                const loteDetalleJSON = JSON.parse(articulo.LoteDetalle)[0];
+                renglon++;
+                worksheet.getRow(renglon).values = [
+                    loteDetalleJSON.productoNombre,
+                    loteDetalleJSON.lote,
+                    loteDetalleJSON.barcode,
+                    loteDetalleJSON.codeEmpresa,
+                    loteDetalleJSON.posicion,
+                    loteDetalleJSON.unidades
+                ];
             }
+        } else {
+            // Empresas con posiciones normales (NO lotes)
+            worksheet.columns = [
+                { header: 'Producto', width: 100 },
+                { header: 'Barcode', width: 40 },
+                { header: 'CodeEmpresa', width: 40 },
+                { header: 'Posición', width: 30 },
+                { header: 'Unidades', width: 25 },
+                { header: 'Id', width: 25 }
+            ];
 
-            worksheet.eachRow ( (row, rowNumber) => {
-                row.eachCell ( (cell, colNumber) => {
-                    if (rowNumber==1) {
-                        cell.font={size: 16, bold: true}
-                    } else {
-                        if (rowNumber==renglon) {
-                            cell.font={size: 16, bold: true}
-                        } else {
-                            cell.font={size: 14}
-                        }
-                    }
-                })
-            } )
-            const buf=await workbook.xlsx.writeBuffer()
-            saveAs(new Blob([buf]), `${this.empresaElegida.Nombre}_Stock.xlsx`)
-        },
+            // ACA genero una fila por producto por cada posición (si no tiene, la dejo vacía)
+            let filas = [];
+            for (const unArticulo of this.listaArticulosCompleta) {
+                // Busco todas las posiciones del artículo
+                let posiciones = await posicionesV3.getPosicionesByIdAndEmpresa(unArticulo.Id, unArticulo.IdEmpresa);
+                if (posiciones && posiciones.length) {
+                    posiciones.forEach(pos => {
+                        filas.push([
+                            unArticulo.Nombre,
+                            unArticulo.Barcode,
+                            unArticulo.CodeEmpresa,
+                            pos.Descripcion, // Una fila por posición
+                            pos.Unidades,
+                            unArticulo.Id
+                        ]);
+                    });
+                } else {
+                    // Si no tiene posiciones igual lo agrego, pero sin info de posición
+                    filas.push([
+                        unArticulo.Nombre,
+                        unArticulo.Barcode,
+                        unArticulo.CodeEmpresa,
+                        '', // posición vacía
+                        '', // unidades vacía
+                        unArticulo.Id
+                    ]);
+                }
+            }
+            // Escribo las filas en el Excel
+            filas.forEach((fila, i) => {
+                worksheet.getRow(i + 2).values = fila;
+            });
+
+            // No pongo totales porque cada posición es una fila independiente
+        }
+    } else {
+        // Para empresas SIN posiciones, hago un listado tradicional
+        worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+        worksheet.autoFilter = 'A1:E1';
+        worksheet.columns = [
+            { header: 'Producto', width: 100 },
+            { header: 'Barcode', width: 40 },
+            { header: 'CodeEmpresa', width: 40 },
+            { header: 'Unidades', width: 25 },
+            { header: 'Id', width: 25 }
+        ];
+        worksheet.getRow(1).font = { bold: true, size: 14 };
+        renglon = 1;
+        this.listaArticulosCompleta.forEach(unArticulo => {
+            renglon++;
+            worksheet.getRow(renglon).values = [
+                unArticulo.Nombre,
+                unArticulo.Barcode,
+                unArticulo.CodeEmpresa,
+                unArticulo.Stock,
+                unArticulo.Id
+            ];
+        });
+        renglon++;
+        const celdaSuma = worksheet.getCell(`D${renglon}`);
+        celdaSuma.value = { formula: `SUM(D2:D${renglon - 1})` };
+        celdaSuma.font = { bold: true };
+    }
+
+    // Formateo las filas (header y resto)
+    worksheet.eachRow((row, rowNumber) => {
+        row.eachCell((cell, colNumber) => {
+            if (rowNumber == 1) {
+                cell.font = { size: 16, bold: true };
+            } else {
+                cell.font = { size: 14 };
+            }
+        });
+    });
+
+    // Exporto el archivo
+    const buf = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buf]), `${this.empresaElegida.Nombre}_Stock.xlsx`);
+},
+
         repararTodosLosArticulos() {
             let cantidadAReparar=0
             for (const unArticulo of this.listaArticulosMostrar) {
