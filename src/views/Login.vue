@@ -1,12 +1,12 @@
 <template>
   <!-- Estructura principal de la aplicación -->
   <v-app>
-    <!-- Contenedor principal con fondo gris claro -->
-    <v-main class="login-bg">
+    <!-- Contenedor principal con fondo gris claro u oscuro según tema -->
+    <v-main :class="['login-bg', { 'modo-dark': $vuetify.theme.dark }]">
       <v-container fill-height>
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="6" lg="4">
-            <v-card class="elevation-6 login-card">
+            <v-card :class="['elevation-6', 'login-card', { 'modo-dark': $vuetify.theme.dark }]">
               <!-- Barra superior con título e icono -->
               <v-toolbar color="primary" dark flat>
                 <v-toolbar-title class="text-h5">Bienvenido</v-toolbar-title>
@@ -25,6 +25,7 @@
                   <v-text-field
                     outlined
                     class="mb-4 input-field"
+                    :class="{ 'input-dark': $vuetify.theme.dark }"
                     label="Usuario"
                     prepend-inner-icon="mdi-account-hard-hat"
                     v-model="username"
@@ -38,6 +39,7 @@
                   <v-text-field
                     outlined
                     class="mb-6 input-field"
+                    :class="{ 'input-dark': $vuetify.theme.dark }"
                     label="Contraseña"
                     prepend-inner-icon="mdi-lock"
                     v-model="password"
@@ -69,12 +71,14 @@
 
                   <!-- Opciones alternativas -->
                   <div class="text-center">
-                    <p class="text-caption mb-3 secondary--text">
+                    <!-- Notar que el texto cambia de color según tema -->
+                    <p class="text-caption mb-3"
+                      :class="{ 'secondary--text': !$vuetify.theme.dark, 'text-dark-mode': $vuetify.theme.dark }">
                       O ingresa con
                     </p>
                     <!-- Componente de login con Google -->
                     <LoginGoogle />
-                    <!-- Enlace para recuperación de contraseña -->
+                    <!-- Enlace para recuperación de contraseña (¡ahora SIEMPRE se ve en ambos temas!) -->
                     <v-btn
                       text
                       small
@@ -96,7 +100,7 @@
 </template>
 
 <script>
-// Importaciones
+// Importaciones necesarias para login
 import store from '@/store'
 import LoginGoogle from '@/components/LoginGoogle.vue'
 import { auth, sendPasswordResetEmail } from '@/firebase-config'
@@ -111,25 +115,20 @@ export default {
       show1: false,       // Toggle para mostrar/ocultar contraseña
       loading: false,     // Estado de carga del botón
       datosValidos: false,// Estado de validación del formulario
-      rules: {            // Reglas de validación
+      rules: {            // Reglas de validación para los campos
         required: v => !!v || 'Obligatorio',
         min:      v => v.length >= 3 || 'Mínimo 3 caracteres'
       }
     }
   },
   methods: {
-    /**
-     * 1) Valida el formulario
-     * 2) Intenta despachar acción de login
-     * 3) Si hay error, muestra modal con "Reintentar"/"Cancelar"
-     */
+    // Lógica de login, validación, errores y loading
     async iniciarSesion() {
       this.$refs.form.validate()
       if (!this.datosValidos) {
         store.dispatch('snackbar/mostrar', 'Datos incompletos')
         return
       }
-
       this.loading = true
       try {
         await store.dispatch('usuarios/intentarLoggearse', {
@@ -138,7 +137,6 @@ export default {
         })
       } catch (err) {
         console.error('Error al iniciar sesión:', err)
-        // Mostrar diálogo de alerta para reintentar el login
         this.$store.dispatch('alertDialog/mostrar', {
           titulo:          'Error al iniciar sesión',
           mensaje:         err.message || 'No fue posible iniciar sesión.',
@@ -154,32 +152,18 @@ export default {
         this.loading = false
       }
     },
-
-    /**
-     * Flujo "Olvidaste tu contraseña":
-     * a) Solicitar email con prompt
-     * b) Enviar correo de restablecimiento
-     * c) Mostrar diálogo con opciones Abrir Gmail / Volver al login
-     * d) Si falla, mostrar diálogo con Reintentar/Cancelar
-     */
+    // Flujo de "Olvidaste tu contraseña", envío de mail con Firebase
     async olvidePassword() {
-      // a) Pedir el email al usuario
       const email = prompt(
         'Por favor, ingresa tu correo registrado y luego revisa tu bandeja de mail'
       )
       if (!email) return
-
-      // b) Configuración para Firebase
       const actionCodeSettings = {
         url: window.location.origin + '/reset-password',
         handleCodeInApp: true
       }
-
       try {
-        // c) Intentar enviar el mail
         await sendPasswordResetEmail(auth, email, actionCodeSettings)
-
-        // Mostrar diálogo de éxito con opción de abrir Gmail
         this.$store.dispatch('alertDialog/mostrar', {
           titulo:          'Revisa tu bandeja de entrada',
           mensaje:         `Hemos enviado un correo a <b>${email}</b>.<br>¿Quieres abrir tu Gmail ahora?`,
@@ -194,12 +178,11 @@ export default {
         })
       } catch (err) {
         console.error('Error al enviar mail de restablecimiento:', err)
-        // d) Si falla, mostrar diálogo de reintento
         this.$store.dispatch('alertDialog/mostrar', {
           titulo:          'Error al enviar correo',
           mensaje:         err.code === 'auth/user-not-found'
-                             ? 'Email no registrado'
-                             : 'Error al enviar el mail de restablecimiento',
+            ? 'Email no registrado'
+            : 'Error al enviar el mail de restablecimiento',
           botonPrimario:   'Reintentar',
           botonSecundario: 'Cancelar',
           callback: respuesta => {
@@ -212,32 +195,28 @@ export default {
     }
   },
   created() {
-    // Ajustar título principal en el store
+    // Al cargar el componente, seteo el título principal del login
     store.dispatch('actualizarTituloPrincipal', 'Inicio de sesión')
   }
 }
 </script>
 
 <style scoped>
-/* Estilos Login.vue */
-
+/* ======== ESTILOS PARA MODO CLARO ======== */
 .login-bg {
   background-color: #f5f5f5;
 }
-
 .login-card {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
 }
-
 .input-field {
   border-radius: 8px !important;
 }
 .input-field >>> .v-input__slot {
   min-height: 48px !important;
 }
-
 .login-btn {
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -253,13 +232,45 @@ export default {
 .login-btn:active {
   transform: translateY(0);
 }
-
 .forgot-password {
   letter-spacing: 0.3px;
+  /* En modo claro usa color primario (azul, por defecto) */
 }
 
-.v-toolbar__title {
-  letter-spacing: 0.5px;
+/* ======== ESTILOS PARA MODO OSCURO ======== */
+.modo-dark {
+  background-color: #181818 !important;
+  color: #fafafa !important;
+}
+.modo-dark .v-card,
+.modo-dark .login-card {
+  background-color: #232323 !important;
+  color: #fafafa !important;
+}
+.input-dark input,
+.input-dark .v-input__slot,
+.input-dark .v-label {
+  background-color: #232323 !important;
+  color: #fafafa !important;
+}
+.input-dark .v-input__slot {
+  border-color: #444 !important;
+}
+.text-dark-mode {
+  color: #fafafa !important;
+}
+/* ======= HAGO QUE EL BOTÓN "¿Olvidaste tu contraseña?" SIEMPRE SE VEA EN DARK ======= */
+.modo-dark .forgot-password,
+.modo-dark .v-btn--text.forgot-password {
+  color: #fafafa !important;
+  opacity: 0.95 !important;
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em;
+}
+.modo-dark .forgot-password:hover {
+  color: #b3d7ff !important;
+  text-shadow: 0 0 6px #ffffff33;
 }
 </style>
 

@@ -1,38 +1,26 @@
 <template>
   <v-container fluid>
-    <!-- FILA GRÁFICO Y CARDS DE RESUMEN -->
+    <!-- DASHBOARD: Cards y gráfico de torta con resumen visual de las posiciones -->
     <v-row class="mb-6 mt-2 resumen-row" align="center" justify="center" no-gutters>
-      <!-- Gráfico de torta a la izquierda -->
-      <v-col
-        cols="12"
-        md="6"
-        lg="5"
-        class="d-flex justify-center align-center chart-col"
-        style="min-height: 230px;"
-      >
+      <v-col cols="12" md="6" lg="5" class="d-flex justify-center align-center chart-col" style="min-height: 230px;">
         <div class="chart-wrap">
+          <!-- Lienzo para el gráfico Pie de Chart.js -->
           <canvas ref="pieChart" width="230" height="230"></canvas>
         </div>
       </v-col>
-      <!-- Cards de resumen a la derecha, siempre horizontal en desktop -->
-      <v-col
-        cols="12"
-        md="6"
-        lg="7"
-        class="d-flex align-center justify-center resumen-tarjetas"
-      >
+      <v-col cols="12" md="6" lg="7" class="d-flex align-center justify-center resumen-tarjetas">
         <div class="resumen-cards-row">
-          <!-- CARD: TOTAL -->
+          <!-- Tarjeta: Total de posiciones -->
           <v-card class="tarjeta-resumen azul">
             <div class="titulo">Totales</div>
             <div class="cantidad">{{ resumen.total }}</div>
           </v-card>
-          <!-- CARD: EN USO -->
+          <!-- Tarjeta: En uso -->
           <v-card class="tarjeta-resumen verde">
             <div class="titulo">En uso</div>
             <div class="cantidad">{{ resumen.enUso }}</div>
           </v-card>
-          <!-- CARD: VACÍAS -->
+          <!-- Tarjeta: Vacías -->
           <v-card class="tarjeta-resumen rojo">
             <div class="titulo">Vacías</div>
             <div class="cantidad">{{ resumen.vacias }}</div>
@@ -41,7 +29,7 @@
       </v-col>
     </v-row>
 
-    <!-- FILTRO Y ACCIONES DE SELECCIÓN -->
+    <!-- FILTRO DE POSICIONES Y ACCIONES PRINCIPALES -->
     <v-row class="mb-2">
       <v-col cols="12" md="4">
         <v-text-field
@@ -52,22 +40,27 @@
         />
       </v-col>
       <v-col cols="12" md="8" class="d-flex align-end justify-end flex-wrap">
-        <v-btn @click="seleccionarTodas" small outlined>Seleccionar todas</v-btn>
-        <v-btn color="success" @click="exportarExcel" class="mx-2" large>
+        <!-- Seleccionar todas las posiciones visibles -->
+        <v-btn class="boton-normalizado" @click="seleccionarTodas" small outlined :disabled="productosSeleccionadosGlobal.length > 0">
+          Seleccionar todas
+        </v-btn>
+        <!-- Exportar a Excel -->
+        <v-btn class="boton-normalizado mx-2" color="success" @click="exportarExcel" large>
           EXPORTAR A EXCEL <v-icon right>mdi-microsoft-excel</v-icon>
         </v-btn>
+        <!-- Vaciar todas las posiciones seleccionadas -->
         <v-btn
+          class="boton-normalizado ml-2"
           color="red"
-          :disabled="seleccionadas.length === 0"
-          class="ml-2"
+          :disabled="seleccionadas.length === 0 || productosSeleccionadosGlobal.length > 0"
           @click="vaciarSeleccionadas"
         >
-          Vaciar seleccionadas
+          Vaciar posiciones
         </v-btn>
       </v-col>
     </v-row>
 
-    <!-- TABLA DE POSICIONES -->
+    <!-- TABLA DE POSICIONES CON SELECCIÓN MULTIPLE -->
     <v-data-table
       :headers="headers"
       :items="posicionesFiltradas"
@@ -77,14 +70,15 @@
       dense
       class="elevation-2"
       style="border-radius:14px"
+      :disabled="productosSeleccionadosGlobal.length > 0"
     >
-      <!-- Estado visual con chip -->
+      <!-- Estado visual (verde si en uso, rojo si vacía) -->
       <template v-slot:item.estado="{ item }">
         <v-chip small :color="item.EnUso ? 'green' : 'red'" dark>
           {{ item.EnUso ? 'En uso' : 'Vacía' }}
         </v-chip>
       </template>
-      <!-- Nombre de la posición con tooltip y click -->
+      <!-- Nombre de posición, clickeable para abrir el detalle de productos -->
       <template v-slot:item.Nombre="{ item }">
         <span
           style="cursor:pointer; text-decoration:underline"
@@ -103,28 +97,84 @@
           </v-tooltip>
         </span>
       </template>
-      <!-- Artículos distintos -->
+      <!-- Cantidad de artículos distintos -->
       <template v-slot:item.CantArticulos="{ item }">
         {{ item.CantArticulos }}
       </template>
-      <!-- Unidades -->
+      <!-- Cantidad total de unidades -->
       <template v-slot:item.CantUnidades="{ item }">
         {{ item.CantUnidades }}
       </template>
     </v-data-table>
 
-    <!-- MODAL DETALLE DE ARTÍCULOS DE LA POSICIÓN -->
-    <v-dialog v-model="showModal" max-width="700px">
+    <!-- PANEL DE PRODUCTOS A DESPOSICIONAR (cuando hay productos seleccionados de cualquier posición) -->
+    <v-row v-if="productosSeleccionadosGlobal.length > 0" class="mb-5">
+      <v-col cols="12" md="10" class="mx-auto">
+        <v-card outlined class="pa-6 my-6" style="font-size: 1.1rem;">
+          <div class="font-weight-bold mb-4" style="font-size:1.3rem;">Productos seleccionados para desposicionar:</div>
+          <v-list dense>
+            <v-list-item
+              v-for="(prod, idx) in productosSeleccionadosGlobal"
+              :key="prod._seleccionKey"
+            >
+              <v-list-item-content>
+                <v-list-item-title>
+                  <span class="font-weight-bold">{{ buscarNombrePosicion(prod._posicionId) }}:</span>
+                  <span style="font-size:1.1rem">
+                    {{ prod.NombreProducto || prod.Producto?.Nombre || '-' }}
+                    (Barcode: {{ prod.BarcodeProducto || prod.Producto?.Barcode || '-' }},
+                    Unidades: {{ prod.Unidades || 0 }})
+                  </span>
+                </v-list-item-title>
+              </v-list-item-content>
+              <v-list-item-action>
+                <!-- Quitar de la selección individualmente -->
+                <v-btn icon @click="quitarSeleccionado(prod._seleccionKey)">
+                  <v-icon color="red">mdi-delete</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+          <!-- Botón: Ejecutar desposicionamiento de todos los seleccionados -->
+          <v-btn
+            color="red"
+            class="boton-normalizado mt-3"
+            :disabled="productosSeleccionadosGlobal.length === 0"
+            @click="vaciarProductosSeleccionados"
+            block
+          >
+            Desposicionar seleccionados
+          </v-btn>
+          <!-- Cancelar selección de productos -->
+          <v-btn
+            class="boton-normalizado mt-3"
+            @click="limpiarSeleccionProductos"
+            color="grey"
+            outlined
+            block
+          >
+            Cancelar selección
+          </v-btn>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- MODAL DETALLE DE ARTÍCULOS DE LA POSICIÓN (con checkboxes para multi-selección) -->
+    <v-dialog v-model="showModal" max-width="900px">
       <v-card>
         <v-card-title class="text-h6">
           Productos en posición: <b>{{ posicionDetalle?.Nombre }}</b>
         </v-card-title>
         <v-card-text>
-          <!-- Si la posición no tiene productos -->
-          <v-alert v-if="!detalleArticulos.length" color="info" dense>
+          <!-- Aviso de carga asíncrona -->
+          <v-alert v-if="cargandoDetalle" color="info" dense>
+            Cargando productos...
+          </v-alert>
+          <!-- Mensaje si está vacía la posición -->
+          <v-alert v-else-if="!detalleArticulos.length" color="info" dense>
             No hay artículos en esta posición.
           </v-alert>
-          <!-- Tabla de artículos si hay productos -->
+          <!-- Tabla de productos con checkboxes -->
           <v-data-table
             v-else
             :headers="detalleHeaders"
@@ -132,27 +182,37 @@
             dense
             class="elevation-1"
             hide-default-footer
+            show-select
+            v-model="productosSeleccionadosModal"
+            :item-key="'_seleccionKey'"
+            :disabled="seleccionadas.length > 0"
           >
-            <!-- Columna Descripción -->
             <template v-slot:item.Producto="{ item }">
-              {{ item.Producto && item.Producto.Nombre ? item.Producto.Nombre : '-' }}
+              {{ item.NombreProducto || (item.Producto && item.Producto.Nombre) || '-' }}
             </template>
-            <!-- Columna Barcode -->
             <template v-slot:item.Barcode="{ item }">
-              {{ item.Producto && item.Producto.Barcode ? item.Producto.Barcode : '-' }}
+              {{ item.BarcodeProducto || (item.Producto && item.Producto.Barcode) || '-' }}
             </template>
-            <!-- Columna Empresa -->
             <template v-slot:item.Empresa="{ item }">
-              {{ item.Empresa && item.Empresa.Nombre ? item.Empresa.Nombre : '-' }}
+              {{ item.NombreEmpresa || (item.Empresa && item.Empresa.Nombre) || '-' }}
             </template>
-            <!-- Unidades -->
             <template v-slot:item.Unidades="{ item }">
               {{ item.Unidades || 0 }}
             </template>
           </v-data-table>
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="showModal = false">Cerrar</v-btn>
+          <!-- Agregar a la selección global para desposicionar -->
+          <v-btn
+            class="boton-normalizado"
+            color="blue"
+            :disabled="productosSeleccionadosModal.length === 0"
+            @click="agregarSeleccionadosGlobal"
+          >
+            Agregar a desposicionar
+          </v-btn>
+          <!-- Cerrar modal -->
+          <v-btn class="boton-normalizado" text @click="cerrarModalDetalle">Cerrar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -160,10 +220,8 @@
 </template>
 
 <script>
-// ==============================
-// LÓGICA DEL COMPONENTE
-// ==============================
 import posiciones from "@/store/posiciones"
+import productos from "@/store/productosV3"
 import store from "@/store"
 import excel from "exceljs"
 import { saveAs } from "file-saver"
@@ -174,21 +232,25 @@ export default {
 
   data() {
     return {
-      listaPosiciones: [],   // Todas las posiciones y su estado actual
-      seleccionadas: [],     // Objetos completos de la fila seleccionados
-      filtro: "",            // Para filtrar por nombre/cantidad/etc
-      resumen: { total: 0, enUso: 0, vacias: 0 }, // Totales arriba
-      showModal: false,      // Modal de detalle de posición
-      posicionDetalle: null, // Posición seleccionada (para modal)
-      detalleArticulos: [],  // Productos/artículos en la posición
-      pieChart: null,        // Objeto Chart.js para la torta
+      listaPosiciones: [], // Array principal de posiciones
+      seleccionadas: [],   // Array de posiciones seleccionadas en tabla principal
+      filtro: "",          // Texto de búsqueda
+      resumen: { total: 0, enUso: 0, vacias: 0 }, // Números de resumen para dashboard
+      showModal: false,          // Controla apertura del modal de detalle
+      posicionDetalle: null,     // Objeto de la posición que se está mostrando en detalle
+      detalleArticulos: [],      // Array de productos de la posición detallada
+      cargandoDetalle: false,    // Bandera para mostrar loading
+      productosSeleccionadosModal: [],    // Productos seleccionados SOLO del modal actual
+      productosSeleccionadosGlobal: [],   // Lista global de productos a desposicionar (de varias posiciones)
+      pieChart: null,      // Instancia Chart.js
+      // Estructura de columnas para tabla principal
       headers: [
         { text: "Estado", value: "estado", sortable: false },
         { text: "Posición", value: "Nombre" },
         { text: "Unidades", value: "CantUnidades" },
         { text: "Artículos distintos", value: "CantArticulos" }
-        // ID está presente internamente, pero NO lo mostramos.
       ],
+      // Estructura para el detalle
       detalleHeaders: [
         { text: "Unidades", value: "Unidades" },
         { text: "Descripción", value: "Producto" },
@@ -199,7 +261,7 @@ export default {
   },
 
   computed: {
-    // Filtro de la tabla principal
+    // Filtra las posiciones según el texto de búsqueda
     posicionesFiltradas() {
       if (!this.filtro) return this.listaPosiciones
       const buscar = this.filtro.toLowerCase()
@@ -212,45 +274,51 @@ export default {
   },
 
   methods: {
-    // Trae todas las posiciones y sus estados
+    // ==============================
+    // Carga todas las posiciones y calcula resumen
+    // ==============================
     async cargarPosiciones() {
       this.listaPosiciones = []
       let total = 0, enUso = 0, vacias = 0
-
-      // Traigo todas las posiciones
       const todas = await posiciones.getAll()
       for (const pos of todas) {
-        // Traigo productos/artículos de esa posición
         let articulos = []
         try {
           articulos = await posiciones.getContent(pos.Id)
         } catch (e) {
           articulos = []
         }
-        // Sumo unidades y artículos
+        // Mapeo para normalizar y armar claves únicas
+        articulos = articulos.map(element => ({
+          ...element,
+          NombreProducto: element.NombreProducto || (element.Producto && element.Producto.Nombre) || "-",
+          BarcodeProducto: element.BarcodeProducto || (element.Producto && element.Producto.Barcode) || "-",
+          NombreEmpresa: element.NombreEmpresa || (element.Empresa && element.Empresa.Nombre) || "-",
+          Unidades: element.Unidades || 0,
+          _seleccionKey: `${pos.Id}-${element.IdProducto || (element.Producto && element.Producto.Id) || Math.random()}`,
+          _posicionId: pos.Id
+        }))
         const cantUnidades = articulos.reduce((acc, art) => acc + (art.Unidades || 0), 0)
         const cantArticulos = articulos.length
-
-        // Armo objeto posición para la tabla
         this.listaPosiciones.push({
           ...pos,
           EnUso: cantArticulos > 0,
           CantUnidades: cantUnidades,
           CantArticulos: cantArticulos,
-          Detalle: articulos // Modal rápido y eficiente
+          Detalle: articulos
         })
-
         total++
         if (cantArticulos > 0) enUso++
         else vacias++
       }
-      // Cargo resumen para tarjetas de arriba
       this.resumen = { total, enUso, vacias }
-      // Dibujo el gráfico de torta
       this.$nextTick(this.renderPieChart)
+      console.log("Posiciones cargadas:", this.listaPosiciones)
     },
 
-    // Gráfico de torta, sin leyenda (solo gráfico)
+    // ==============================
+    // Renderiza gráfico Pie con Chart.js
+    // ==============================
     renderPieChart() {
       if (!this.$refs.pieChart) return
       if (this.pieChart) this.pieChart.destroy()
@@ -270,30 +338,138 @@ export default {
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: {
-              display: false // Oculta leyenda, sólo gráfico
+          plugins: { legend: { display: false } }
+        }
+      })
+    },
+
+    // ==============================
+    // Abre modal de detalle de productos de una posición
+    // ==============================
+    async mostrarDetalle(posicion) {
+      this.posicionDetalle = posicion
+      this.detalleArticulos = []
+      this.productosSeleccionadosModal = []
+      this.cargandoDetalle = true
+      try {
+        let articulos = await posiciones.getContent(posicion.Id)
+        this.detalleArticulos = articulos.map(element => ({
+          ...element,
+          NombreProducto: element.NombreProducto || (element.Producto && element.Producto.Nombre) || "-",
+          BarcodeProducto: element.BarcodeProducto || (element.Producto && element.Producto.Barcode) || "-",
+          NombreEmpresa: element.NombreEmpresa || (element.Empresa && element.Empresa.Nombre) || "-",
+          Unidades: element.Unidades || 0,
+          _seleccionKey: `${posicion.Id}-${element.IdProducto || (element.Producto && element.Producto.Id) || Math.random()}`,
+          _posicionId: posicion.Id
+        }))
+        console.log("Detalle de productos en posición", posicion.Id, this.detalleArticulos)
+      } catch (e) {
+        this.detalleArticulos = []
+        console.error("Error cargando detalle de productos en posición:", posicion.Id, e)
+      }
+      this.cargandoDetalle = false
+      this.showModal = true
+    },
+
+    cerrarModalDetalle() {
+      this.showModal = false
+      this.productosSeleccionadosModal = []
+    },
+
+    // ==============================
+    // Agrega productos seleccionados en modal al array global de desposicionar
+    // ==============================
+    agregarSeleccionadosGlobal() {
+      if (!this.productosSeleccionadosModal.length) return
+      for (const prod of this.productosSeleccionadosModal) {
+        if (!this.productosSeleccionadosGlobal.some(p => p._seleccionKey === prod._seleccionKey)) {
+          this.productosSeleccionadosGlobal.push({ ...prod })
+        }
+      }
+      this.cerrarModalDetalle()
+      this.mostrarMensaje("Productos agregados a la lista de desposicionamiento.", "Listo")
+      this.seleccionadas = [] // Si se seleccionan productos, deshabilito posiciones
+      console.log("Productos seleccionados para desposicionar:", this.productosSeleccionadosGlobal)
+    },
+
+    quitarSeleccionado(clave) {
+      this.productosSeleccionadosGlobal = this.productosSeleccionadosGlobal.filter(p => p._seleccionKey !== clave)
+      console.log("Producto quitado de la selección:", clave)
+    },
+
+    limpiarSeleccionProductos() {
+      this.productosSeleccionadosGlobal = []
+      this.productosSeleccionadosModal = []
+      console.log("Selección de productos limpiada")
+    },
+
+    // ==============================
+    // Desposiciona solo los productos seleccionados, no toda la posición
+    // ==============================
+    async vaciarProductosSeleccionados() {
+      if (!this.productosSeleccionadosGlobal.length) return
+
+      const detalleConfirm = `<b>Productos seleccionados:</b><ul>` +
+        this.productosSeleccionadosGlobal
+          .map(p => `<li>${p.NombreProducto || '-'} - ${p.Unidades || 0} und - <b>${this.buscarNombrePosicion(p._posicionId)}</b></li>`)
+          .join("") +
+        `</ul>`
+
+      store.dispatch("alertDialog/mostrar", {
+        titulo: "Confirmar desposicionamiento",
+        texto: `¿Confirma desposicionar los siguientes productos?<br>${detalleConfirm}`,
+        botonPrimario: "Desposicionar productos",
+        botonSecundario: "Cancelar",
+        callback: async (respuesta) => {
+          if (respuesta === "Desposicionar productos") {
+            for (const prod of this.productosSeleccionadosGlobal) {
+              try {
+                // ORDEN CORRECTO: productoId, posicionId, unidades
+                console.log("Enviando a desposicionar:", {
+                  idProducto: prod.IdProducto || (prod.Producto && prod.Producto.Id),
+                  idPosicion: prod._posicionId,
+                  unidades: prod.Unidades
+                })
+                await productos.registrarDesposicionamiento(
+                  prod.IdProducto || (prod.Producto && prod.Producto.Id),
+                  prod._posicionId,
+                  prod.Unidades
+                )
+              } catch (e) {
+                console.error("Error al desposicionar producto:", e)
+              }
             }
+            this.mostrarMensaje("Productos desposicionados correctamente.", "Éxito")
+            this.productosSeleccionadosGlobal = []
+            this.cargarPosiciones()
           }
         }
       })
     },
 
-    // Mostrar modal detalle de la posición
-    mostrarDetalle(posicion) {
-      this.posicionDetalle = posicion
-      this.detalleArticulos = Array.isArray(posicion.Detalle) ? posicion.Detalle : []
-      this.showModal = true
+    // ==============================
+    // Devuelve el nombre de una posición por ID (para mostrar en panel de seleccionados)
+    // ==============================
+    buscarNombrePosicion(id) {
+      const pos = this.listaPosiciones.find(p => p.Id === id)
+      return pos ? pos.Nombre : `ID:${id}`
     },
 
-    // Selecciono todas las posiciones filtradas en la tabla
+    // ==============================
+    // Selecciona todas las posiciones filtradas
+    // ==============================
     seleccionarTodas() {
+      if (this.productosSeleccionadosGlobal.length > 0) return // Bloquea si hay productos seleccionados
       this.seleccionadas = this.posicionesFiltradas.map(pos => pos)
+      console.log("Todas las posiciones seleccionadas:", this.seleccionadas)
     },
 
-    // Vacía solo las posiciones con ID numérico válido
+    // ==============================
+    // Vacía posiciones completas (no productos individuales)
+    // ==============================
     vaciarSeleccionadas() {
-      // Mapeo a los IDs de los objetos seleccionados
+      if (this.productosSeleccionadosGlobal.length > 0) return // No permite si hay productos seleccionados
+
       const idsDisponibles = this.listaPosiciones.map(p => p.Id)
       const posicionesValidas = this.seleccionadas
         .map(item => item.Id)
@@ -321,8 +497,11 @@ export default {
           if (respuesta === "Vaciar posiciones") {
             for (const posId of posicionesValidas) {
               try {
+                console.log("Vaciando posición:", posId)
                 await posiciones.vaciar(posId)
-              } catch (e) {}
+              } catch (e) {
+                console.error("Error al vaciar posición:", e)
+              }
             }
             this.mostrarMensaje("Posiciones vaciadas correctamente.", "Éxito")
             this.seleccionadas = []
@@ -332,7 +511,9 @@ export default {
       })
     },
 
-    // Exportar listado de posiciones a Excel
+    // ==============================
+    // Exporta todas las posiciones a Excel (productos no incluidos)
+    // ==============================
     async exportarExcel() {
       const workbook = new excel.Workbook()
       const worksheet = workbook.addWorksheet("Posiciones")
@@ -356,35 +537,53 @@ export default {
       })
       const buf = await workbook.xlsx.writeBuffer()
       saveAs(new Blob([buf]), `Posiciones_${(new Date()).toLocaleDateString('es-AR')}.xlsx`)
+      console.log("Exportación a Excel lista")
     },
 
-    // Mensaje global para snack o popup
     mostrarMensaje(mensaje, titulo) {
       store.dispatch("alertDialog/mostrar", { titulo, mensaje })
     }
   },
 
   mounted() {
-    // Al montar el componente, cargo toda la info y la tabla inicial
     this.cargarPosiciones()
   }
 }
 </script>
 
 <style scoped>
-/* ===========================================
-   ESTILOS PRODUCTIVOS, RESPONSIVE, COMENTADOS
-   =========================================== */
+/* ====== Estilos principales y normalización de botones ====== */
+.boton-normalizado {
+  min-height: 40px !important;
+  height: 40px !important;
+  line-height: 40px !important;
+  font-size: 15px !important;
+  padding: 0 28px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  box-shadow: 0 1px 6px #0001 !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  text-transform: uppercase !important;
+}
+@media (max-width: 720px) {
+  .boton-normalizado {
+    min-height: 32px !important;
+    height: 32px !important;
+    font-size: 13px !important;
+    padding: 0 12px !important;
+    border-radius: 7px !important;
+  }
+}
 
-/* FILA resumen y gráfica: centrado y alineado horizontal SIEMPRE */
+/* Cards de resumen, dashboard y torta: igual que versión anterior */
 .resumen-row {
   display: flex;
   align-items: stretch;
   justify-content: center;
   gap: 0;
 }
-
-/* Cards de resumen: SIEMPRE horizontal, gap proporcional, ajustable */
 .resumen-cards-row {
   display: flex;
   flex-direction: row;
@@ -396,8 +595,6 @@ export default {
   margin-top: 12px;
   margin-bottom: 12px;
 }
-
-/* Cards adaptativos, crecen pero nunca bajan a columna salvo en móviles extremos */
 .tarjeta-resumen {
   min-width: 104px;
   min-height: 84px;
@@ -440,8 +637,6 @@ export default {
   letter-spacing: 1.5px;
   text-shadow: 0 3px 12px #0002;
 }
-
-/* Gráfico de torta centrado */
 .chart-col {
   display: flex;
   align-items: center;
@@ -459,8 +654,6 @@ export default {
   min-height: 230px;
   min-width: 230px;
 }
-
-/* Responsive SOLO apila debajo de 720px, si no hay lugar */
 @media (max-width: 720px) {
   .resumen-row {
     flex-direction: column;

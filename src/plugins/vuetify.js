@@ -30,19 +30,20 @@ export default new Vuetify({
         darkblue:   '#1e2b36',       // Para algún widget, footer o detalles
       },
       dark: {
+       
         // -------- Tema oscuro (fondo oscuro) --------
-        primary:    '#0374e4',       // Mismo azul para consistencia
-        secondary:  '#0557c1',
-        accent:     '#032284',
-        error:      '#ff5252',
-        info:       '#888888',       // Gris para iconos
-        success:    '#5beb51',
-        warning:    '#ffe082',
-        background: '#101415',       // Fondo general negro
-        surface:    '#1e2b36',       // Para tarjetas, paneles, tablas
-        menubar:    'linear-gradient(115deg, #0374e4 65%, #032284 98%)', // Misma barra azul degradada
-        card:       '#1e2b36',       // Fondo para cards oscuro
-        darkblue:   '#1e2b36',       // Fondo para widgets especiales
+        primary:    '#212224',    // Barra superior y acentos
+        secondary:  '#2A2D2E',    // Bordes sutiles o detalles secundarios
+        accent:     '#313437',    // Hover/focus en botones, feedback visual suave
+        error:      '#FF6B6B',    // Error (sin cambios)
+        info:       '#B0B3B8',    // Texto secundario, iconos muted
+        success:    '#5beb51',    // (opcional, podés suavizarlo si te parece muy vivo)
+        warning:    '#E6B800',    // Amarillo más cálido para warnings
+        background: '#181A1B',    // Fondo general, casi negro
+        surface:    '#232526',    // Cards, paneles, menús flotantes
+        menubar:    '#212224',    // Misma barra superior (o quitá el degradé para minimal total)
+        card:       '#232526',    // Cards y paneles secundarios
+        darkblue:   '#232526' ,   // No usás azul, lo mantengo como gris oscuro 
       }
     },
     options: {

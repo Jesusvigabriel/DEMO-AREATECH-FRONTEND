@@ -1,78 +1,171 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
-        <SelectorEmpresa @eligioEmpresa="eligioEmpresa($event)" ></SelectorEmpresa>
+  <v-container fluid class="pa-4 grey lighten-4">
+    <!-- ========================================= -->
+    <!-- 1. Resumen gráfico de posiciones procesadas -->
+    <!-- ========================================= -->
+    <v-row class="mb-6" align="stretch" justify="space-between">
+      <!-- Card: Total de posiciones procesadas -->
+      <v-col cols="12" sm="4">
+        <v-card class="pa-4 elevation-4 rounded-lg" outlined tile>
+          <v-row no-gutters align="center">
+            <v-col cols="3" class="text-center">
+              <v-icon x-large color="primary">mdi-format-list-bulleted-type</v-icon>
+            </v-col>
+            <v-col cols="9">
+              <h4 class="mb-1 font-weight-medium">Total de posiciones</h4>
+              <h2 class="display-1 blue--text text--darken-2">{{ totalPosiciones }}</h2>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+
+      <!-- Card: Gráfico de torta OK vs Errores -->
+      <v-col cols="12" sm="4">
+        <v-card class="pa-4 elevation-4 rounded-lg" outlined tile>
+          <v-row no-gutters>
+            <v-col cols="12" class="text-center">
+              <h4 class="font-weight-medium mb-2">Posiciones OK vs Errores</h4>
+            </v-col>
+            <v-col cols="12" class="chart-wrapper">
+              <doughnut-chart :chart-data="doughnutData" :chart-options="chartOptions" />
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+
+      <!-- Card: Gráfico de barras Distribución de estados -->
+      <v-col cols="12" sm="4">
+        <v-card class="pa-4 elevation-4 rounded-lg" outlined tile>
+          <v-row no-gutters>
+            <v-col cols="12" class="text-center">
+              <h4 class="font-weight-medium mb-2">Distribución de estados</h4>
+            </v-col>
+            <v-col cols="12" class="chart-wrapper">
+              <bar-chart :chart-data="barData" :chart-options="chartOptions" />
+            </v-col>
+          </v-row>
+        </v-card>
       </v-col>
     </v-row>
-    <v-row v-if="idEmpresa != null">
-      <v-col>
-        <v-file-input 
-          label="Planilla a procesar" 
-          @change="fileOnChange" 
+
+    <!-- ========================================= -->
+    <!-- 2. Selector de empresa y carga de Excel  -->
+    <!-- ========================================= -->
+    <v-row class="mb-4" align="center">
+      <!-- Selector de empresa -->
+      <v-col cols="12" sm="6">
+        <SelectorEmpresa @eligioEmpresa="eligioEmpresa" />
+      </v-col>
+      <!-- Botón para importar Excel -->
+      <v-col cols="12" sm="4" v-if="idEmpresa">
+        <v-file-input
+          label="Importar planilla Excel"
           accept=".xlsx"
           filled
-          prepend-icon="mdi-microsoft-excel"
-        >Importar planilla excel</v-file-input>
+          prepend-icon="mdi-file-excel"
+          outlined
+          dense
+          @change="fileOnChange"
+        />
       </v-col>
-    </v-row>
-    <v-row v-for="(item, index) in mensajes" :key="index" class="py-0">
-      <v-col class="py-0">
-        <v-alert :color="item.color ?  item.color : 'success'" class="py-0 my-1">{{item.texto}}</v-alert>
+      <!-- Botón para descargar plantilla de ejemplo -->
+      <v-col cols="12" sm="2" v-if="idEmpresa" class="d-flex align-center">
+        <v-btn outlined color="primary" @click="downloadTemplate">
+          <v-icon left>mdi-file-download</v-icon>
+          Ejemplo
+        </v-btn>
       </v-col>
     </v-row>
 
-    <v-row v-show="posicionesRevisadas.length>0" class="pb-0 mb-0">
-        <v-col cols="6" class="py-0 my-0"  >
-          <v-card-title class="py-1 my-0">
-              <v-text-field
-                  v-model="textoBusqueda"
-                  append-icon="mdi-magnify"
-                  label="Búsqueda"
-                  single-line
-                  dense
-                  hide-details
-              ></v-text-field>
-            </v-card-title>
-        </v-col>
-        <v-col v-if="posicionDetallada.length>0">
-          <h3>Detalle de la posición {{posicionSeleccionada}}</h3>
-        </v-col>
+    <!-- ========================================= -->
+    <!-- 3. Mensajes de estado y validaciones     -->
+    <!-- ========================================= -->
+    <v-row v-for="(msg, i) in mensajes" :key="i" class="mb-2">
+      <v-col>
+        <v-alert :type="msg.color ? msg.color : 'success'" dense outlined>
+          {{ msg.texto }}
+        </v-alert>
+      </v-col>
     </v-row>
+
+    <!-- ========================================= -->
+    <!-- 4. Buscador y título de detalle          -->
+    <!-- ========================================= -->
+    <v-row v-if="posicionesRevisadas.length" class="mb-2" align="center">
+      <v-col cols="12" sm="6">
+        <v-text-field
+          v-model="textoBusqueda"
+          label="Buscar posición"
+          append-icon="mdi-magnify"
+          dense
+          outlined
+        />
+      </v-col>
+      <v-col cols="12" sm="6" v-if="posicionDetallada.length">
+        <h5 class="font-weight-medium">
+          Detalle de: <span class="blue--text">{{ posicionSeleccionada }}</span>
+        </h5>
+      </v-col>
+    </v-row>
+
+    <!-- ========================================= -->
+    <!-- 5. Tablas de posiciones y detalle        -->
+    <!-- ========================================= -->
     <v-row>
-      <v-col cols="6" v-if="posicionesRevisadas.length>0">
-        <v-data-table 
-            :headers="cabecerasPosiciones" 
-            :items="posicionesRevisadas"  
-            :footer-props="{itemsPerPageOptions:[5,15,-1]}"   
-            :items-per-page="15" 
-            :search="textoBusqueda"
-            class="elevation-3" 
+      <!-- Tabla principal de posiciones -->
+      <v-col cols="12" lg="6" v-if="posicionesRevisadas.length">
+        <v-data-table
+          :headers="cabecerasPosiciones"
+          :items="posicionesRevisadas"
+          :search="textoBusqueda"
+          dense
+          outlined
+          class="elevation-1"
+          :items-per-page="10"
         >
-          <template v-slot:item.Estado="{item}">
-            <v-chip :color="getColorEstado(item.Estado)" dark><v-icon @click="verEstado(item)">{{getIconoEstado(item.Estado)}}</v-icon></v-chip>
+          <!-- Columna Estado con chip -->
+          <template v-slot:item.Estado="{ item }">
+            <v-chip
+              :color="getColorEstado(item.Estado)"
+              dark
+              small
+              class="ma-0"
+            >
+              <v-icon left small>{{ getIconoEstado(item.Estado) }}</v-icon>
+              {{ item.Estado }}
+            </v-chip>
           </template>
-          <template v-slot:item.Acciones="{item}">
-            <v-row class="my-0">
-                <v-col align="end" >
-                    <v-btn class="mx-1 " :color="getColorEstado(item.Estado)" @click="verEstado(item)"  ><v-icon class="mx-3" color="white">{{getIconoAccion(item.Estado)}}</v-icon></v-btn>
-                </v-col>
-            </v-row>
+          <!-- Columna Acciones para ver detalle -->
+          <template v-slot:item.Acciones="{ item }">
+            <v-btn icon @click="verEstado(item)">
+              <v-icon color="primary">mdi-arrow-right-bold</v-icon>
+            </v-btn>
           </template>
-
         </v-data-table>
       </v-col>
-      <v-col v-if="posicionDetallada.length>0">
-        <v-data-table 
-            :headers="cabecerasDetalle" 
-            :items="posicionDetallada"  
-            :footer-props="{itemsPerPageOptions:[5,30,-1]}"   
-            :items-per-page="30" 
-            :search="textoBusquedaDetalle"
-            class="elevation-3" 
+
+      <!-- Tabla de detalle de la posición seleccionada -->
+      <v-col cols="12" lg="6" v-if="posicionDetallada.length">
+        <v-data-table
+          :headers="cabecerasDetalle"
+          :items="posicionDetallada"
+          dense
+          outlined
+          class="elevation-1"
+          :items-per-page="10"
         >
-          <template v-slot:item.Estado="{item}">
-            <v-chip :color="getColorEstadoDetalle(item)" dark @click="clickEnReparacion(item)"><v-icon>{{getIconoEstadoDetalle(item)}}</v-icon></v-chip>
+          <!-- Chip Estado en detalle con acción -->
+          <template v-slot:item.Estado="{ item }">
+            <v-chip
+              :color="getColorEstadoDetalle(item)"
+              dark
+              small
+              clickable
+              @click="clickEnReparacion(item)"
+            >
+              <v-icon left small>{{ getIconoEstadoDetalle(item) }}</v-icon>
+              {{ item.Inventariado === item.Unidades ? 'OK' : 'Corregir' }}
+            </v-chip>
           </template>
         </v-data-table>
       </v-col>
@@ -81,339 +174,347 @@
 </template>
 
 <script>
-
-import {xlsx, read, utils} from 'xlsx'
+// Importaciones de librerías y módulos
+import * as XLSX from 'xlsx'             // Para generar la plantilla Excel de ejemplo
+import { Doughnut, Bar } from 'vue-chartjs'  // Gráficos de torta y barra
 import SelectorEmpresa from '../components/SelectorEmpresa.vue'
 import store from '../store'
-import posiciones from "../store/posiciones"
+import posiciones from '../store/posiciones'
 import fechas from 'vue-lsi-util/fechas'
 import productos from '../store/productosV3'
 
 export default {
-  name: "Inventario",
-
+  name: 'InventarioMejorado',
+  components: {
+    SelectorEmpresa,
+    // Componente wrapper para Doughnut
+    DoughnutChart: {
+      extends: Doughnut,
+      props: ['chartData', 'chartOptions'],
+      mounted() { this.renderChart(this.chartData, this.chartOptions) }
+    },
+    // Componente wrapper para Bar
+    BarChart: {
+      extends: Bar,
+      props: ['chartData', 'chartOptions'],
+      mounted() { this.renderChart(this.chartData, this.chartOptions) }
+    }
+  },
   data() {
     return {
-      idEmpresa: null,
-      mensajes: [],
-      posicionesARevisar: [],
-      posicionesRevisadas: [],
-      posicionDetallada: [],
+      idEmpresa: null,               // ID de la empresa seleccionada
+      mensajes: [],                  // Mensajes de estado y validaciones
+      posicionesARevisar: [],        // Posiciones extraídas de la planilla
+      posicionesRevisadas: [],       // Posiciones con estado OK o Errores
+      posicionDetallada: [],         // Detalle de productos para la posición seleccionada
+      posicionSeleccionada: '',      // Nombre de la posición actualmente desplegada
+      textoBusqueda: '',             // Término para filtrar tabla de posiciones
+
+      // Definición de columnas para la tabla de posiciones
       cabecerasPosiciones: [
-          {text: 'Posición', align: 'start', value: 'Nombre', sortable: true},
-          {text: 'Fec.Inv.', align: 'start', value: 'FechaInventario', sortable: true},
-          {text: '', align: 'start', value: 'Estado', sortable: true},
-          {text: '', value: 'Acciones', sortable: false},
+        { text: 'Posición', value: 'Nombre', align: 'start' },
+        { text: 'Fec.Inv.', value: 'FechaInventario', align: 'start' },
+        { text: 'Estado', value: 'Estado' },
+        { text: 'Acciones', value: 'Acciones', sortable: false }
       ],
+      // Definición de columnas para la tabla de detalle
       cabecerasDetalle: [
-          {text: 'Id', align: 'start', value: 'IdProducto', sortable: true},
-          {text: 'Barcode', align: 'start', value: 'BarcodeProducto', sortable: true},
-          {text: 'Sistema', align: 'start', value: 'Unidades', sortable: true},
-          {text: 'Inventario', align: 'start', value: 'Inventariado', sortable: true},
-          {text: '', align: 'start', value: 'Estado', sortable: true},
+        { text: 'Id', value: 'IdProducto' },
+        { text: 'Barcode', value: 'BarcodeProducto' },
+        { text: 'Sistema', value: 'Unidades' },
+        { text: 'Inventario', value: 'Inventariado' },
+        { text: 'Estado', value: 'Estado' }
       ],
-      textoBusqueda: '',
-      textoBusquedaDetalle: '',
-      posicionSeleccionada: '',
-      idPosicionSeleccionada: -1,
+      // Datos para los gráficos
+      doughnutData: null,
+      barData: null,
+      chartOptions: { responsive: true, maintainAspectRatio: false }
     }
   },
-
+  computed: {
+    // Computa el total de posiciones procesadas para mostrar en la card
+    totalPosiciones() {
+      return this.posicionesRevisadas.length
+    }
+  },
+  watch: {
+    // Cada vez que cambian las posiciones, actualizamos los gráficos
+    posicionesRevisadas: 'actualizarGraficos'
+  },
   methods: {
-    async clickEnReparacion(item) {
-      if (item.Unidades==item.Inventariado) {
-        this.mostrarError("El elemento seleccionado no tiene errores para corregir")
-      } else {
-        if (item.Unidades>item.Inventariado) {
-          //Hay más por sistema que en el inventario, las saco y desposicion
-          const botonPrimario="Confirmar el desposicionamiento"
-          const confirmacion={
-            titulo: "Confirma el desposicionamiento?", 
-            mensaje: "Confirma el desposicionamiento de "+parseInt(item.Unidades-item.Inventariado)+" unidades?",
-            botonPrimario,
-            botonSecundario: 'Cancelar',
-            callback: respuesta => {
-              if (respuesta==botonPrimario) {
-                this.registrarDesposicionamiento(item)
-              }
-            }
-          }
-          store.dispatch("alertDialog/mostrar", confirmacion)
-        } else {
-          //Hay más en el inventario que en el sistema, si hay sin posicionar las posiciono acá
-          try {
-            const productoAPosicionar=await productos.getByBarcodeAndEmpresa(item.BarcodeProducto, this.idEmpresa)
-            const cantidadAPosicionar=item.Inventariado-item.Unidades
-            if (productoAPosicionar.StockSinPosicionar >= cantidadAPosicionar) {
-              const botonPrimario="Confirmar el posicionamiento"
-              const confirmacion={
-                titulo: "Confirma el posicionamiento?", 
-                mensaje: `Confirma el posicionamiento de ${cantidadAPosicionar} unidades?`,
-                botonPrimario,
-                botonSecundario: 'Cancelar',
-                callback: respuesta => {
-                  if (respuesta==botonPrimario) {
-                    this.registrarPosicionamiento(productoAPosicionar.Id, this.idPosicionSeleccionada, cantidadAPosicionar, item)
-                  }
-                }
-              }
-              store.dispatch("alertDialog/mostrar", confirmacion)
-            } else {
-              let posiciones=""
-              productoAPosicionar.Posiciones.forEach(element => {
-                posiciones="Posición: "+element.Nombre+" - Unidades: "+element.Unidades+";"
-              })
-              const aviso={
-                titulo: "No se puede posicionar!", 
-                mensaje: `Atención!;No se puede posicionar porque no hay suficiente stock sin posicionar: ${productoAPosicionar.StockSinPosicionar} - Cantidad a posicionar: ${cantidadAPosicionar};;Posicionado actual del artículo: ${posiciones}`
-              }
-              store.dispatch("alertDialog/mostrar", aviso)
-            }
-          } catch (error) {
-            this.mostrarError(error)
-          }
-        }
-      }
+    /**
+     * Genera y descarga dinámicamente un Excel de plantilla con
+     * las cabeceras esperadas: Posicion, Barcode Producto y Cantidad.
+     */
+    downloadTemplate() {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.aoa_to_sheet([
+        ['Posicion', 'Barcode Producto', 'Cantidad']
+      ])
+      XLSX.utils.book_append_sheet(wb, ws, 'Inventario')
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      const blob = new Blob([wbout], { type: 'application/octet-stream' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'inventario_template.xlsx'
+      link.click()
+      URL.revokeObjectURL(url)
     },
-    registrarDesposicionamiento(item) {
-      productos.registrarDesposicionamiento(item.IdProducto, this.idPosicionSeleccionada, item.Unidades-item.Inventariado)
-        .then(response => {
-          item.Unidades=item.Inventariado
-          this.sonidoExito()
-          this.actualizarEstadoPosicionRevisada()
-          // store.dispatch("alertDialog/mostrar", {titulo: 'Desposicionamiento exitoso!', mensaje: "El producto fue correctamente desposicionado"})
-        })
-        .catch(error => {
-          this.mostrarError(error)
-        })
-    },
-    registrarPosicionamiento(idProducto, idPosicion, cantidadAPosicionar, item) {
-      productos.registrarPosicionamiento(idProducto, idPosicion, cantidadAPosicionar)
-        .then(response => {
-          item.Unidades=item.Inventariado
-          this.sonidoExito()
-          this.actualizarEstadoPosicionRevisada()
-          // store.dispatch("alertDialog/mostrar", {titulo: 'Posicionamiento exitoso!', mensaje: "El producto fue correctamente posicionado"})
-        })
-        .catch(error => {
-          this.mostrarError(error)
-        })
-    },
-    actualizarEstadoPosicionRevisada() {
-      const registrosConError=this.posicionDetallada.filter(e => e.Inventariado != e.Unidades)
-      if (registrosConError.length==0) {
-        const index=this.posicionesARevisar.findIndex(e => e.Id===this.idPosicionSeleccionada)
-        this.posicionesRevisadas[index].Estado="OK"
-        this.sonidoExito()
-      } 
-    },
-    getIconoEstadoDetalle(item) {
-      if (item.Unidades==item.Inventariado) {
-        return "mdi-check-circle-outline"
-      } else {
-        return 'mdi-tools'
-      }
-    },
-    getColorEstadoDetalle(item) {
-      if (item.Unidades==item.Inventariado) {
-        return "green"
-      } else {
-        return "red"
-      }
-    },
-    getIconoAccion(estado) {
-      return estado=="OK" ? "mdi-calendar-lock-outline" : "mdi-magnify"
-    },
-    getIconoVer(estado) {
-      return estado!="OK" 
-    },
-    getIconoEstado(estado) {
-      return estado=="OK" ? "mdi-check-circle-outline" : 'mdi-alert-circle-outline'
-    },
-    getColorEstado(estado) {
-      return estado=="OK" ? "green" : 'red'
-    },
-    async verEstado(item) {
-      if (item.Estado=="OK") {
-        this.posicionDetallada=[]
-        this.posicionSeleccionada=''
-        this.idPosicionSeleccionada=-1
-        const textoPrimario="Si, confirmar"
-        const textoSecundario="Cancelar"
-        const ad={
-          titulo: 'Confirma la registración?',
-          mensaje: `Confirma la registración de la fecha de inventario para la posición <b>${item.Nombre}</b>?`,
-          botonPrimario: textoPrimario,
-          botonSecundario: textoSecundario,
-          callback: ((respuesta) => {
-            if (respuesta==textoPrimario) {
-              this.registrarFechaInventarioEnPosicion(item)
-            }
-          })
-        }
-        store.dispatch("alertDialog/mostrar", ad)        
-      } else {
-        const posicionADetallar=this.posicionesARevisar.find(e => e.Id==item.Id)
-        this.posicionDetallada=posicionADetallar.Contenido
-        this.posicionSeleccionada=posicionADetallar.Nombre
-        this.idPosicionSeleccionada=posicionADetallar.Id
-      }
-    },
-    async registrarFechaInventarioEnPosicion(item) {
-      try {
-        const response=await posiciones.modificar(item.Id, {UsuarioInventario: store.state.usuarios.usuarioActual.Nombre, FechaInventario: fechas.getHoy()})
-        item.FechaInventario=fechas.getHoy()
-        store.dispatch("alertDialog/mostrar", { titulo: 'Proceso exitoso 👍', mensaje: 'El proceso finalizó <b>exitosamente</b>'})
-      } catch (error) {
-        this.mostrarError(error)
-      }
-    },
-    procesarPlanilla(planilla) {
-      this.mensajes.push({texto: "Procesando planilla ..."})
 
-      //Obtengo los comprobantes distintos
-      this.posicionesARevisar=[]
-      planilla.forEach(element => {
-          const existente=this.posicionesARevisar.find(e => e.Nombre.trim()==element.Posicion.trim())
-          if (existente==null) {
-            this.posicionesARevisar.push({Nombre: element.Posicion.trim()})
+    /**
+     * Reconstruye los datasets para los gráficos de torta y barras
+     * con los conteos de posiciones OK y con Errores.
+     */
+    actualizarGraficos() {
+      const ok = this.posicionesRevisadas.filter(p => p.Estado === 'OK').length
+      const err = this.posicionesRevisadas.length - ok
+      this.doughnutData = {
+        labels: ['OK', 'Errores'],
+        datasets: [{ data: [ok, err], backgroundColor: ['#4CAF50', '#F44336'] }]
+      }
+      this.barData = {
+        labels: ['OK', 'Errores'],
+        datasets: [{ label: 'Posiciones', data: [ok, err], backgroundColor: ['#4CAF50', '#F44336'] }]
+      }
+    },
+
+    /**
+     * Guarda el ID de la empresa seleccionada
+     */
+    eligioEmpresa(id) {
+      this.idEmpresa = id
+    },
+
+    /**
+     * Lee el Excel cuando el usuario lo selecciona,
+     * lo parsea y pasa a validar sus columnas.
+     */
+    fileOnChange(file) {
+      if (!file) {
+        // Si el usuario cancela la selección, limpia todo
+        this.mensajes = []
+        this.posicionesARevisar = []
+        this.posicionesRevisadas = []
+        this.posicionDetallada = []
+        return
+      }
+      this.mensajes.push({ texto: 'Leyendo archivo ...' })
+      const reader = new FileReader()
+      reader.onload = ev => {
+        const data = ev.target.result
+        const workbook = XLSX.read(data, { type: 'binary' })
+        const sheetName = workbook.SheetNames[0]
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
+        this.verificarColumnasExcel(rows)
+      }
+      reader.readAsBinaryString(file)
+    },
+
+    /**
+     * Verifica que cada fila tenga las columnas: Posicion y Barcode Producto.
+     * Si falta alguna, detiene el proceso y muestra errores.
+     */
+    verificarColumnasExcel(rows) {
+      const colsReq = ['Posicion', 'Barcode Producto', 'Cantidad']
+      this.mensajes = [{ texto: 'Verificando columnas ...' }]
+      const faltan = []
+      rows.forEach((r, i) => {
+        colsReq.forEach(col => {
+          if (!Object.prototype.hasOwnProperty.call(r, col)) {
+            faltan.push(`Fila ${i + 2}: falta columna '${col}'`)
           }
+        })
       })
+      if (faltan.length) {
+        this.mensajes = [{ texto: 'Columnas faltantes:', color: 'error' },
+                         ...faltan.map(t => ({ texto: t, color: 'warning' }))]
+      } else {
+        this.mensajes = [{ texto: 'Columnas correctas', color: 'success' }]
+        // Normaliza a mayúsculas y procesa planilla
+        rows.forEach(r => { r['Barcode Producto'] = r['Barcode Producto'].toString().toUpperCase() })
+        this.procesarPlanilla(rows)
+      }
+    },
+
+    /**
+     * Extrae posiciones únicas de la planilla y arranca el procesamiento completo.
+     */
+    procesarPlanilla(planilla) {
+      this.mensajes.push({ texto: 'Procesando planilla ...' })
+      this.posicionesARevisar = [...new Set(planilla.map(r => r.Posicion.trim()))]
+        .map(nombre => ({ Nombre: nombre }))
       this.procesarTodasLasPosiciones(planilla)
     },
+
+    /**
+     * Consulta al backend las posiciones y su stock,
+     * calcula discrepancias e inicializa posicionesRevisadas.
+     */
     async procesarTodasLasPosiciones(planilla) {
-      let nombresPosiciones=''
-      this.posicionesARevisar.forEach(element => {
-        nombresPosiciones += element.Nombre + ","
-      })
-      nombresPosiciones=nombresPosiciones.slice(0, -1)
-
-      const contenidoDeLasPosiciones=await posiciones.getContenidoVariasPosiciones(nombresPosiciones)
-
-      let nombresPosicionesInexistentes=""
-      this.posicionesARevisar.forEach(element => {
-        const indice=contenidoDeLasPosiciones.findIndex(e => element.Nombre == e.Posicion.Nombre)
-        if (indice>=0) {
-          element.Id=contenidoDeLasPosiciones[indice].Posicion.Id
-          element.FechaInventario=contenidoDeLasPosiciones[indice].Posicion.FechaInventario
-          if (element.Id<0) {
-            nombresPosicionesInexistentes += element.Nombre+";";
-          }
-        }
-      })
-
-      for (const unaPosicionARevisar of this.posicionesARevisar) {
-        const contenidoDeLaPosicion=contenidoDeLasPosiciones.filter(e => e.Posicion.Id==unaPosicionARevisar.Id)
-
-        if (typeof contenidoDeLaPosicion[0].Contenido != "undefined") {
-          unaPosicionARevisar.Contenido=contenidoDeLaPosicion[0].Contenido
-          unaPosicionARevisar.Contenido.forEach(element => {
-            element.Inventariado=0
+      // 1. Obtiene contenido real de todas las posiciones
+      const nombres = this.posicionesARevisar.map(p => p.Nombre).join(',')
+      const datos = await posiciones.getContenidoVariasPosiciones(nombres)
+      // 2. Anida contenido y cuenta inventariado
+      this.posicionesARevisar.forEach(p => {
+        const record = datos.find(d => d.Posicion.Nombre === p.Nombre)
+        if (!record) return // posición inexistente en backend
+        p.Id = record.Posicion.Id
+        p.FechaInventario = record.Posicion.FechaInventario
+        p.Contenido = record.Contenido.map(c => ({
+          ...c,
+          Inventariado: 0
+        }))
+        // Suma las cantidades inventariadas del Excel
+        planilla.filter(r => r.Posicion.trim() === p.Nombre)
+          .forEach(r => {
+            const prod = p.Contenido.find(c => c.BarcodeProducto === r['Barcode Producto'])
+            if (prod) prod.Inventariado += (r.Cantidad || 1)
+            else p.Contenido.push({
+              IdProducto: -1,
+              BarcodeProducto: r['Barcode Producto'],
+              Unidades: 0,
+              Inventariado: r.Cantidad || 1
+            })
           })
-
-          const inventarioDeLaPosicion=planilla.filter(e => e.Posicion==unaPosicionARevisar.Nombre)
-          for (const unArticuloInventariado of inventarioDeLaPosicion) {
-            const posicion=unaPosicionARevisar.Contenido.findIndex(e => e.BarcodeProducto==unArticuloInventariado["Barcode Producto"] && e.IdEmpresa==this.idEmpresa)
-            if (posicion>=0) {
-              unaPosicionARevisar.Contenido[posicion].Inventariado++
-            } else {
-              unaPosicionARevisar.Contenido.push({IdProducto: -1, Inventariado: 1, Unidades: 0, BarcodeProducto: unArticuloInventariado["Barcode Producto"] })
-            }
-          }
-
-        }
-      }
-
-      this.posicionesRevisadas=[]
-      this.posicionesARevisar.forEach(element => {
-        let todoOK=true
-
-        if (element.Id>0) {
-          element.Contenido.forEach(element => {
-            if (element.Inventariado!=element.Unidades) {
-              todoOK=false
-            }
-          });
-          this.posicionesRevisadas.push({Id: element.Id, Nombre: element.Nombre, Estado: todoOK ? 'OK' : 'Errores', FechaInventario: element.FechaInventario, UsuarioInventario: element.UsuarioInventario})
-        }
       })
-      this.mensajes=[]
-
-      if (nombresPosicionesInexistentes.length>0) {
-        store.dispatch("alertDialog/mostrar", {titulo: 'Posiciones inexistentes', mensaje: "<b>Atención!!!⚠️</b>;;Se han leido las siguientes posiciones inexistentes:;;"+nombresPosicionesInexistentes+";Estas posiciones no serán procesadas."})
-      }
-
+      // 3. Construye posicionesRevisadas con estado OK o Errores
+      this.posicionesRevisadas = this.posicionesARevisar
+        .filter(p => p.Id > 0)
+        .map(p => ({
+          Id: p.Id,
+          Nombre: p.Nombre,
+          Estado: p.Contenido.every(c => c.Inventariado === c.Unidades) ? 'OK' : 'Errores',
+          FechaInventario: p.FechaInventario,
+          UsuarioInventario: p.UsuarioInventario
+        }))
+      this.mensajes = []
     },
-    verificarColumnasExcel(planilla) {
 
-      let columnasObligatorias=['Posicion', 'Barcode Producto']
-      this.mensajes.push({texto: "Verificando columnas ..."})
-      let columnasFaltantes=[]
-      let filaActual=1
-      let tituloMostrado=false
-      planilla.forEach(unaFila => {
-        filaActual++
-        columnasObligatorias.forEach(unaColumnaObligatoria => {
-          if (!Object.keys(unaFila).includes(unaColumnaObligatoria)) {
-            if (!columnasFaltantes.includes(unaColumnaObligatoria)) {
-              if (!tituloMostrado) {
-                this.mensajes.push({texto: "Faltan las siguientes columnas:", color:"red"})
-                tituloMostrado=true
-              }
-              this.mensajes.push({texto: "Fila: "+filaActual+" - Columna: "+unaColumnaObligatoria, color:"yellow"})
-            }
-          }
+    /**
+     * Maneja clic en posición: si OK, registra fecha;
+     * si Errores, muestra detalle de productos.
+     */
+    async verEstado(item) {
+      if (item.Estado === 'OK') {
+        // Confirma antes de actualizar fecha en backend
+        const ok = confirm(`Registrar inventario para '${item.Nombre}'?`)
+        if (!ok) return
+        await this.registrarFechaInventarioEnPosicion(item)
+      } else {
+        // Despliega tabla de detalle
+        const pos = this.posicionesARevisar.find(p => p.Id === item.Id)
+        this.posicionDetallada = pos.Contenido
+        this.posicionSeleccionada = pos.Nombre
+      }
+    },
+
+    /**
+     * Llama al store para actualizar la FechaInventario en backend.
+     */
+    async registrarFechaInventarioEnPosicion(item) {
+      try {
+        await posiciones.modificar(item.Id, {
+          UsuarioInventario: store.state.usuarios.usuarioActual.Nombre,
+          FechaInventario: fechas.getHoy()
         })
-      })
-      if (tituloMostrado) {
-        this.mensajes.push({texto: "La planilla no puede ser procesada", color: "red"})
-      } else {
-        this.mensajes.push({texto: "La planilla tiene las columnas correctas"})
-        planilla.forEach(element => {
-          element["Barcode Producto"]=element["Barcode Producto"].toUpperCase()
-        });
-        this.procesarPlanilla(planilla)
+        item.FechaInventario = fechas.getHoy()
+        alert('Fecha de inventario registrada exitosamente')
+      } catch (e) {
+        alert('Error al registrar fecha: ' + e)
       }
     },
-    fileOnChange(archivoLeido) {
-      if (archivoLeido!=null) {
-        this.mensajes.push({texto: "Leyendo archivo ..."})
-        const lector=new FileReader()
-        lector.onload = ev => {
-          const datosCrudos = ev.target.result;
-          const planillaCruda = read(datosCrudos, {type: "binary", cellDates: true, cellNF: true, cellText:true})
-          const nombreHoja1=planillaCruda.SheetNames[0]
-          const datosPlanilla=utils.sheet_to_json(planillaCruda.Sheets[nombreHoja1])
-          this.verificarColumnasExcel(datosPlanilla)
+
+    /**
+     * Corrige discrepancias de un producto:
+     * - Si Unidades > Inventariado → desposicionar
+     * - Si Inventariado > Unidades → posicionar si hay stock sin ubicar
+     */
+    async clickEnReparacion(item) {
+      if (item.Unidades === item.Inventariado) {
+        alert('Sin discrepancias para corregir')
+        return
+      }
+      // Desposicionar exceso
+      if (item.Unidades > item.Inventariado) {
+        const diff = item.Unidades - item.Inventariado
+        if (!confirm(`Confirmar desposicionamiento de ${diff} unidades?`)) return
+        this.registrarDesposicionamiento(item)
+      } else {
+        // Posicionar faltante si hay stock libre
+        const diff = item.Inventariado - item.Unidades
+        try {
+          const prod = await productos.getByBarcodeAndEmpresa(item.BarcodeProducto, this.idEmpresa)
+          if (prod.StockSinPosicionar < diff) {
+            alert(`Stock insuficiente: solo ${prod.StockSinPosicionar} disponibles`) 
+            return
+          }
+          if (confirm(`Confirmar posicionamiento de ${diff} unidades?`)) {
+            this.registrarPosicionamiento(prod.Id, this.idPosicionSeleccionada, diff, item)
+          }
+        } catch (e) {
+          alert('Error al obtener producto: ' + e)
         }
-
-        lector.readAsBinaryString(archivoLeido)            
-      } else {
-        this.mensajes=[]
-        this.posicionesARevisar= []
-        this.posicionesRevisadas= []
-        this.posicionDetallada= []
       }
     },
-    eligioEmpresa(idEmpresaElegida) {
-      this.idEmpresa=idEmpresaElegida;
-    },
-    mostrarError(mensaje) {
-      store.dispatch("snackbar/mostrar", mensaje)
-    },
-    sonidoExito() {
-      store.dispatch('sonidos/exito')
-    }
-  },
 
-  components: {
-    SelectorEmpresa
-  },
+    /**
+     * Llama al store para eliminar stock posicionado
+     */
+    async registrarDesposicionamiento(item) {
+      try {
+        await productos.registrarDesposicionamiento(
+          item.IdProducto,
+          this.idPosicionSeleccionada,
+          item.Unidades - item.Inventariado
+        )
+        item.Unidades = item.Inventariado
+        this.actualizarEstadoPosicionRevisada()
+      } catch (e) {
+        alert('Error al desposicionar: ' + e)
+      }
+    },
 
+    /**
+     * Llama al store para posicionar stock
+     */
+    async registrarPosicionamiento(idProd, idPos, qty, item) {
+      try {
+        await productos.registrarPosicionamiento(idProd, idPos, qty)
+        item.Unidades = item.Inventariado
+        this.actualizarEstadoPosicionRevisada()
+      } catch (e) {
+        alert('Error al posicionar: ' + e)
+      }
+    },
+
+    /**
+     * Si ya no quedan discrepancias en detalle, marca posición OK
+     */
+    actualizarEstadoPosicionRevisada() {
+      const errores = this.posicionDetallada.some(c => c.Inventariado !== c.Unidades)
+      if (!errores) {
+        const idx = this.posicionesRevisadas.findIndex(p => p.Nombre === this.posicionSeleccionada)
+        if (idx >= 0) this.posicionesRevisadas[idx].Estado = 'OK'
+      }
+    },
+
+    // Iconos y colores según estado
+    getIconoEstado(item) { return item === 'OK' ? 'mdi-check-circle-outline' : 'mdi-alert-circle-outline' },
+    getColorEstado(item) { return item === 'OK' ? 'green' : 'red' },
+    getIconoEstadoDetalle(item) { return item.Unidades === item.Inventariado ? 'mdi-check-circle-outline' : 'mdi-tools' },
+    getColorEstadoDetalle(item) { return item.Unidades === item.Inventariado ? 'green' : 'red' }
+  },
   created() {
+    // Título de la pantalla y carga de empresas con stock posicionado
     store.dispatch('actualizarTituloPrincipal', 'Inventario')
-    store.dispatch('empresas/cargarListaEmpresas', "SoloStockPosicionado")
+    store.dispatch('empresas/cargarListaEmpresas', 'SoloStockPosicionado')
   }
-
 }
 </script>
+
+<style scoped>
+/* Ajustes de estilo adicionales */
+.chart-wrapper { height: 220px; }
+.v-card { background: #ffffff; }
+</style>
