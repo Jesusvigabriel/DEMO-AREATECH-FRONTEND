@@ -1,18 +1,20 @@
 <template>
-    <v-select 
-        v-model="IdEmpresaSeleccionada" 
-        dense 
+    <v-autocomplete
+        v-model="IdEmpresaSeleccionada"
+        dense
         prepend-inner-icon="mdi-factory"
-        @change="eligioEmpresa" 
-        :chips="false" 
-        :items="listaEmpresas" 
-        item-value="Id" 
-        item-text="Nombre" 
+        @change="eligioEmpresa"
+        @keypress.enter="eligioEmpresa"
+        :chips="false"
+        :items="listaEmpresas"
+        item-value="Id"
+        item-text="Nombre"
         label="Seleccione empresa"
         class="my-0 py-0"
         id="SelectorEmpresa"
+        :search-input.sync="searchTerm"
     >
-    </v-select>
+    </v-autocomplete>
 </template>
 
 <script>
@@ -23,7 +25,8 @@ export default {
     name: 'SelectorEmpresa',
     data() {
         return {
-            IdEmpresaSeleccionada: null
+            IdEmpresaSeleccionada: null,
+            searchTerm: ''
         }
     },
     props: {
