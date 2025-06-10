@@ -80,7 +80,11 @@
           <span class="body-2">{{ item.Creada }}</span>
         </template>
         <template v-slot:item.estadoActual="{ item }">
-          <v-chip :class="statusChipClassFn(item.Estado)" small>
+          <v-chip
+            :color="statusChipColorFn(item.Estado)"
+            :text-color="statusChipTextColorFn(item.Estado)"
+            small
+          >
             {{ item.Estado }}
           </v-chip>
         </template>
@@ -152,7 +156,8 @@ export default {
     page: Number,
     pageCount: Number,
     paginationInfo: String,
-    statusChipClassFn: Function
+    statusChipColorFn: Function,
+    statusChipTextColorFn: Function
   }
 }
 </script>
