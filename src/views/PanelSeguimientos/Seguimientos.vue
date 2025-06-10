@@ -126,332 +126,43 @@
             <!-- PESTAÑA: Seguimiento de Órdenes -->
             <v-tab-item value="tab-ordenes">
               <v-card-text>
-                <v-toolbar flat dense color="grey lighten-4">
-                  <v-toolbar-title class="subtitle-1 font-weight-medium text--primary">
-                    Seguimiento de Órdenes
-                  </v-toolbar-title>
-                </v-toolbar>
-
-                <!-- Estado de carga (spinner) para órdenes -->
-                <div v-if="loading" class="text-center py-10">
-                  <v-progress-circular indeterminate size="40" color="primary" />
-                  <div class="mt-2">
-                    <span class="body-2 text--secondary">
-                      Cargando órdenes...
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Mensaje de error al cargar órdenes -->
-                <div v-else-if="errorAlCargar" class="text-center py-10">
-                  <v-icon size="36" color="error">mdi-alert-circle-outline</v-icon>
-                  <div class="mt-2">
-                    <span class="body-2 text--error">
-                      {{ errorAlCargar }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Mensaje si no se ha seleccionado ninguna empresa para órdenes -->
-                <div v-else-if="idEmpresa <= 0" class="text-center py-10">
-                  <v-icon size="36" color="grey">mdi-office-building</v-icon>
-                  <div class="mt-2">
-                    <span class="body-2 text--secondary">
-                      Seleccione una empresa para ver sus órdenes.
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Contenido principal: Buscador, Selector de filas y Tabla de Órdenes -->
-                <div v-else>
-                  <v-row align="center" justify="space-between" class="mb-4">
-                    <!-- Buscador de órdenes -->
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="textoBusqueda"
-                        append-icon="mdi-magnify"
-                        label="Buscar órdenes..."
-                        dense
-                        outlined
-                        clearable
-                      />
-                    </v-col>
-
-                    <!-- Desplegable "Filas por página" para órdenes -->
-                    <v-col cols="12" md="3">
-                      <v-select
-                        v-model="itemsPerPage"
-                        :items="itemsPerPageOptions"
-                        label="Filas por página"
-                        dense
-                        outlined
-                        hide-details
-                      />
-                    </v-col>
-                  </v-row>
-
-                  <!-- Tabla de datos de Órdenes -->
-                  <v-data-table
-                    :headers="cabecerasOrdenes"
-                    :items="ordenesFiltradasParaTabla"
-                    :search="textoBusqueda"
-                    item-key="IdOrden"
-                    :items-per-page="itemsPerPage"
-                    class="elevation-1"
-                    dense
-                    hide-default-footer
-                    header-class="blue-header"
-                  >
-                    <!-- Slot personalizado para la columna "N° Orden" (texto en negrita) -->
-                    <template v-slot:item.numero="{ item }">
-                      <span class="body-2 font-weight-bold">
-                        {{ item.numero }}
-                      </span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Empresa" -->
-                    <template v-slot:item.nombreEmpresa="{ item }">
-                      <span class="body-2">{{ item.nombre || 'N/A' }}</span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Cliente" -->
-                    <template v-slot:item.nombreCliente="{ item }">
-                      <span class="body-2">{{ item.nombreDestino || 'N/A' }}</span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Fecha Creación" -->
-                    <template v-slot:item.fechaCreacion="{ item }">
-                      <span class="body-2">{{ item.Creada }}</span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Estado Actual" (chip con color) -->
-                    <template v-slot:item.estadoActual="{ item }">
-                      <v-chip
-                        :class="getStatusChipClassTextual(item.Estado)"
-                        small
-                      >
-                        {{ item.Estado }}
-                      </v-chip>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Acciones" (botón de ojo para ver detalle y botón de seguimiento de guía) -->
-                    <template v-slot:item.acciones="{ item }">
-                      <!-- Botón para ver detalles de la orden -->
-                      <v-btn
-                        icon
-                        small
-                        @click="openModal('orden', item.IdOrden)"
-                        :aria-label="`Ver detalles orden ${item.numero}`"
-                      >
-                        <v-icon color="primary">mdi-eye-outline</v-icon>
-                      </v-btn>
-
-                      <!-- Condición para mostrar el botón/chip de seguimiento de guía -->
-                      <!-- Se muestra si la orden está en estado 'A distribución' (despachada) y tiene un IdGuia válido. -->
-                      <v-chip
-                        v-if="item.Estado === 'A distribuciòn' && item.IdGuia > 0"
-                        small
-                        class="ml-2"
-                        color="green lighten-4"
-                        text-color="green darken-4"
-                        @click="verGuiaAsociada(item)"
-                        title="Haz clic para ver el seguimiento de la guía asociada"
-                        label
-                      >
-                        Seguimiento aquí
-                        <v-icon right small>mdi-truck-check-outline</v-icon>
-                      </v-chip>
-                    </template>
-
-                    <!-- Pie de tabla: Paginación manual y texto "Mostrando X de Y" -->
-                    <template v-slot:footer.prepend>
-                      <v-row align="center" justify="space-between" class="px-4">
-                        <v-col cols="12" md="6">
-                          <v-pagination
-                            v-model="pageOrdenes"
-                            :length="pageCountOrdenes"
-                            prev-icon="mdi-chevron-left"
-                            next-icon="mdi-chevron-right"
-                            circle
-                            dense
-                          />
-                        </v-col>
-                        <v-col cols="12" md="6" class="text-right">
-                          <span class="caption text--secondary">
-                            Mostrando {{ paginationInfoOrdenes }}
-                          </span>
-                        </v-col>
-                      </v-row>
-                    </template>
-
-                    <!-- Slot "no-data" si no hay órdenes para los filtros seleccionados -->
-                    <template v-slot:no-data>
-                      <v-alert type="warning" dense text>
-                        No se encontraron órdenes para los filtros seleccionados.
-                      </v-alert>
-                    </template>
-                  </v-data-table>
-                </div>
+                <OrdersTable
+                  :loading="loading"
+                  :error="errorAlCargar"
+                  :id-empresa="idEmpresa"
+                  :texto-busqueda.sync="textoBusqueda"
+                  :items-per-page.sync="itemsPerPage"
+                  :items-per-page-options="itemsPerPageOptions"
+                  :cabeceras="cabecerasOrdenes"
+                  :items="ordenesFiltradasParaTabla"
+                  :page.sync="pageOrdenes"
+                  :page-count="pageCountOrdenes"
+                  :pagination-info="paginationInfoOrdenes"
+                  :status-chip-class-fn="getStatusChipClassTextual"
+                  @open-modal="openModal"
+                  @ver-guia="verGuiaAsociada"
+                />
               </v-card-text>
             </v-tab-item>
 
             <!-- PESTAÑA: Seguimiento de Guías -->
             <v-tab-item value="tab-guias">
               <v-card-text>
-                <v-toolbar flat dense color="grey lighten-4">
-                  <v-toolbar-title class="subtitle-1 font-weight-medium text--primary">
-                    Seguimiento de Guías
-                  </v-toolbar-title>
-                </v-toolbar>
-
-                <!-- Estado de carga (spinner) para guías -->
-                <div v-if="loading" class="text-center py-10">
-                  <v-progress-circular indeterminate size="40" color="primary" />
-                  <div class="mt-2">
-                    <span class="body-2 text--secondary">
-                      Cargando guías...
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Mensaje de error al cargar guías -->
-                <div v-else-if="errorAlCargar" class="text-center py-10">
-                  <v-icon size="36" color="error">mdi-alert-circle-outline</v-icon>
-                  <div class="mt-2">
-                    <span class="body-2 text--error">
-                      {{ errorAlCargar }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Mensaje si no se ha seleccionado ninguna empresa para guías -->
-                <div v-else-if="idEmpresa <= 0" class="text-center py-10">
-                  <v-icon size="36" color="grey">mdi-office-building</v-icon>
-                  <div class="mt-2">
-                    <span class="body-2 text--secondary">
-                      Seleccione una empresa para ver sus guías.
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Contenido principal: Buscador, Selector de filas y Tabla de Guías -->
-                <div v-else>
-                  <v-row align="center" justify="space-between" class="mb-4">
-                    <!-- Buscador de guías -->
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="textoBusquedaGuias"
-                        append-icon="mdi-magnify"
-                        label="Buscar guías..."
-                        dense
-                        outlined
-                        clearable
-                      />
-                    </v-col>
-
-                    <!-- Desplegable "Filas por página" para guías -->
-                    <v-col cols="12" md="3">
-                      <v-select
-                        v-model="itemsPerPageGuias"
-                        :items="itemsPerPageOptions"
-                        label="Filas por página"
-                        dense
-                        outlined
-                        hide-details
-                      />
-                    </v-col>
-                  </v-row>
-
-                  <!-- Tabla de datos de Guías -->
-                  <v-data-table
-                    :headers="cabecerasGuias"
-                    :items="guiasFiltradasParaTabla"
-                    :search="textoBusquedaGuias"
-                    item-key="Id"
-                    :items-per-page="itemsPerPageGuias"
-                    class="elevation-1"
-                    dense
-                    hide-default-footer
-                    header-class="blue-header"
-                  >
-                    <!-- Slot personalizado para la columna "N° Guía" (texto en negrita) -->
-                    <template v-slot:item.Comprobante="{ item }">
-                      <span class="body-2 font-weight-bold">
-                        {{ item.Comprobante }}
-                      </span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Empresa" -->
-                    <template v-slot:item.NombreCliente="{ item }">
-                      <span class="body-2">{{ item.NombreCliente || 'N/A' }}</span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Destino" -->
-                    <template v-slot:item.NombreDestino="{ item }">
-                      <span class="body-2">{{ item.NombreDestino || 'N/A' }}</span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Remito" -->
-                    <template v-slot:item.Remitos="{ item }">
-                      <span class="body-2">{{ item.Remitos || 'N/A' }}</span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Fecha Creación" -->
-                    <template v-slot:item.FechaOriginal="{ item }">
-                      <span class="body-2">{{ item.FechaOriginal }}</span>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Estado Actual" (chip con color) -->
-                    <template v-slot:item.Estado="{ item }">
-                      <v-chip
-                        :class="getStatusChipClassTextual(item.Estado)"
-                        small
-                      >
-                        {{ item.Estado }}
-                      </v-chip>
-                    </template>
-
-                    <!-- Slot personalizado para la columna "Acciones" (botón de ojo para ver detalle) -->
-                    <template v-slot:item.acciones="{ item }">
-                      <v-btn
-                        icon
-                        small
-                        @click="openModal('guia', item)"
-                        :aria-label="`Ver detalles guía ${item.Comprobante}`"
-                      >
-                        <v-icon color="primary">mdi-eye-outline</v-icon>
-                      </v-btn>
-                    </template>
-
-                    <!-- Pie de tabla: Paginación manual y texto "Mostrando X de Y" -->
-                    <template v-slot:footer.prepend>
-                      <v-row align="center" justify="space-between" class="px-4">
-                        <v-col cols="12" md="6">
-                          <v-pagination
-                            v-model="pageGuias"
-                            :length="pageCountGuias"
-                            prev-icon="mdi-chevron-left"
-                            next-icon="mdi-chevron-right"
-                            circle
-                            dense
-                          />
-                        </v-col>
-                        <v-col cols="12" md="6" class="text-right">
-                          <span class="caption text--secondary">
-                            Mostrando {{ paginationInfoGuias }}
-                          </span>
-                        </v-col>
-                      </v-row>
-                    </template>
-
-                    <!-- Slot "no-data" si no hay guías para los filtros seleccionados -->
-                    <template v-slot:no-data>
-                      <v-alert type="warning" dense text>
-                        No se encontraron guías para los filtros seleccionados.
-                      </v-alert>
-                    </template>
-                  </v-data-table>
-                </div>
+                <GuidesTable
+                  :loading="loading"
+                  :error="errorAlCargar"
+                  :id-empresa="idEmpresa"
+                  :texto-busqueda.sync="textoBusquedaGuias"
+                  :items-per-page.sync="itemsPerPageGuias"
+                  :items-per-page-options="itemsPerPageOptions"
+                  :cabeceras="cabecerasGuias"
+                  :items="guiasFiltradasParaTabla"
+                  :page.sync="pageGuias"
+                  :page-count="pageCountGuias"
+                  :pagination-info="paginationInfoGuias"
+                  :status-chip-class-fn="getStatusChipClassTextual"
+                  @open-modal="openModal"
+                />
               </v-card-text>
             </v-tab-item>
           </v-tabs-items>
@@ -465,245 +176,16 @@
     <!-- incluyendo datos generales, una línea de tiempo de progreso y       -->
     <!-- detalles de productos (para órdenes).                               -->
     <!-- =================================================================== -->
-    <v-dialog v-model="showModal" scrollable max-width="650px">
-      <v-card>
-        <v-card-title class="justify-space-between">
-          <!-- Título del modal dinámico según el tipo (Orden o Guía) y su número/comprobante -->
-          <span class="text-h6">
-            Detalle de {{ modalType === 'orden' ? 'Orden' : 'Guía' }}: {{ modalData?.Numero || modalData?.Comprobante || '' }}
-          </span>
-          <!-- Botón para cerrar el modal -->
-          <v-btn icon @click="closeModal" aria-label="Cerrar detalle">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-
-        <v-divider />
-
-        <v-card-text>
-          <!-- Spinner mientras se cargan los detalles del modal -->
-          <div v-if="loading && !modalData" class="text-center py-6">
-            <v-progress-circular indeterminate size="36" color="primary" />
-            <div class="mt-2">
-              <span class="body-2 text--secondary">
-                Cargando detalles...
-              </span>
-            </div>
-          </div>
-
-          <!-- Mensaje de error al cargar detalles del modal -->
-          <div v-else-if="errorAlCargar && !modalData" class="text-center py-6">
-            <v-icon size="36" color="error">mdi-alert-circle-outline</v-icon>
-            <div class="mt-2">
-              <span class="body-2 text--error">
-                {{ errorAlCargar }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Contenido del detalle del modal (visible si hay datos cargados) -->
-          <div v-else-if="modalData">
-            <v-row dense>
-              <!-- Columna izquierda: Datos Generales de la orden/guía -->
-              <v-col cols="12" md="6">
-                <v-list dense>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        N° {{ modalType === 'orden' ? 'Orden' : 'Guía' }}:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{ modalData.Numero || modalData.Comprobante }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Empresa:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{ modalData.Empresa?.RazonSocial || modalData.NombreCliente || 'N/A' }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Cliente/Destino:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{ modalData.Destino?.Nombre || modalData.NombreDestino || 'N/A' }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <!-- Campo "Email Cliente" solo para órdenes -->
-                  <v-list-item v-if="modalType === 'orden'">
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Email Cliente:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{ modalData.EmailDestinatario || 'N/A' }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <!-- Campo "Remito" solo para guías -->
-                  <v-list-item v-else>
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Remito:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{ modalData.Remitos || 'N/A' }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Fecha Creación:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{
-                          modalType === 'orden' ? (modalData.FechaCreacion ? new Date(modalData.FechaCreacion).toLocaleDateString() : 'N/A') : modalData.FechaOriginal || 'N/A'
-                        }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <!-- Campos de fecha específicos para órdenes -->
-                  <v-list-item v-if="modalType === 'orden'">
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Preparado:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        <span v-if="modalData.FechaPreparado">{{
-                          new Date(modalData.FechaPreparado).toLocaleDateString()
-                        }}</span>
-                        <span v-else>N/A</span>
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <v-list-item v-if="modalType === 'orden'">
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Fecha Distribución/Retiro:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        <span v-if="modalData.Fecha">{{
-                          new Date(modalData.Fecha).toLocaleDateString()
-                        }}</span>
-                        <span v-else>N/A</span>
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title class="subtitle-2 font-weight-medium">
-                        Estado Actual:
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        <!-- Chip que muestra el estado actual con color condicional -->
-                        <v-chip
-                          :class="getStatusChipClassTextual(modalData.NombreEstado || modalData.Estado)"
-                          small
-                        >
-                          {{ modalData.NombreEstado || modalData.Estado }}
-                        </v-chip>
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-col>
-
-              <!-- Columna derecha: Línea de Tiempo de la Orden/Guía -->
-              <v-col cols="12" md="6">
-                <span class="subtitle-1 font-weight-medium mb-2">
-                  Progreso de la {{ modalType === 'orden' ? 'Orden' : 'Guía' }}:
-                </span>
-                <v-sheet elevation="0">
-                  <!-- Renderiza los pasos de la línea de tiempo (órdenes o guías) -->
-                  <div
-                    v-for="(paso, index) in timelineStepsComputed"
-                    :key="paso.id + index"
-                    class="timeline-step"
-                  >
-                    <div :class="['timeline-icon-container', paso.statusClass]">
-                      <v-icon class="timeline-icon">{{ paso.icon }}</v-icon>
-                    </div>
-                    <div class="timeline-content">
-                      <span class="subtitle-2 font-weight-medium">
-                        {{ paso.nombre }}
-                      </span>
-                      <span v-if="paso.fecha" class="caption text--secondary">
-                        – {{ paso.fecha }}
-                      </span>
-                      <span
-                        v-if="paso.descripcion"
-                        class="caption mt-1 text--secondary"
-                      >
-                        {{ paso.descripcion }}
-                      </span>
-                    </div>
-                    <!-- Línea vertical que conecta los pasos del timeline -->
-                    <div
-                      v-if="index < timelineStepsComputed.length - 1"
-                      class="timeline-line"
-                    ></div>
-                  </div>
-                </v-sheet>
-              </v-col>
-            </v-row>
-
-            <!-- Separador antes de la sección de productos -->
-            <v-divider class="my-4" />
-
-            <!-- Sección: Detalle de Productos (solo para órdenes) -->
-            <span class="subtitle-1 font-weight-medium mb-2">
-              Detalle de Productos:
-            </span>
-            <div v-if="modalData.productosDetalle && modalData.productosDetalle.length > 0">
-              <v-list dense>
-                <v-list-item
-                  v-for="(prod, prodIndex) in modalData.productosDetalle"
-                  :key="prodIndex"
-                >
-                  <v-list-item-content>
-                    <span class="body-2">
-                      {{ prod.Unidades }} x {{ prod.Productos }}
-                      <span v-if="prod.Barcode"> (Código: {{ prod.Barcode }})</span>
-                      <span v-if="prod.CodeEmpresa"> (Cod.Empresa: {{ prod.CodeEmpresa }})</span>
-                      <span v-if="prod.lote"> (Box: {{ prod.lote }})</span>
-                      <span v-if="prod.Partida"> (Partida: {{ prod.Partida }})</span>
-                    </span>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </div>
-            <div v-else>
-              <span class="body-2 text--secondary">
-                No hay productos en esta orden.
-              </span>
-            </div>
-          </div>
-        </v-card-text>
-
-        <v-divider />
-
-        <!-- Acciones del modal (botón para cerrar) -->
-        <v-card-actions class="justify-end">
-          <v-btn text color="primary" @click="closeModal">Cerrar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <SeguimientoModal
+      :show.sync="showModal"
+      :loading="loading"
+      :error="errorAlCargar"
+      :modal-type="modalType"
+      :modal-data="modalData"
+      :timeline-steps="timelineStepsComputed"
+      :status-chip-class-fn="getStatusChipClassTextual"
+      @close="closeModal"
+    />
   </v-container>
 </template>
 
@@ -782,10 +264,13 @@ import ordenes from '@/store/ordenesV3' // Módulo Vuex para órdenes
 import empresasV3 from '@/store/empresasV3' // Módulo Vuex para empresas
 import roles from '@/store/roles' // Módulo Vuex para roles de usuario
 import guias from '@/store/guias' // Importamos el módulo de guías
+import OrdersTable from './OrdersTable.vue'
+import GuidesTable from './GuidesTable.vue'
+import SeguimientoModal from './SeguimientoModal.vue'
 
 export default {
   name: 'SeguimientosOrdenesGuias', // Nuevo nombre para el componente
-  components: { SelectorEmpresa },
+  components: { SelectorEmpresa, OrdersTable, GuidesTable, SeguimientoModal },
   data() {
     return {
       tab: null, // Controla la pestaña activa ('tab-ordenes' o 'tab-guias'). Por defecto, null para que no se seleccione ninguna al inicio o la primera se activa si Vuetify lo hace.
