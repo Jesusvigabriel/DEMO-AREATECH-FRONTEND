@@ -783,6 +783,8 @@ import empresasV3 from '@/store/empresasV3' // Módulo Vuex para empresas
 import roles from '@/store/roles' // Módulo Vuex para roles de usuario
 import guias from '@/store/guias' // Importamos el módulo de guías
 
+const isDebug = process.env.NODE_ENV !== 'production'
+
 export default {
   name: 'SeguimientosOrdenesGuias', // Nuevo nombre para el componente
   components: { SelectorEmpresa },
@@ -1075,15 +1077,15 @@ export default {
      * Almacena el resultado en `this.listaEmpresas`.
      */
     async fetchEmpresas() {
-      console.log("fetchEmpresas: Iniciando carga de empresas.");
+      if (isDebug) console.log("fetchEmpresas: Iniciando carga de empresas.");
       try {
         // Dispara la acción Vuex para cargar la lista de empresas.
         await store.dispatch('empresas/cargarListaEmpresas', 'SoloActivas');
         // Asigna la lista de empresas del store localmente.
         this.listaEmpresas = store.state.empresas.listaEmpresas || [];
-        console.log("fetchEmpresas: Empresas cargadas exitosamente:", this.listaEmpresas.length);
+        if (isDebug) console.log("fetchEmpresas: Empresas cargadas exitosamente:", this.listaEmpresas.length);
       } catch (error) {
-        console.error("fetchEmpresas: Error al cargar empresas:", error);
+        if (isDebug) console.error("fetchEmpresas: Error al cargar empresas:", error);
         this.listaEmpresas = []; // En caso de error, la lista queda vacía.
       }
     },
@@ -1095,7 +1097,7 @@ export default {
      * @param {number} idEmpresa - El ID de la empresa seleccionada.
      */
     async eligioEmpresa(idEmpresa) {
-      console.log("eligioEmpresa: Empresa seleccionada con ID:", idEmpresa);
+      if (isDebug) console.log("eligioEmpresa: Empresa seleccionada con ID:", idEmpresa);
       // Limpia los datos del modal y lo oculta.
       this.modalData = null;
       this.showModal = false;
@@ -1104,7 +1106,7 @@ export default {
       try {
         // Obtiene la configuración detallada de la empresa seleccionada.
         const resp = await empresasV3.getOneById(idEmpresa);
-        console.log("eligioEmpresa: Configuración de empresa recibida:", resp);
+        if (isDebug) console.log("eligioEmpresa: Configuración de empresa recibida:", resp);
         // Asigna propiedades de la empresa (configuración, lote, stock).
         this.estaEmpresa = resp;
         this.empresaPosicionado = resp.StockPosicionado;
@@ -1116,12 +1118,12 @@ export default {
             idEmpresa,
             this.getHoy()
           );
-          console.log("eligioEmpresa: Unidades totales en base (cliente textil):", this.unidadesTotalesEnBase);
+          if (isDebug) console.log("eligioEmpresa: Unidades totales en base (cliente textil):", this.unidadesTotalesEnBase);
         } else {
           this.unidadesTotalesEnBase = 0;
         }
       } catch (error) {
-        console.error("eligioEmpresa: Error al configurar empresa:", error);
+        if (isDebug) console.error("eligioEmpresa: Error al configurar empresa:", error);
         // Restablece las propiedades de la empresa en caso de error.
         this.estaEmpresa = {};
         this.empresaPosicionado = false;
@@ -1144,7 +1146,7 @@ export default {
      * Se dispara cuando cambian la empresa o las fechas de filtro.
      */
     async popularAmbasListas() {
-      console.log("popularAmbasListas: Intentando cargar órdenes y guías.");
+      if (isDebug) console.log("popularAmbasListas: Intentando cargar órdenes y guías.");
       // Solo procede si hay una empresa y fechas de filtro válidas.
       if (this.idEmpresa > 0 && this.fechaDesde && this.fechaHasta) {
         this.loading = true; // Activa el spinner de carga general.
@@ -1155,16 +1157,16 @@ export default {
             this.popularListaDeOrdenes(),
             this.popularListaDeGuias()
           ]);
-          console.log("popularAmbasListas: Carga de órdenes y guías completada exitosamente.");
+          if (isDebug) console.log("popularAmbasListas: Carga de órdenes y guías completada exitosamente.");
         } catch (error) {
-          console.error("popularAmbasListas: Error al cargar ambas listas:", error);
+          if (isDebug) console.error("popularAmbasListas: Error al cargar ambas listas:", error);
           // Muestra un mensaje de error si alguna de las promesas falla.
           this.errorAlCargar = error.message || "Ocurrió un error al cargar los datos. Intente nuevamente.";
         } finally {
           this.loading = false; // Desactiva el spinner de carga.
         }
       } else {
-        console.log("popularAmbasListas: No hay empresa o fechas seleccionadas, limpiando listas.");
+        if (isDebug) console.log("popularAmbasListas: No hay empresa o fechas seleccionadas, limpiando listas.");
         // Si no hay filtros válidos, limpia las listas y los estados de carga/error.
         this.todasLasOrdenes = [];
         this.todasLasGuias = [];
@@ -1179,28 +1181,28 @@ export default {
      * Filtra las órdenes por empresa y rango de fechas, las formatea y las ordena.
      */
     async popularListaDeOrdenes() {
-      console.log("popularListaDeOrdenes: Iniciando carga de órdenes.");
+      if (isDebug) console.log("popularListaDeOrdenes: Iniciando carga de órdenes.");
       this.todasLasOrdenes = []; // Limpia la lista de órdenes antes de la carga.
 
       // Bloque para verificar roles de usuario (se mantiene del código original).
       try {
         const userId = store.state.usuarios.usuarioActual.Id;
-        console.log("popularListaDeOrdenes: Obteniendo roles para userId:", userId);
+        if (isDebug) console.log("popularListaDeOrdenes: Obteniendo roles para userId:", userId);
         const rolesUser = await roles.getUserRolesById(userId);
         this.rolPermitido =
           !store.state.usuarios.usuarioActual.IdEmpresa &&
           rolesUser[0]?.IdRole === 1;
-        console.log("popularListaDeOrdenes: rolPermitido:", this.rolPermitido);
+        if (isDebug) console.log("popularListaDeOrdenes: rolPermitido:", this.rolPermitido);
       } catch (error) {
-        console.error("popularListaDeOrdenes: Error al verificar roles de usuario:", error);
+        if (isDebug) console.error("popularListaDeOrdenes: Error al verificar roles de usuario:", error);
         this.rolPermitido = false;
       }
 
       try {
         // Llama al servicio de órdenes.getOrdenes(). Este endpoint debería devolver el IdGuia.
-        console.log(`popularListaDeOrdenes: Llamando a ordenes.getOrdenes() para idEmpresa: ${this.idEmpresa}, fechas: ${this.fechaDesde} a ${this.fechaHasta}`);
+        if (isDebug) console.log(`popularListaDeOrdenes: Llamando a ordenes.getOrdenes() para idEmpresa: ${this.idEmpresa}, fechas: ${this.fechaDesde} a ${this.fechaHasta}`);
         const response = await ordenes.getOrdenes(); // Asume que este ya filtra o filtraremos aquí
-        console.log("popularListaDeOrdenes: Respuesta de ordenes.getOrdenes() recibida:", response);
+        if (isDebug) console.log("popularListaDeOrdenes: Respuesta de ordenes.getOrdenes() recibida:", response);
 
         let todas = [];
         // Verifica el formato de la respuesta para obtener los datos.
@@ -1215,7 +1217,7 @@ export default {
 
         // Filtro manual por empresa, en caso de que la API no lo haga directamente.
         todas = todas.filter(o => o.IdEmpresa === this.idEmpresa);
-        console.log("popularListaDeOrdenes: Órdenes filtradas por empresa (antes de fecha):", todas.length);
+        if (isDebug) console.log("popularListaDeOrdenes: Órdenes filtradas por empresa (antes de fecha):", todas.length);
 
         const fechaDesdeNormalized = this.normalizeDateToStartOfDay(this.fechaDesde);
         const fechaHastaNormalized = this.normalizeDateToStartOfDay(this.fechaHasta);
@@ -1235,7 +1237,7 @@ export default {
             }
             return passedDateFilter;
         });
-        console.log("popularListaDeOrdenes: Órdenes filtradas por fecha:", todas.length);
+        if (isDebug) console.log("popularListaDeOrdenes: Órdenes filtradas por fecha:", todas.length);
 
         // Formatea los datos de cada orden para su visualización en la tabla.
         todas.forEach((o) => {
@@ -1275,9 +1277,9 @@ export default {
           (a, b) => new Date(b.Creada).getTime() - new Date(a.Creada).getTime()
         );
         this.todasLasOrdenes = todas;
-        console.log("popularListaDeOrdenes: Total de órdenes procesadas:", this.todasLasOrdenes.length);
+        if (isDebug) console.log("popularListaDeOrdenes: Total de órdenes procesadas:", this.todasLasOrdenes.length);
       } catch (error) {
-        console.error("popularListaDeOrdenes: Error al cargar órdenes:", error);
+        if (isDebug) console.error("popularListaDeOrdenes: Error al cargar órdenes:", error);
         // Lanza el error para que `popularAmbasListas` lo capture.
         throw new Error('No se pudieron cargar las órdenes. Intente nuevamente.');
       }
@@ -1289,13 +1291,13 @@ export default {
      * Utiliza el endpoint `getByPeriodoIdEmpresa` para obtener las guías.
      */
     async popularListaDeGuias() {
-      console.log("popularListaDeGuias: Iniciando carga de guías.");
+      if (isDebug) console.log("popularListaDeGuias: Iniciando carga de guías.");
       this.todasLasGuias = []; // Limpia la lista de guías antes de la carga.
       try {
         // Llama al servicio de guías para obtenerlas por periodo y ID de empresa.
-        console.log(`popularListaDeGuias: Llamando a guias.getByPeriodoIdEmpresa con fechaDesde: ${this.fechaDesde}, fechaHasta: ${this.fechaHasta}, idEmpresa: ${this.idEmpresa}`);
+        if (isDebug) console.log(`popularListaDeGuias: Llamando a guias.getByPeriodoIdEmpresa con fechaDesde: ${this.fechaDesde}, fechaHasta: ${this.fechaHasta}, idEmpresa: ${this.idEmpresa}`);
         const response = await guias.getByPeriodoIdEmpresa(this.fechaDesde, this.fechaHasta, this.idEmpresa);
-        console.log("popularListaDeGuias: Respuesta de guias.getByPeriodoIdEmpresa recibida:", response);
+        if (isDebug) console.log("popularListaDeGuias: Respuesta de guias.getByPeriodoIdEmpresa recibida:", response);
 
         let todas = [];
         // Verifica el formato de la respuesta para obtener los datos.
@@ -1321,9 +1323,9 @@ export default {
         // Ordena las guías por fecha de creación de forma descendente.
         todas.sort((a, b) => b.FechaOriginalDate.getTime() - a.FechaOriginalDate.getTime());
         this.todasLasGuias = todas;
-        console.log("popularListaDeGuias: Total de guías procesadas:", this.todasLasGuias.length);
+        if (isDebug) console.log("popularListaDeGuias: Total de guías procesadas:", this.todasLasGuias.length);
       } catch (error) {
-        console.error("popularListaDeGuias: Error al cargar guías:", error);
+        if (isDebug) console.error("popularListaDeGuias: Error al cargar guías:", error);
         // Lanza el error para que `popularAmbasListas` lo capture.
         throw new Error('No se pudieron cargar las guías. Intente nuevamente.');
       }
@@ -1336,26 +1338,26 @@ export default {
      * @param {object} ordenItem - El objeto completo de la orden desde la tabla.
      */
     async verGuiaAsociada(ordenItem) {
-      console.log("verGuiaAsociada: Intentando ver guía asociada para orden:", ordenItem.Numero, "IdGuia:", ordenItem.IdGuia);
+      if (isDebug) console.log("verGuiaAsociada: Intentando ver guía asociada para orden:", ordenItem.Numero, "IdGuia:", ordenItem.IdGuia);
       // Asegura que hay un IdGuia válido.
       if (ordenItem.IdGuia > 0) {
         // Busca la guía correspondiente en la lista de guías ya cargadas.
         const guiaAsociada = this.todasLasGuias.find(g => g.Id === ordenItem.IdGuia);
 
         if (guiaAsociada) {
-          console.log("verGuiaAsociada: Guía asociada encontrada localmente:", guiaAsociada.Comprobante);
+          if (isDebug) console.log("verGuiaAsociada: Guía asociada encontrada localmente:", guiaAsociada.Comprobante);
           this.tab = 'tab-guias'; // Cambia a la pestaña de Guías.
           // Abre el modal de la guía, pasando el objeto completo de la guía.
           await this.openModal('guia', guiaAsociada);
         } else {
           // Si por alguna razón la guía no está en `todasLasGuias` (ej. fue cargada fuera del rango de fechas de guías),
           // se intenta obtenerla directamente de la API.
-          console.warn("verGuiaAsociada: Guía asociada no encontrada en la lista local. Intentando obtener de la API.");
+          if (isDebug) console.warn("verGuiaAsociada: Guía asociada no encontrada en la lista local. Intentando obtener de la API.");
           try {
             const response = await guias.getById(ordenItem.IdGuia);
             const retrievedGuia = (response && response.data) ? response.data : (response && response.Id ? response : null);
             if (retrievedGuia) {
-              console.log("verGuiaAsociada: Guía obtenida de la API:", retrievedGuia.Comprobante);
+              if (isDebug) console.log("verGuiaAsociada: Guía obtenida de la API:", retrievedGuia.Comprobante);
               // Si se obtuvo, la agrega a la lista de guías (opcional, para futuras interacciones)
               // y abre el modal.
               // Formatea la fecha de la guía obtenida directamente para que sea consistente con la lista.
@@ -1366,15 +1368,15 @@ export default {
               await this.openModal('guia', retrievedGuia);
             } else {
               this.errorAlCargar = "No se pudo encontrar la guía asociada.";
-              console.error("verGuiaAsociada: No se pudo obtener la guía de la API.");
+              if (isDebug) console.error("verGuiaAsociada: No se pudo obtener la guía de la API.");
             }
           } catch (error) {
             this.errorAlCargar = `Error al cargar la guía asociada: ${error.message || error}`;
-            console.error("verGuiaAsociada: Error al intentar obtener guía de la API:", error);
+            if (isDebug) console.error("verGuiaAsociada: Error al intentar obtener guía de la API:", error);
           }
         }
       } else {
-        console.warn("verGuiaAsociada: La orden no tiene un IdGuia válido.");
+        if (isDebug) console.warn("verGuiaAsociada: La orden no tiene un IdGuia válido.");
         this.errorAlCargar = "Esta orden no tiene una guía asociada para seguimiento.";
       }
     },
@@ -1387,7 +1389,7 @@ export default {
      * @param {number|object} item - Para 'orden', es el ID de la orden. Para 'guia', es el objeto completo de la guía.
      */
     async openModal(type, item) {
-      console.log(`openModal: Abriendo modal para tipo: ${type}, item:`, item);
+      if (isDebug) console.log(`openModal: Abriendo modal para tipo: ${type}, item:`, item);
       this.modalData = null; // Limpia datos de modal previos.
       this.loading = true; // Activa el spinner dentro del modal.
       this.errorAlCargar = null; // Limpia errores previos.
@@ -1397,9 +1399,9 @@ export default {
         let dataToModal;
         if (type === 'orden') {
           // Si es una orden, se espera que `item` sea el ID de la orden.
-          console.log(`openModal: Llamando a ordenes.getById con ID: ${item}`);
+          if (isDebug) console.log(`openModal: Llamando a ordenes.getById con ID: ${item}`);
           const response = await ordenes.getById(item);
-          console.log("openModal: Respuesta de ordenes.getById recibida:", response);
+          if (isDebug) console.log("openModal: Respuesta de ordenes.getById recibida:", response);
 
           // Ajuste crucial: Determina si la respuesta contiene un wrapper 'data' o si el objeto es directo.
           dataToModal = (response && response.data) ? response.data : (response && response.Id ? response : null);
@@ -1421,14 +1423,14 @@ export default {
               default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
             }
             dataToModal.nombreCliente = dataToModal.Destino?.Nombre || 'N/A';
-            console.log("openModal: Datos de orden para modal procesados:", dataToModal);
+            if (isDebug) console.log("openModal: Datos de orden para modal procesados:", dataToModal);
           } else {
             // Lanza un error si el objeto de la orden no es válido.
             throw new Error('No se encontraron detalles válidos para esta orden.');
           }
         } else if (type === 'guia') {
           // Si es una guía, se espera que `item` ya sea el objeto completo de la guía de la tabla.
-          console.log("openModal: Procesando datos de guía para modal:", item);
+          if (isDebug) console.log("openModal: Procesando datos de guía para modal:", item);
           dataToModal = { ...item }; // Clona el objeto para evitar mutaciones directas en la lista de la tabla.
           // Las guías no tienen un `detalle de productos` como las órdenes por defecto en este sistema.
           dataToModal.productosDetalle = []; // Por ahora, se inicializa vacío.
@@ -1441,24 +1443,24 @@ export default {
           } else {
             dataToModal.FechaNoEntregado = 'N/A';
           }
-           console.log("openModal: Datos de guía para modal procesados:", dataToModal);
+           if (isDebug) console.log("openModal: Datos de guía para modal procesados:", dataToModal);
         }
 
         // Si se obtuvieron datos válidos para el modal, los asigna y lo muestra.
         if (dataToModal && (dataToModal.Id || dataToModal.Comprobante)) {
           this.modalData = dataToModal;
           this.showModal = true;
-          console.log("openModal: Modal abierto con datos.");
+          if (isDebug) console.log("openModal: Modal abierto con datos.");
         } else {
           // Si `dataToModal` es nulo o incompleto después de la lógica, se lanza un error.
           throw new Error('No se encontraron detalles o la respuesta fue inválida.');
         }
       } catch (error) {
-        console.error("openModal: Error al cargar detalles del modal:", error);
+        if (isDebug) console.error("openModal: Error al cargar detalles del modal:", error);
         this.errorAlCargar = error.message || 'Error al cargar los detalles. Intente nuevamente.';
       } finally {
         this.loading = false; // Desactiva el spinner del modal.
-        console.log("openModal: Loading finalizado.");
+        if (isDebug) console.log("openModal: Loading finalizado.");
       }
     },
 
@@ -1470,23 +1472,23 @@ export default {
      * @returns {Promise<Array>} Promesa que resuelve a un array de productos o un array vacío en caso de error.
      */
     async _obtenerDetalleProductos(orden) {
-      console.log("_obtenerDetalleProductos: Obteniendo detalle de productos para orden con IdEmpresa:", orden.IdEmpresa);
+      if (isDebug) console.log("_obtenerDetalleProductos: Obteniendo detalle de productos para orden con IdEmpresa:", orden.IdEmpresa);
       try {
         // Obtiene la configuración de la empresa para saber si usa "PART".
         const empresaConfig = await empresasV3.getOneById(orden.IdEmpresa);
-        console.log("_obtenerDetalleProductos: Configuración de empresa para productos:", empresaConfig);
+        if (isDebug) console.log("_obtenerDetalleProductos: Configuración de empresa para productos:", empresaConfig);
         if (empresaConfig && empresaConfig.PART) {
           // Si usa PART, llama al endpoint específico para productos con partida.
           const productos = await ordenes.getDetalleOrdenAndProductoPartidaById(orden.Id);
-          console.log("_obtenerDetalleProductos: Productos con partida obtenidos:", productos);
+          if (isDebug) console.log("_obtenerDetalleProductos: Productos con partida obtenidos:", productos);
           return productos;
         }
         // Si no usa PART, llama al endpoint estándar para productos.
         const productos = await ordenes.getDetalleOrdenAndProductoById(orden.Id);
-        console.log("_obtenerDetalleProductos: Productos estándar obtenidos:", productos);
+        if (isDebug) console.log("_obtenerDetalleProductos: Productos estándar obtenidos:", productos);
         return productos;
       } catch (error) {
-        console.error("_obtenerDetalleProductos: Error al obtener detalle de productos:", error);
+        if (isDebug) console.error("_obtenerDetalleProductos: Error al obtener detalle de productos:", error);
         return []; // Retorna un array vacío en caso de error.
       }
     },
@@ -1501,7 +1503,7 @@ export default {
      * @returns {Array} Array de objetos que representan los pasos de la línea de tiempo.
      */
     _construirTimelineOrden(orden) {
-      console.log("_construirTimelineOrden: Construyendo timeline para orden:", orden.Numero, "Estado:", orden.NombreEstado);
+      if (isDebug) console.log("_construirTimelineOrden: Construyendo timeline para orden:", orden.Numero, "Estado:", orden.NombreEstado);
       const timelineSteps = [];
       const currentStatusText = orden.NombreEstado; // El estado ya está en formato textual.
       const isAnulada = currentStatusText === 'Anulado';
@@ -1614,7 +1616,7 @@ export default {
           step.statusClass = 'completed';
         }
       }
-      console.log("_construirTimelineOrden: Timeline construido:", timelineSteps);
+      if (isDebug) console.log("_construirTimelineOrden: Timeline construido:", timelineSteps);
       return timelineSteps;
     },
 
@@ -1628,7 +1630,7 @@ export default {
      * @returns {Array} Array de objetos que representan los pasos de la línea de tiempo.
      */
     _construirTimelineGuia(guia) {
-      console.log("_construirTimelineGuia: Construyendo timeline para guía:", guia.Comprobante, "Estado:", guia.Estado);
+      if (isDebug) console.log("_construirTimelineGuia: Construyendo timeline para guía:", guia.Comprobante, "Estado:", guia.Estado);
       const timelineSteps = [];
       const currentStatusText = guia.Estado; // El estado ya está en formato textual.
       // Determina si la guía es para retiro en sucursal (basado en la dirección "lagos garcia 4470").
@@ -1792,7 +1794,7 @@ export default {
           step.statusClass = 'completed';
         }
       }
-      console.log("_construirTimelineGuia: Timeline construido:", timelineSteps);
+      if (isDebug) console.log("_construirTimelineGuia: Timeline construido:", timelineSteps);
       return timelineSteps;
     },
 
@@ -1801,7 +1803,7 @@ export default {
      * Cierra el diálogo (modal) de detalle y reinicia sus datos.
      */
     closeModal() {
-      console.log("closeModal: Cerrando modal.");
+      if (isDebug) console.log("closeModal: Cerrando modal.");
       this.showModal = false; // Oculta el modal.
       this.modalData = null; // Limpia los datos del modal.
       this.modalType = ''; // Restablece el tipo de modal.
@@ -1873,7 +1875,7 @@ export default {
    * del componente ha sido creada. Se utiliza para la inicialización inicial.
    */
   async created() {
-    console.log("created: Componente SeguimientosOrdenesGuias inicializado.");
+    if (isDebug) console.log("created: Componente SeguimientosOrdenesGuias inicializado.");
     const today = new Date();
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(today.getDate() - 7); // Retrocede 7 días para obtener la fecha de inicio de la última semana.
@@ -1882,7 +1884,7 @@ export default {
     this.fechaDesde = sevenDaysAgo.toISOString().split('T')[0];
     // Inicializa `fechaHasta` a la fecha de hoy.
     this.fechaHasta = today.toISOString().split('T')[0];
-    console.log(`created: Fechas por defecto configuradas: Desde ${this.fechaDesde} hasta ${this.fechaHasta}`);
+    if (isDebug) console.log(`created: Fechas por defecto configuradas: Desde ${this.fechaDesde} hasta ${this.fechaHasta}`);
 
     // Carga la lista de empresas disponibles.
     await this.fetchEmpresas();
@@ -1892,11 +1894,11 @@ export default {
     const empresaUsuario = store.state.usuarios.usuarioActual.IdEmpresa;
     if (empresaUsuario && empresaUsuario > 0) {
       this.idEmpresa = empresaUsuario;
-      console.log("created: Usuario con empresa asignada, cargando datos para ID:", this.idEmpresa);
+      if (isDebug) console.log("created: Usuario con empresa asignada, cargando datos para ID:", this.idEmpresa);
       // Llama a `eligioEmpresa` para iniciar la carga de datos con la empresa preseleccionada.
       await this.eligioEmpresa(empresaUsuario);
     } else {
-      console.log("created: No hay empresa asignada al usuario o el ID es inválido.");
+      if (isDebug) console.log("created: No hay empresa asignada al usuario o el ID es inválido.");
     }
   },
 }
