@@ -126,7 +126,7 @@
                       Estado Actual:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      <v-chip :class="statusChipClassFn(modalData.NombreEstado || modalData.Estado)" small>
+                      <v-chip :color="statusChipClassFn(modalData.NombreEstado || modalData.Estado)" dark small>
                         {{ modalData.NombreEstado || modalData.Estado }}
                       </v-chip>
                     </v-list-item-subtitle>

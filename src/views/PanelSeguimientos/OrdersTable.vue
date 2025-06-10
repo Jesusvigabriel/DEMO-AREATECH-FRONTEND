@@ -80,7 +80,7 @@
           <span class="body-2">{{ item.Creada }}</span>
         </template>
         <template v-slot:item.estadoActual="{ item }">
-          <v-chip :class="statusChipClassFn(item.Estado)" small>
+          <v-chip :color="statusChipClassFn(item.Estado)" dark small>
             {{ item.Estado }}
           </v-chip>
         </template>

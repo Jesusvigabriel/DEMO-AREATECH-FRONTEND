@@ -1301,40 +1301,41 @@ export default {
      * @returns {string} Clases CSS de Vuetify.
      */
     getStatusChipClassTextual(estado) {
-      // Clases para estados de Órdenes.
-      if (['Pendiente', 'Preparado', 'A distribuciòn', 'Anulado', 'Retira Cliente'].includes(estado)) {
-        switch (estado) {
-          case 'Pendiente': return 'grey lighten-4 amber--text text--darken-3'; // Amarillo para advertencia.
-          case 'Preparado': return 'grey lighten-4 blue--text text--darken-2'; // Azul para información.
-          case 'A distribuciòn': return 'grey lighten-4 green--text text--darken-2'; // Verde para éxito/distribución.
-          case 'Anulado': return 'grey lighten-4 red--text text--darken-2'; // Rojo para error/anulado.
-          case 'Retira Cliente': return 'grey lighten-4 deep-purple--text text--darken-2'; // Morado para retiro.
-          default: return 'grey lighten-4 grey--text text--darken-1'; // Gris por defecto.
-        }
+      // Colores para estados de Órdenes.
+      const mapOrdenes = {
+        'Pendiente': 'warning',
+        'Preparado': 'info',
+        'A distribuciòn': 'success',
+        'Anulado': 'error',
+        'Retira Cliente': 'info'
       }
-      // Clases para estados de Guías (basadas en `VistaDeTracking.vue`).
-      else if (['Pedido en preparación', 'Pedido preparado', 'En CD', 'En Planchada', 'Ruteado', 'DESPACHADO', 'En distribución', 'Entregado', 'No entregado', 'Entrega parcial', 'Pedido retirado', 'ANULADO'].includes(estado)) {
-          switch (estado) {
-              case 'Entregado':
-              case 'Pedido preparado':
-              case 'Pedido en preparación':
-              case 'En CD':
-              case 'En Planchada':
-              case 'Ruteado':
-              case 'DESPACHADO':
-              case 'En distribución':
-              case 'Pedido retirado':
-                  return 'grey lighten-4 green--text text--darken-2'; // Verde para estados de progreso positivo.
-              case 'No entregado':
-              case 'ANULADO': // Añadido para guías anuladas
-                  return 'grey lighten-4 red--text text--darken-2'; // Rojo para no entregado o anulado.
-              case 'Entrega parcial':
-                  return 'grey lighten-4 orange--text text--darken-2'; // Naranja/Amarillo para parcial.
-              default:
-                  return 'grey lighten-4 grey--text text--darken-1'; // Gris por defecto.
-          }
+
+      if (Object.prototype.hasOwnProperty.call(mapOrdenes, estado)) {
+        return mapOrdenes[estado]
       }
-      return 'grey lighten-4 grey--text text--darken-1'; // Color por defecto si el estado no coincide.
+
+      // Colores para estados de Guías.
+      const mapGuias = {
+        'Entregado': 'success',
+        'Pedido preparado': 'success',
+        'Pedido en preparación': 'success',
+        'En CD': 'success',
+        'En Planchada': 'success',
+        'Ruteado': 'success',
+        'DESPACHADO': 'success',
+        'En distribución': 'success',
+        'Pedido retirado': 'success',
+        'No entregado': 'error',
+        'ANULADO': 'error',
+        'Entrega parcial': 'warning'
+      }
+
+      if (Object.prototype.hasOwnProperty.call(mapGuias, estado)) {
+        return mapGuias[estado]
+      }
+
+      // Color por defecto
+      return 'secondary'
     },
 
     /**
