@@ -783,6 +783,15 @@ import empresasV3 from '@/store/empresasV3' // Módulo Vuex para empresas
 import roles from '@/store/roles' // Módulo Vuex para roles de usuario
 import guias from '@/store/guias' // Importamos el módulo de guías
 
+// Mapeo de estados numéricos de las órdenes a sus etiquetas textuales.
+export const ORDER_STATE_TEXT = {
+  1: 'Pendiente',
+  2: 'Preparado',
+  3: 'A distribuciòn',
+  4: 'Anulado',
+  5: 'Retira Cliente'
+}
+
 export default {
   name: 'SeguimientosOrdenesGuias', // Nuevo nombre para el componente
   components: { SelectorEmpresa },
@@ -1250,14 +1259,7 @@ export default {
             : 'N/A';
 
           // Traduce el estado numérico de la orden a un estado textual legible.
-          switch (o.Estado) {
-            case 1: o.NombreEstado = 'Pendiente'; break;
-            case 2: o.NombreEstado = 'Preparado'; break;
-            case 3: o.NombreEstado = 'A distribuciòn'; break; // Estado textual que indica que tiene guía
-            case 4: o.NombreEstado = 'Anulado'; break;
-            case 5: o.NombreEstado = 'Retira Cliente'; break;
-            default: o.NombreEstado = `Desconocido (${o.Estado})`;
-          }
+          o.NombreEstado = ORDER_STATE_TEXT[o.Estado] || `Desconocido (${o.Estado})`
           // Asigna el estado textual al campo `Estado` que la tabla usa para la columna.
           o.Estado = o.NombreEstado;
 
@@ -1412,14 +1414,8 @@ export default {
             dataToModal.Preparado = dataToModal.FechaPreparado ? new Date(dataToModal.FechaPreparado).toLocaleDateString() : 'N/A';
             dataToModal.FechaDistribucion = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString() : 'N/A';
             // Asegura que el estado textual para el modal se use correctamente.
-            switch (dataToModal.Estado) {
-              case 1: dataToModal.NombreEstado = 'Pendiente'; break;
-              case 2: dataToModal.NombreEstado = 'Preparado'; break;
-              case 3: dataToModal.NombreEstado = 'A distribuciòn'; break;
-              case 4: dataToModal.NombreEstado = 'Anulado'; break;
-              case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
-              default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
-            }
+            dataToModal.NombreEstado = ORDER_STATE_TEXT[dataToModal.Estado] ||
+              `Desconocido (${dataToModal.Estado})`
             dataToModal.nombreCliente = dataToModal.Destino?.Nombre || 'N/A';
             console.log("openModal: Datos de orden para modal procesados:", dataToModal);
           } else {
