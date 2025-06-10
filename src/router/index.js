@@ -4,7 +4,7 @@ import store from '../store'
 
 // Importa la vista de restablecimiento de contraseña
 import ResetPassword from '../views/ResetPassword.vue'
-
+import Seguimientos from '../views/PanelSeguimientos/Seguimientos.vue'
 Vue.use(VueRouter)
 
 const routes = [
@@ -56,7 +56,7 @@ const routes = [
   { path: '/Transportes/RutaChoferes', name: 'Ruta_Choferes', component: () => import('../views/Transportes/RutaChoferes.vue'), meta: { tituloPagina: 'Ruta Choferes' } },
   { path: '/Login', name: 'Login', component: () => import('../views/Login.vue'), meta: { tituloPagina: 'Inicio de sesión' } },
   { path: '/Logout', name: 'Logout', component: () => import('../views/Logout.vue'), meta: { tituloPagina: 'Cierre de sesión' } },
-
+  {path: '/seguimientos',  name: 'Seguimientos', component: Seguimientos, meta: { tituloPagina: 'Panel de Seguimientos' } },
   // Ruta para restablecer contraseña
   {
     path: '/reset-password',

@@ -1,15 +1,15 @@
 <template>
-  <!-- Todo el template va envuelto en un único div por requerimiento de Vue -->
+  <!-- El template va envuelto en un único div raíz -->
   <div>
     <!-- ================= BARRA PRINCIPAL (DESKTOP/MOBILE) ================= -->
     <v-app-bar v-if="estaLoggeado" app color="primary" dark dense>
-      <!-- Ícono hamburguesa SOLO en mobile (d-md-none) -->
+      <!-- Ícono hamburguesa SOLO en mobile (<960px) -->
       <v-app-bar-nav-icon
         class="d-md-none"
         @click.stop="drawer = true"
       ></v-app-bar-nav-icon>
 
-      <!-- Logo a la izquierda -->
+      <!-- Logo alineado a la izquierda -->
       <v-toolbar-title class="logo-container">
         <v-img
           :src="nombreLogo"
@@ -20,15 +20,15 @@
         />
       </v-toolbar-title>
 
-      <!-- Menús horizontales: solo aparecen en desktop (d-none d-md-flex) -->
-      <v-toolbar-items class="ml-4 d-none d-md-flex">
+      <!-- Menús horizontales SOLO en desktop (>=960px), compactos -->
+      <v-toolbar-items class="ml-4 d-none d-md-flex menu-horizontal-compacta">
         <!-- HOME -->
         <v-btn text to="/">
           <v-icon left small>mdi-home-outline</v-icon>
           HOME
         </v-btn>
-        <!-- STOCK -->
-        <v-menu offset-y>
+        <!-- STOCK SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusStock.length > 0">
           <template #activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on">
               <v-icon left small>mdi-warehouse</v-icon>
@@ -47,8 +47,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <!-- ÓRDENES -->
-        <v-menu offset-y>
+        <!-- ÓRDENES SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusOrdenes.length > 0">
           <template #activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on">
               <v-icon left small>mdi-checkbox-marked-outline</v-icon>
@@ -67,8 +67,28 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <!-- GUÍAS -->
-        <v-menu offset-y>
+        <!-- SEGUIMIENTOS SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusSeguimientos.length > 0">
+          <template #activator="{ on, attrs }">
+            <v-btn text v-bind="attrs" v-on="on">
+              <v-icon left small>mdi-radar</v-icon> <!-- Puedes cambiar el ícono si lo deseas -->
+              SEGUIMIENTOS
+              <v-icon right small>mdi-menu-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="menu in ListaDeMenusSeguimientos"
+              :key="menu.ruta"
+              :to="menu.ruta"
+              link
+            >
+              <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <!-- GUÍAS SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusGuias.length > 0">
           <template #activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on">
               <v-icon left small>mdi-folder-outline</v-icon>
@@ -87,8 +107,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <!-- INFORMES -->
-        <v-menu offset-y>
+        <!-- INFORMES SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusInformes.length > 0">
           <template #activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on">
               <v-icon left small>mdi-chart-bar</v-icon>
@@ -107,8 +127,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <!-- EMPRESAS -->
-        <v-menu offset-y>
+        <!-- EMPRESAS SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusEmpresas.length > 0">
           <template #activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on">
               <v-icon left small>mdi-office-building</v-icon>
@@ -127,8 +147,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <!-- SEGURIDAD -->
-        <v-menu offset-y>
+        <!-- SEGURIDAD SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusSeguridad.length > 0">
           <template #activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on">
               <v-icon left small>mdi-shield-outline</v-icon>
@@ -147,8 +167,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <!-- TRANSPORTES (AGREGADO POR MI PARA TENERLO COMO EN EL VIEJO MENU) -->
-        <v-menu offset-y>
+        <!-- TRANSPORTES SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusTransportes.length > 0">
           <template #activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on">
               <v-icon left small>mdi-truck</v-icon>
@@ -227,104 +247,27 @@
           <v-list-item-title>{{ nombreUsuario }}</v-list-item-title>
         </v-list-item>
         <v-divider></v-divider>
-        <!-- Menú lateral: secciones igual a la barra principal -->
-        <v-list-group value="true" no-action>
+        <!-- Menú lateral: acordéon, solo expande un grupo -->
+        <v-list-group
+          v-for="(grupo, i) in gruposMobile"
+          :key="grupo.titulo"
+          v-model="grupo.expanded"
+          no-action
+          @click="expandirSoloGrupo(i)" 
+        >
           <template #activator>
-            <v-list-item-title>STOCK</v-list-item-title>
+            <v-list-item-content> <!-- Envuelve el título para el click -->
+              <v-list-item-title>{{ grupo.titulo }}</v-list-item-title>
+            </v-list-item-content>
           </template>
           <v-list-item
-            v-for="menu in ListaDeMenusStock"
+            v-for="menu in grupo.items"
             :key="menu.ruta"
             :to="menu.ruta"
             link
             @click="drawer = false"
           >
-            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-        <v-list-group value="true" no-action>
-          <template #activator>
-            <v-list-item-title>ÓRDENES</v-list-item-title>
-          </template>
-          <v-list-item
-            v-for="menu in ListaDeMenusOrdenes"
-            :key="menu.ruta"
-            :to="menu.ruta"
-            link
-            @click="drawer = false"
-          >
-            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-        <v-list-group value="true" no-action>
-          <template #activator>
-            <v-list-item-title>GUÍAS</v-list-item-title>
-          </template>
-          <v-list-item
-            v-for="menu in ListaDeMenusGuias"
-            :key="menu.ruta"
-            :to="menu.ruta"
-            link
-            @click="drawer = false"
-          >
-            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-        <v-list-group value="true" no-action>
-          <template #activator>
-            <v-list-item-title>INFORMES</v-list-item-title>
-          </template>
-          <v-list-item
-            v-for="menu in ListaDeMenusInformes"
-            :key="menu.ruta"
-            :to="menu.ruta"
-            link
-            @click="drawer = false"
-          >
-            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-        <v-list-group value="true" no-action>
-          <template #activator>
-            <v-list-item-title>EMPRESAS</v-list-item-title>
-          </template>
-          <v-list-item
-            v-for="menu in ListaDeMenusEmpresas"
-            :key="menu.ruta"
-            :to="menu.ruta"
-            link
-            @click="drawer = false"
-          >
-            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-        <v-list-group value="true" no-action>
-          <template #activator>
-            <v-list-item-title>SEGURIDAD</v-list-item-title>
-          </template>
-          <v-list-item
-            v-for="menu in ListaDeMenusSeguridad"
-            :key="menu.ruta"
-            :to="menu.ruta"
-            link
-            @click="drawer = false"
-          >
-            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-        <!-- TRANSPORTES (MOBILE) - AGREGADO POR MI -->
-        <v-list-group value="true" no-action>
-          <template #activator>
-            <v-list-item-title>TRANSPORTES</v-list-item-title>
-          </template>
-          <v-list-item
-            v-for="menu in ListaDeMenusTransportes"
-            :key="menu.ruta"
-            :to="menu.ruta"
-            link
-            @click="drawer = false"
-          >
-            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
+            <v-list-item-title class="pl-4">{{ menu.nombre }}</v-list-item-title> <!-- Añadido padding para indentar subitems -->
           </v-list-item>
         </v-list-group>
         <v-divider></v-divider>
@@ -343,26 +286,28 @@
 <script>
 // Importa el store global de Vuex y el helper de roles
 import store from '@/store'
-import roles from '@/store/roles'
+import roles from '@/store/roles' // Asegúrate que la ruta a tu store de roles sea correcta
 
 export default {
   name: 'MenuPrincipal',
   data() {
     return {
-      drawer: false, // <-- Controla la visibilidad del Drawer (mobile)
+      drawer: false, // Controla el Drawer (mobile)
       nombreLogo: require(`@/assets/IsoLogo_${process.env.VUE_APP_Quien_Soy}.png`),
-      // Arrays donde se agrupan los menús por tipo
+      // Arrays de menús por tipo
       ListaDeMenusStock: [],
       ListaDeMenusOrdenes: [],
+      ListaDeMenusSeguimientos: [], // Para el nuevo menú de Seguimientos
       ListaDeMenusGuias: [],
       ListaDeMenusInformes: [],
       ListaDeMenusEmpresas: [],
       ListaDeMenusSeguridad: [],
-      ListaDeMenusTransportes: [] // <--- NUEVO ARRAY PARA TRANSPORTES (POR MI)
+      ListaDeMenusTransportes: [],
+      gruposMobile: [] // Para el Drawer mobile
     }
   },
   computed: {
-    // Si el usuario está logueado (de Vuex)
+    // Si está logueado (de Vuex)
     estaLoggeado() {
       return store.state.usuarios.usuarioActual.Loggeado
     },
@@ -372,77 +317,137 @@ export default {
     usuarioId() {
       return store.state.usuarios.usuarioActual.Id
     },
-    // Ícono de modo oscuro/tema claro
     themeIcon() {
       return this.$vuetify.theme.dark
         ? 'mdi-white-balance-sunny'
         : 'mdi-moon-waning-crescent'
     },
-    // Combina logueo e ID para evitar bugs de carga
+    // Evita bugs de carga
     estaLogueadoConId() {
       return this.estaLoggeado && !!this.usuarioId
     }
   },
   watch: {
-    // Cuando cambia el usuario (logueo), recarga menús (evita duplicados)
+    // Si cambia el usuario (login), recarga menús
     estaLogueadoConId: {
       immediate: true,
-      handler(val) {
+      async handler(val) { // Convertido a async para esperar cargarYAgruparMenus
         if (val) {
-          this.cargarYAgruparMenus()
+          await this.cargarYAgruparMenus(); // Esperar a que los menús se carguen
         } else {
-          this.limpiarMenus()
+          this.limpiarMenus();
         }
       }
     }
   },
   methods: {
-    // Cambia tema oscuro/claro y lo persiste en localStorage
+    // Cambia tema oscuro/claro y lo guarda en localStorage
     toggleTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
       localStorage.setItem('modoOscuro', this.$vuetify.theme.dark)
     },
-    // Limpia todos los arrays de menús antes de recargar
+    // Limpia todos los menús
     limpiarMenus() {
       this.ListaDeMenusStock = []
       this.ListaDeMenusOrdenes = []
+      this.ListaDeMenusSeguimientos = [] // Limpiar la nueva lista
       this.ListaDeMenusGuias = []
       this.ListaDeMenusInformes = []
       this.ListaDeMenusEmpresas = []
       this.ListaDeMenusSeguridad = []
-      this.ListaDeMenusTransportes = [] // <--- LIMPIO TRANSPORTES TAMBIÉN (POR MI)
+      this.ListaDeMenusTransportes = []
+      this.gruposMobile = []
     },
-    // Trae menús del backend y los agrupa según "modulo"
-    cargarYAgruparMenus() {
-      this.limpiarMenus() // Evita duplicados
-      if (!this.estaLogueadoConId) return
+    // Trae menús y los agrupa según el "modulo"
+    async cargarYAgruparMenus() { // Convertido a async
+      this.limpiarMenus(); // Limpia al inicio de la carga
+      if (!this.estaLogueadoConId) return;
 
-      roles.getAllMenuUser(this.usuarioId)
-        .then(menus => {
-          console.log("Recibí los siguientes menús del backend:", menus)
-          this.limpiarMenus()
-          menus.forEach(m => {
-            if (m.modulo.includes('stock')) this.ListaDeMenusStock.push(m)
-            else if (m.modulo.includes('ordenes')) this.ListaDeMenusOrdenes.push(m)
-            else if (m.modulo.includes('guias')) this.ListaDeMenusGuias.push(m)
-            else if (m.modulo.includes('informes')) this.ListaDeMenusInformes.push(m)
-            else if (m.modulo.includes('empresas')) this.ListaDeMenusEmpresas.push(m)
-            else if (m.modulo.includes('seguridad')) this.ListaDeMenusSeguridad.push(m)
-            else if (m.modulo.includes('transportes')) this.ListaDeMenusTransportes.push(m) // <--- AGRUPA TRANSPORTES (POR MI)
-          })
-        })
-        .catch(() => {
-          this.limpiarMenus()
-        })
+      try {
+        const menusDelBackend = await roles.getAllMenuUser(this.usuarioId);
+        // Limpiar de nuevo aquí puede ser redundante si la primera limpieza es suficiente,
+        // pero no daña y asegura un estado limpio si hay llamadas concurrentes o reintentos.
+        this.limpiarMenus(); 
+
+        menusDelBackend.forEach(m => {
+          if (m.modulo.includes('stock')) this.ListaDeMenusStock.push(m);
+          else if (m.modulo.includes('ordenes')) this.ListaDeMenusOrdenes.push(m);
+          else if (m.modulo.includes('guias')) this.ListaDeMenusGuias.push(m);
+          else if (m.modulo.includes('informes')) this.ListaDeMenusInformes.push(m);
+          else if (m.modulo.includes('empresas')) this.ListaDeMenusEmpresas.push(m);
+          else if (m.modulo.includes('seguridad')) this.ListaDeMenusSeguridad.push(m);
+          else if (m.modulo.includes('transportes')) this.ListaDeMenusTransportes.push(m);
+          // Comprobación para el módulo de seguimientos (si viene del backend para algunos roles)
+          else if (m.modulo.includes('seguimientos')) this.ListaDeMenusSeguimientos.push(m);
+        });
+        
+        // Lógica para añadir el menú "Seguimientos" si el usuario es administrador
+        let esAdmin = false;
+        if (!store.state.usuarios.usuarioActual.IdEmpresa) { // Condición: Sin empresa asignada
+          try {
+            const userRoles = await roles.getUserRolesById(this.usuarioId);
+            // Condición: Rol ID es 1 (asumiendo que 1 es administrador)
+            if (userRoles && userRoles.length > 0 && userRoles[0].IdRole === 1) {
+              esAdmin = true;
+            }
+          } catch (roleError) {
+            console.error("Error al obtener roles de usuario para menú:", roleError);
+            // Decidir cómo manejar este error. Si falla, no se marcará como admin.
+          }
+        }
+
+        // Si es administrador y el menú de seguimientos aún no existe (no vino del backend para este admin)
+        if (esAdmin) {
+          const seguimientosMenuExists = this.ListaDeMenusSeguimientos.some(menu => menu.ruta === '/seguimientos');
+          if (!seguimientosMenuExists) {
+            this.ListaDeMenusSeguimientos.push({
+              nombre: "Panel de Seguimientos", // Nombre que se mostrará en el submenú
+              ruta: "/seguimientos",           // Ruta definida en Vue Router
+              modulo: "seguimientos"           // Identificador del módulo
+            });
+          }
+        }
+
+        const todosGrupos = [
+          { titulo: "STOCK", items: this.ListaDeMenusStock },
+          { titulo: "ÓRDENES", items: this.ListaDeMenusOrdenes },
+          { titulo: "SEGUIMIENTOS", items: this.ListaDeMenusSeguimientos }, // Añadido para el menú móvil
+          { titulo: "GUÍAS", items: this.ListaDeMenusGuias },
+          { titulo: "INFORMES", items: this.ListaDeMenusInformes },
+          { titulo: "EMPRESAS", items: this.ListaDeMenusEmpresas },
+          { titulo: "SEGURIDAD", items: this.ListaDeMenusSeguridad },
+          { titulo: "TRANSPORTES", items: this.ListaDeMenusTransportes }
+        ];
+
+        this.gruposMobile = todosGrupos
+          .filter(g => g.items.length > 0) // Solo grupos con items
+          .map(g => ({ ...g, expanded: false })); // Inicializar como no expandidos
+
+      } catch (error) {
+        console.error("Error al cargar y agrupar los menús:", error);
+        this.limpiarMenus(); // En caso de error, limpiar menús para evitar estado inconsistente
+      }
+    },
+    // Expande solo un grupo a la vez en mobile
+    expandirSoloGrupo(indexClickeado) {
+      this.gruposMobile.forEach((grupo, index) => {
+        // Si es el grupo clickeado, invierte su estado 'expanded'
+        // Si no es el grupo clickeado, ciérralo (setea 'expanded' a false)
+        if (index === indexClickeado) {
+          grupo.expanded = !grupo.expanded;
+        } else {
+          grupo.expanded = false;
+        }
+      });
     }
   },
   mounted() {
-    // Cuando se monta, recupera modo oscuro de localStorage
-    const pref = localStorage.getItem('modoOscuro')
+    // Cuando se monta, recupera modo oscuro guardado
+    const pref = localStorage.getItem('modoOscuro');
     if (pref !== null) {
-      this.$vuetify.theme.dark = pref === 'true'
+      this.$vuetify.theme.dark = pref === 'true';
     }
-    // Los menús los maneja el watcher, no es necesario llamar a cargarYAgruparMenus() acá
+    // La carga inicial de menús la maneja el watcher `estaLogueadoConId`
   }
 }
 </script>
@@ -455,19 +460,53 @@ export default {
   text-transform: none;
   font-weight: 500;
 }
-/* Menús de barra y dropdowns con fuente más chica y compacta */
-.v-toolbar__content, .v-toolbar-items, .v-btn, .v-list-item-title {
+
+/* Barra horizontal súper compacta: nunca hace overflow, los botones se achican */
+.menu-horizontal-compacta {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 1px !important;
+  align-items: center;
+}
+.menu-horizontal-compacta > * {
+  flex-shrink: 1 !important;
+}
+
+/* Botones más chicos */
+.v-btn {
+  font-size: 12px !important;
+  padding: 0 7px !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  border-radius: 7px !important;
+}
+
+/* Fuente y compactado en los dropdowns */
+.v-toolbar__content {
   font-size: 13px !important;
   font-family: "Segoe UI", Arial, sans-serif;
   letter-spacing: 0;
   line-height: 1.1;
 }
-/* Mejora la experiencia mobile si hay overflow de menús horizontales */
-.v-toolbar__content {
-  overflow-x: auto !important;
+.v-list-item-title {
+  font-size: 13px !important;
+  padding: 0 2px !important;
 }
 
-/* ==== SWITCH SOL/LUNA ANIMADO (más ancho y suave) ==== */
+/* Menú horizontal solo visible en desktop >= 960px */
+.d-none.d-md-flex {
+  display: none !important;
+}
+@media (min-width: 960px) {
+  .d-none.d-md-flex {
+    display: flex !important;
+  }
+}
+
+/* ==== SWITCH SOL/LUNA ANIMADO ==== */
 .theme-switch-wide {
   width: 70px;
   height: 38px;

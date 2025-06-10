@@ -127,6 +127,7 @@ import ordenesV3 from "@/store/ordenesV3"
 import movimientosStockV3 from '@/store/movimientosStockV3'
 import empresasV3 from '@/store/empresasV3'
 import posiciones from '@/store/posiciones'
+import posicionesV3 from '@/store/posicionesV3'
 import productosV3 from '@/store/productosV3'
 import fechas from 'vue-lsi-util/fechas'
 
@@ -158,7 +159,6 @@ export default {
             userName: null,
             botonDesactivado: false,
             tieneLOTE: false,
-            tienePART: false,
             elegirLote: false,
             listaLotes: [],
             textoBusqueda: "",
@@ -221,13 +221,8 @@ export default {
                 .then( async response => {   
                     if(response.LOTE == true){
                         this.tieneLOTE = true  
-                        this.tienePART =false
-                    } else if(response.PART){
-                        this.tienePART =true
-                        this.tieneLOTE = false
-                    }else{
+                    } else {
                         this.tieneLOTE = false  
-                        this.tienePART =false
                     }                       
                     this.empresa = response
                     this.botonSalidaExpress = false
@@ -235,12 +230,27 @@ export default {
                 .catch( error => {
                     this.mostrarMensaje({titulo: "Error", mensaje: error})
                 })
+            // API.actions.acceder({Ruta: "ordenes/getAll", 
+            //                      Cabeceras: {IdEmpresa: IdEmpresaElegida, Estado: 1, IdOrden: -1, FechaDesde: '', FechaHasta: ''},
+            //                      Cartel: 'Leyendo órdenes...'})
+            //     .then(datosLeidos => {
+            //         if (datosLeidos.Estado=="OK") {
+            //             this.listaOrdenes=datosLeidos.Datos.Ordenes.sort((e1, e2) => {
+            //                 return e1.Numero.localeCompare(e2.Numero)
+            //             })
+            //             this.selectorOrden.mostrar=true
+            //         }
+            //     })
+            //     .catch(puteada => {
+            //         store.dispatch('snackbar/mostrar', puteada.Detalle)
+            //     })
 
             try{
                 const results=await ordenesV3.getByPeriodoEmpresaSoloPreparadasYNoPreorden('2022-10-01', '2030-12-31', IdEmpresaElegida) 
                 this.listaOrdenes=results.sort((e1, e2) => {return e1.Numero.localeCompare(e2.Numero)})
                 this.listaOrdenes=this.listaOrdenes.filter(e => (!e.PreOrden) && (e.Estado===1))
                 this.selectorOrden.mostrar=true
+
             } catch (error) {
                 console.log("Error al leer órdenes", error)
             }
@@ -250,6 +260,7 @@ export default {
             this.botonSalidaExpress = false
             this.pedirCantidadBultos = false
             this.cantidadBultos = 0
+
             const ordenEnCurso=this.listaOrdenes.find(element => element.Id == idOrdenSeleccionada)
             if (typeof(ordenEnCurso)=='undefined') {
                 store.dispatch("snackbar/mostrar", "Orden inexistente")
@@ -280,30 +291,7 @@ export default {
                         
                         this.barcodeArticulo.mostrar=false
                         this.botonSalidaExpress = true
-                } else if(this.tienePART){
-                    ordenesV3.getDetalleOrdenAndProductoPartidaById(ordenEnCurso.Id)
-                        .then(response => {
-                            response.forEach(e => {
-                                e.Numero = ordenEnCurso.Numero
-                                e.Id = ordenEnCurso.Id
-                                e.CantidadSalida = 0
-                                // Guardamos el detalle para poder mostrarlo con la lupa
-                                this.detalleOrdenEnCurso.push(e)
-                            })
-                            this.ordenEnCurso = this.detalleOrdenEnCurso
-                        })
-                        .catch( error => {
-                            this.mostrarMensaje({titulo: "Error", mensaje: error})
-                        })
-
-                    if(this.empresa.SalidaExpress){
-                        this.barcodeArticulo.mostrar=false
-                        this.botonSalidaExpress = true
-                    } else {
-                        this.barcodeArticulo.mostrar=true
-                        this.enfocarBarcodeArticulo()    
-                    }
-                }else{
+                } else {
                     //Obtenemos detalle de la Orden
                     ordenesV3.getDetalleOrdenAndProductoById(ordenEnCurso.Id)
                         .then(response => {
@@ -333,12 +321,71 @@ export default {
 
         },
 
-        salidaExpress(){
+       /**
+ * Salida Express mejorada:
+ * Para empresas con StockPosicionado, reparte automáticamente las cantidades a despachar
+ * entre todas las posiciones donde haya stock disponible, para cada producto de la orden.
+ * Si falta stock en alguna línea, lo deja asentado en listaProductosLeidos.
+ * Para empresas sin posiciones, se comporta como antes (lleva cantidad a salida).
+ */
+async salidaExpress() {
+    try {
+        this.listaProductosLeidos = [];
+
+        if (this.empresa.StockPosicionado) {
+            // 1. Obtenemos los productos y posiciones ASIGNADOS A LA ORDEN desde el endpoint correcto:
+            const productosPosiciones = await ordenesV3.getProductosYPosicionesByOrden(this.ordenEnCurso[0].Id);
+
+            // 2. Por cada producto/posición asignado, agregamos el registro para salida
+            for (const registro of productosPosiciones) {
+                // Solo mostramos las líneas con cantidad mayor a cero
+                if (registro.cantidad_posicion > 0) {
+                    this.listaProductosLeidos.push({
+                        correcto: true,
+                        barcode: registro.p_CodeEmpresa,  // O el campo que corresponda a tu barcode
+                        cantidad: registro.cantidad_posicion,
+                        descripcion: registro.nombre_producto,
+                        codeempresa: registro.p_CodeEmpresa,
+                        idProducto: registro.id_producto,
+                        idPosicion: registro.ppod_id_posicion,
+                        nombrePosicion: registro.nombre_posicion
+                    });
+                }
+            }
+
+            // 3. Actualizamos las cantidades de salida de los productos en la orden
+            // Si tenés ordenEnCurso como array de productos, sumá las cantidades asignadas:
             this.ordenEnCurso.forEach(producto => {
-                producto.CantidadSalida = producto.Unidades
-            })
-            this.pedirCantidadBultos=true
-        },
+                producto.CantidadSalida = productosPosiciones
+                    .filter(r => r.id_producto === producto.IdProducto)
+                    .reduce((suma, r) => suma + r.cantidad_posicion, 0);
+            });
+
+            // 4. Si hay productos con faltante (esto dependerá de la lógica de tu backend),
+            // podrías mostrarlo aparte o manejarlo acá si lo necesitas.
+            // Por ahora, asumo que sólo mostramos lo que efectivamente está asignado.
+        } else {
+            // Empresas SIN stock posicionado: como antes.
+            for (const producto of this.ordenEnCurso) {
+                producto.CantidadSalida = producto.Unidades;
+                this.listaProductosLeidos.push({
+                    correcto: true,
+                    barcode: producto.Barcode,
+                    cantidad: producto.Unidades,
+                    descripcion: producto.Productos,
+                    codeempresa: producto.CodeEmpresa,
+                    idProducto: producto.IdProducto
+                });
+            }
+        }
+
+        // Siguiente paso: pedir cantidad de bultos
+        this.pedirCantidadBultos = true;
+
+    } catch (error) {
+        this.mostrarMensaje({ titulo: "Error", mensaje: error.toString() });
+    }
+},
 
         botonPrevisualizarOrdenClick() {
             let detalle=""
@@ -365,7 +412,7 @@ export default {
 
         async clickFinalizarIngresarBultos() {
             this.pedirCantidadBultos=true
-        },//
+        },
         async clickProcesarIngreso() {
             this.botonDesactivado = true
             if (this.cantidadBultos<=0) {
@@ -412,85 +459,104 @@ export default {
             })
             return ordenCompleta
         },
-        registrarProcesamientoOrden() {
-            let detalleArray = []
-            let detalle="["
-            this.ordenEnCurso.forEach(element => {
-                detalle += "{"
-                detalle += "IdProducto: "+element.IdPartida
-                detalle += ", "
-                detalle += "Cantidad: "+element.CantidadSalida
-                detalle += "}, "
-                if(this.tieneLOTE){
-                    detalleArray.push({IdProducto: element.IdProducto, Cantidad: element.CantidadSalida, Lote: element.lote, Barcode: element.Barcode, Descripcion: element.Productos})
-                } else if(this.tienePART){
-                    detalleArray.push({Cantidad: element.CantidadSalida, importe: element.Importe, barcode: element.Barcode, partida: element.Partida, idProducto: element.IdProducto, idPartida: element.IdPartida})
-                }else{
-                    detalleArray.push({IdProducto: element.IdProducto, Cantidad: element.CantidadSalida})
-                }
-            })
-            detalle= detalle.slice(0, -2)
-            detalle += "]"
         
-            let Cabeceras={
-                IdOrden: this.ordenEnCurso[0].Id,
-                IdEmpresa: this.selectorEmpresa.dato,
-                Comprobante:this.ordenEnCurso[0].Numero,
-                Usuario: this.userName,
-                Detalle: detalleArray,
-                Textil: this.empresa.ClienteTextil,
-                StockPosicionado: this.empresa.StockPosicionado,
-                TieneLote: this.tieneLOTE, 
-                TienePART:this.tienePART,
-                Fecha: fechas.getHoy()
+async registrarProcesamientoOrden() {
+    let detalleArray = [];
+
+    // 1. Armado del array de detalle según el tipo de empresa
+    if (this.empresa.StockPosicionado && !this.empresa.ClienteTextil) {
+        // Stock posicionado, NO textil: endpoint optimizado
+        let productosPosiciones = [];
+        try {
+            productosPosiciones = await ordenesV3.getProductosYPosicionesByOrden(this.ordenEnCurso[0].Id);
+
+            if (!Array.isArray(productosPosiciones) || productosPosiciones.length === 0) {
+                this.mostrarMensaje({titulo: "Error", mensaje: "No se encontraron productos ni posiciones para la orden."});
+                return;
             }
-            
-            if(this.empresa.StockPosicionado==true && this.empresa.ClienteTextil==false){
-                ordenesV3.getDetalleOrdenById(this.ordenEnCurso[0].Id)
-                        .then( async response => {
-                            this.detalleOrden = response
-                            this.detalleOrden.forEach(d=>{
 
-                                ordenesV3.getDetallePosicionesOrdenById(d.Id,this.selectorEmpresa.dato)
-                                .then( async response => {
-                                    this.detallePosiciones.push({idProducto: response[0].IdProducto, idPosicion: response[0].IdPosicion, cantidad: response[0].Cantidad})
-                                })
-                                    .catch( error => {
-                                        this.mostrarMensaje({titulo: "Error", mensaje: error})
-                                }) 
-                            }) 
-                        })
-                            .catch( error => {
-                                this.mostrarMensaje({titulo: "Error", mensaje: error})
-                        })                   
-                }              
-                           
-             ordenesV3.saleOrder(this.selectorEmpresa.dato,{Cabeceras})
-                  .then(respuesta => {  
-                        
-                        ordenesV3.setCantidadBultos(this.ordenEnCurso[0].Id, this.selectorEmpresa.dato, this.cantidadBultos)
-                               .then( async response => {
-                                   this.mostrarMensaje({titulo: "Registración correcta! 👍", mensaje: "La salida de la orden ha sido registrada exitosamente"})
-                                
-                                   const datosOrden =  await ordenesV3.getById(this.ordenEnCurso[0].Id)
-                                   const ordenActualizada=await ordenes.actions.getDatosOrden(datosOrden)
-                                   const pdfEtiqueta=await ordenes.generarOrdenEtiquetaEnPDFChicaUnaPorHoja(ordenActualizada)
-                                   //const pdfSticker=await ordenesV3.imprimirStickersBulto(ordenActualizada,Number(this.cantidadBultos))
-                                   pdfEtiqueta.save("etiqueta_"+ordenActualizada[0].Orden.Numero+".pdf")
-                               })
-                               .catch( error => {
-                                   this.mostrarMensaje({titulo: "Error", mensaje: error})
-                               })
+            productosPosiciones.forEach(e => {
+                detalleArray.push({
+                    IdProducto: e.id_producto,
+                    Cantidad: e.cantidad_posicion,
+                    IdPosicion: e.ppod_id_posicion,
+                    NombrePosicion: e.nombre_posicion,
+                    Barcode: e.p_CodeEmpresa
+                });
+            });
 
-                           //este es el lugar correcto 
-                           this.resetearPantalla()      
-                    
-                    })
-                      .catch(error => {
-                          store.dispatch('snackbar/mostrar', error)
-                    })
-         },
+        } catch (err) {
+            let mensajeError = "No se pudo obtener productos y posiciones de la orden. ";
+            mensajeError += err && err.message ? err.message : JSON.stringify(err);
+            this.mostrarMensaje({titulo: "Error", mensaje: mensajeError});
+            return;
+        }
+    } else {
+        // Lógica clásica para empresas sin stock posicionado O textiles
+        this.ordenEnCurso.forEach(element => {
+            if (this.tieneLOTE) {
+                detalleArray.push({
+                    IdProducto: element.IdProducto,
+                    Cantidad: element.CantidadSalida,
+                    Lote: element.lote,
+                    Barcode: element.Barcode,
+                    Descripcion: element.Productos
+                });
+            } else {
+                detalleArray.push({
+                    IdProducto: element.IdProducto,
+                    Cantidad: element.CantidadSalida
+                });
+            }
+        });
+    }
 
+    // 2. Armado del objeto de cabeceras
+    let Cabeceras = {
+        IdOrden: this.ordenEnCurso[0].Id,
+        IdEmpresa: this.selectorEmpresa.dato,
+        Comprobante: this.ordenEnCurso[0].Numero,
+        Usuario: this.userName,
+        Detalle: detalleArray,
+        Textil: this.empresa.ClienteTextil,
+        StockPosicionado: this.empresa.StockPosicionado,
+        TieneLote: this.tieneLOTE,
+        Fecha: fechas.getHoy()
+    };
+
+    // 3. DEBUG: Mostramos en consola el JSON que se envía
+    console.log("Payload enviado a saleOrder:", JSON.stringify(Cabeceras, null, 2));
+
+    // 4. Validación final de datos antes de enviar (simple)
+    if (!Cabeceras.IdOrden || !Cabeceras.IdEmpresa || !Array.isArray(Cabeceras.Detalle) || Cabeceras.Detalle.length === 0) {
+        this.mostrarMensaje({titulo: "Error", mensaje: "Los datos de la orden no están completos o correctos."});
+        return;
+    }
+
+    // 5. Envío al endpoint PATCH, asegurando que el payload sea un objeto plano (no anidado como {Cabeceras: ...})
+    try {
+        await ordenesV3.saleOrder(this.selectorEmpresa.dato, { Cabeceras });
+        try {
+            await ordenesV3.setCantidadBultos(this.ordenEnCurso[0].Id, this.selectorEmpresa.dato, this.cantidadBultos);
+            this.mostrarMensaje({titulo: "Registración correcta! 👍", mensaje: "La salida de la orden ha sido registrada exitosamente"});
+
+            // Actualización de datos y generación del PDF
+            const datosOrden = await ordenesV3.getById(this.ordenEnCurso[0].Id);
+            const ordenActualizada = await ordenes.actions.getDatosOrden(datosOrden);
+            const pdfEtiqueta = await ordenes.generarOrdenEtiquetaEnPDFChicaUnaPorHoja(ordenActualizada);
+            pdfEtiqueta.save("etiqueta_" + ordenActualizada[0].Orden.Numero + ".pdf");
+        } catch (error) {
+            this.mostrarMensaje({titulo: "Error", mensaje: error});
+        }
+
+        this.resetearPantalla();
+
+    } catch (error) {
+        // Mostramos el error de manera amigable
+        let msg = (error && error.message) ? error.message : JSON.stringify(error);
+        store.dispatch('snackbar/mostrar', "Error al registrar salida: " + msg);
+    }
+},
 
         cantidadAIngresarEnter() {
             this.procesarItemEnCurso()

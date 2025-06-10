@@ -1177,129 +1177,120 @@ export default {
 
             }
         },
-        async clickDescargarExcel() {
-    // Creo el workbook y worksheet
-    const workbook = new excel.Workbook();
+  
+
+  async clickDescargarExcel() {
+    // 1) Creo el workbook y la hoja
+    const workbook  = new excel.Workbook();
     const worksheet = workbook.addWorksheet("Stock");
-    let renglon;
 
-    if (this.empresaElegida.StockPosicionado) {
-        // Para empresas que manejan posiciones (stock posicionado)
-        worksheet.views = [{ state: 'frozen', ySplit: 1 }];
-        worksheet.autoFilter = 'A1:F1'; // filtro en todas las columnas importantes
-        if (this.tieneLOTE) {
-            // Si la empresa usa lotes (dejo igual, ajustar según necesidad)
-            worksheet.columns = [
-                { header: 'Producto', width: 100 },
-                { header: 'BoxNumber', width: 40 },
-                { header: 'SerialNumber', width: 40 },
-                { header: 'ProductNumber', width: 40 },
-                { header: 'Posición', width: 30 },
-                { header: 'Unidades', width: 25 },
-            ];
-            renglon = 1;
-            for (const articulo of this.listaArticulosCompleta) {
-                const loteDetalleJSON = JSON.parse(articulo.LoteDetalle)[0];
-                renglon++;
-                worksheet.getRow(renglon).values = [
-                    loteDetalleJSON.productoNombre,
-                    loteDetalleJSON.lote,
-                    loteDetalleJSON.barcode,
-                    loteDetalleJSON.codeEmpresa,
-                    loteDetalleJSON.posicion,
-                    loteDetalleJSON.unidades
-                ];
-            }
-        } else {
-            // Empresas con posiciones normales (NO lotes)
-            worksheet.columns = [
-                { header: 'Producto', width: 100 },
-                { header: 'Barcode', width: 40 },
-                { header: 'CodeEmpresa', width: 40 },
-                { header: 'Posición', width: 30 },
-                { header: 'Unidades', width: 25 },
-                { header: 'Id', width: 25 }
-            ];
+    // 2) Caso A: empresa con posiciones SIN lotes → llamada única optimizada
+    if (this.empresaElegida.StockPosicionado && !this.tieneLOTE) {
+      // 2a) Traigo todo el detalle de posiciones en una sola llamada
+      const detalle = await posicionesV3.getAllByEmpresaConDetalle(this.idEmpresa);
+      console.log("📊 Datos recibidos para detalle:", detalle);
 
-            // ACA genero una fila por producto por cada posición (si no tiene, la dejo vacía)
-            let filas = [];
-            for (const unArticulo of this.listaArticulosCompleta) {
-                // Busco todas las posiciones del artículo
-                let posiciones = await posicionesV3.getPosicionesByIdAndEmpresa(unArticulo.Id, unArticulo.IdEmpresa);
-                if (posiciones && posiciones.length) {
-                    posiciones.forEach(pos => {
-                        filas.push([
-                            unArticulo.Nombre,
-                            unArticulo.Barcode,
-                            unArticulo.CodeEmpresa,
-                            pos.Descripcion, // Una fila por posición
-                            pos.Unidades,
-                            unArticulo.Id
-                        ]);
-                    });
-                } else {
-                    // Si no tiene posiciones igual lo agrego, pero sin info de posición
-                    filas.push([
-                        unArticulo.Nombre,
-                        unArticulo.Barcode,
-                        unArticulo.CodeEmpresa,
-                        '', // posición vacía
-                        '', // unidades vacía
-                        unArticulo.Id
-                    ]);
-                }
-            }
-            // Escribo las filas en el Excel
-            filas.forEach((fila, i) => {
-                worksheet.getRow(i + 2).values = fila;
-            });
+      // 2b) Configuro columnas, filtro y freeze pane
+      worksheet.columns = [
+        { header: 'Producto',      width: 40 },
+        { header: 'IdProducto',    width: 15 },
+        { header: 'Posición',      width: 30 },
+        { header: 'Unidades',      width: 15 },
+         { header: 'Barcode',       width: 30 },    
+         { header: 'CodeEmpresa',   width: 25 }
+      ];
+      worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
+      worksheet.autoFilter = 'A1:D1';
 
-            // No pongo totales porque cada posición es una fila independiente
-        }
-    } else {
-        // Para empresas SIN posiciones, hago un listado tradicional
-        worksheet.views = [{ state: 'frozen', ySplit: 1 }];
-        worksheet.autoFilter = 'A1:E1';
-        worksheet.columns = [
-            { header: 'Producto', width: 100 },
-            { header: 'Barcode', width: 40 },
-            { header: 'CodeEmpresa', width: 40 },
-            { header: 'Unidades', width: 25 },
-            { header: 'Id', width: 25 }
+      // 2c) Relleno filas con los datos
+      let rowIndex = 2;
+      detalle.forEach(item => {
+        worksheet.getRow(rowIndex++).values = [
+          item.NombreProducto,
+          item.IdProducto,
+          item.NombrePosicion,
+          item.Unidades,
+          item.barrCode,       
+        item.codeEmpresa 
         ];
-        worksheet.getRow(1).font = { bold: true, size: 14 };
-        renglon = 1;
-        this.listaArticulosCompleta.forEach(unArticulo => {
-            renglon++;
-            worksheet.getRow(renglon).values = [
-                unArticulo.Nombre,
-                unArticulo.Barcode,
-                unArticulo.CodeEmpresa,
-                unArticulo.Stock,
-                unArticulo.Id
-            ];
-        });
-        renglon++;
-        const celdaSuma = worksheet.getCell(`D${renglon}`);
-        celdaSuma.value = { formula: `SUM(D2:D${renglon - 1})` };
-        celdaSuma.font = { bold: true };
+      });
+
+      // 2d) Agrego fila de totales al final
+      const totRow = rowIndex;
+      worksheet.getCell(`C${totRow}`).value = 'TOTAL';
+      worksheet.getCell(`D${totRow}`).value = { formula: `SUM(D2:D${totRow-1})` };
+      worksheet.getCell(`D${totRow}`).font = { bold: true };
     }
 
-    // Formateo las filas (header y resto)
-    worksheet.eachRow((row, rowNumber) => {
-        row.eachCell((cell, colNumber) => {
-            if (rowNumber == 1) {
-                cell.font = { size: 16, bold: true };
-            } else {
-                cell.font = { size: 14 };
-            }
-        });
+    // 3) Caso B: empresa con posiciones Y lotes → tu lógica original para lotes
+    else if (this.empresaElegida.StockPosicionado && this.tieneLOTE) {
+      worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
+      worksheet.autoFilter = 'A1:F1';
+      worksheet.columns = [
+        { header: 'Producto',      width: 100 },
+        { header: 'BoxNumber',     width: 40 },
+        { header: 'SerialNumber',  width: 40 },
+        { header: 'ProductNumber', width: 40 },
+        { header: 'Posición',      width: 30 },
+        { header: 'Unidades',      width: 25 }
+      ];
+      let rowIndex = 1;
+      for (const art of this.listaArticulosCompleta) {
+        const d = JSON.parse(art.LoteDetalle)[0];
+        rowIndex++;
+        worksheet.getRow(rowIndex).values = [
+          d.productoNombre,
+          d.lote,
+          d.barcode,
+          d.codeEmpresa,
+          d.posicion,
+          d.unidades
+        ];
+      }
+    }
+
+    // 4) Caso C: empresas sin posiciones → tu lógica original para sin posiciones
+    else {
+      worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
+      worksheet.autoFilter = 'A1:E1';
+      worksheet.columns = [
+        { header: 'Producto',   width: 100 },
+        { header: 'Barcode',    width: 40 },
+        { header: 'CodeEmpresa',width: 40 },
+        { header: 'Unidades',   width: 25 },
+        { header: 'Id',         width: 25 }
+      ];
+      let rowIndex = 1;
+      this.listaArticulosCompleta.forEach(item => {
+        rowIndex++;
+        worksheet.getRow(rowIndex).values = [
+          item.Nombre,
+          item.Barcode,
+          item.CodeEmpresa,
+          item.Stock,
+          item.Id
+        ];
+      });
+      rowIndex++;
+      const sumCell = worksheet.getCell(`D${rowIndex}`);
+      sumCell.value = { formula: `SUM(D2:D${rowIndex-1})` };
+      sumCell.font  = { bold: true };
+    }
+
+    // 5) Formateo general: encabezados grandes, celdas normales
+    worksheet.eachRow((row, idx) => {
+      row.eachCell(cell => {
+        cell.font = idx === 1 ? { size: 16, bold: true } : { size: 14 };
+      });
     });
 
-    // Exporto el archivo
-    const buf = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buf]), `${this.empresaElegida.Nombre}_Stock.xlsx`);
-},
+    // 6) Genero el buffer y disparo la descarga
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_Stock.xlsx`);
+  },
+
+ 
+
 
         repararTodosLosArticulos() {
             let cantidadAReparar=0

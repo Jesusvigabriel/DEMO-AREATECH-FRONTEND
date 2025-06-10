@@ -619,6 +619,22 @@ const productosV3= {
             }
         )            
     },
+    async registraReposicionamientoExcelCantidad(idEmpresa,idProducto, posicionOrigen, posicionDestino, cantidadAPosicionar,barcodeProducto, usuario) {
+                return new Promise (
+                    function (resolve, reject) {
+                        const Ruta=`/producto/registraReposicionamientoExcelCantidad/${idEmpresa}/${idProducto}/${posicionOrigen}/${posicionDestino}/${cantidadAPosicionar}/${barcodeProducto}/${usuario}`
+                        API.acceder(
+                            {
+                                Ruta,
+                                Metodo: "POST",
+                                Cartel: "Registrando reposicionamiento..."
+                            }
+                        )
+                        .then(data => {resolve(data)})
+                        .catch(puteada => {reject(puteada)})
+                    }
+                )            
+            },
 
     async imprimirSticker(item) {
         const imagen=new Image()

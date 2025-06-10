@@ -32,7 +32,7 @@
                 </v-select>
             </v-col>
         </v-row>
-        <v-row justify="center" v-if="manejaStockUnitario || tieneLOTE">
+        <v-row v-if="idEmpresa != null">
             <v-col cols="6">
                 <v-file-input 
                 label="Planilla a procesar" 
@@ -41,6 +41,9 @@
                 filled
                 prepend-icon="mdi-microsoft-excel"
                 >Importar planilla excel</v-file-input>
+            </v-col>
+            <v-col class="col-sm-12 col-md-6">
+                <v-btn color="blue v-btn--block" dark @click="descargarExcelEjemplo()">Descargar excel de ejemplo<v-icon>mdi-microsoft-excel</v-icon></v-btn>
             </v-col>
         </v-row>
         <v-row justify="center" >
@@ -155,6 +158,8 @@ import posiciones from "@/store/posiciones"
 import store from "@/store"
 import router from '../router'
 import {xlsx, read, utils} from 'xlsx'
+import excel from "exceljs"
+import {saveAs} from "file-saver"
 import posicionesV3 from "@/store/posicionesV3"
 
 export default {
@@ -182,6 +187,7 @@ export default {
             listaCodigosLeidos: [],
             listaCodigosFallidos: [],
             userName: null,
+            tipoCodigo:null,
         }
     },
 
@@ -503,17 +509,34 @@ export default {
         },
 
         fileOnChange(archivoLeido) {
-            if (archivoLeido!=null) {
-                const lector=new FileReader()
-                lector.onload = ev => {
-                const datosCrudos = ev.target.result;
-                const planillaCruda = read(datosCrudos, {type: "binary", cellDates: true, cellNF: true, cellText:true})
-                const nombreHoja1=planillaCruda.SheetNames[0]
-                const datosPlanilla=utils.sheet_to_json(planillaCruda.Sheets[nombreHoja1])
-                this.verificarColumnasExcel(datosPlanilla)
-                }
+            //"manejaStockUnitario || tieneLOTE"
+            if(this.manejaStockUnitario || this.tieneLOTE){
+            
+                if (archivoLeido!=null) {
+                    const lector=new FileReader()
+                    lector.onload = ev => {
+                    const datosCrudos = ev.target.result;
+                    const planillaCruda = read(datosCrudos, {type: "binary", cellDates: true, cellNF: true, cellText:true})
+                    const nombreHoja1=planillaCruda.SheetNames[0]
+                    const datosPlanilla=utils.sheet_to_json(planillaCruda.Sheets[nombreHoja1])
+                    this.verificarColumnasExcel(datosPlanilla)
+                    }
 
-                lector.readAsBinaryString(archivoLeido)            
+                    lector.readAsBinaryString(archivoLeido)            
+                }
+            }else{
+                if (archivoLeido!=null) {
+                    const lector=new FileReader()
+                    lector.onload = ev => {
+                    const datosCrudos = ev.target.result;
+                    const planillaCruda = read(datosCrudos, {type: "binary", cellDates: true, cellNF: true, cellText:true})
+                    const nombreHoja1=planillaCruda.SheetNames[0]
+                    const datosPlanilla=utils.sheet_to_json(planillaCruda.Sheets[nombreHoja1])
+                    this.verificarColumnasExcelMasivo(datosPlanilla)
+                    }
+
+                    lector.readAsBinaryString(archivoLeido)            
+                }
             }
         },
 
@@ -546,6 +569,104 @@ export default {
             }
         },
 
+        verificarColumnasExcelMasivo(planilla) {
+
+            let columnasObligatorias= (['Posicion Origen', 'Barcode Producto', 'Posicion Destino', 'Cantidad'])
+            let revision = planilla[0]
+            if(!Object.keys(revision).includes('Code Empresa')){
+                //si no incluye code empresa en los campos usa estas
+                columnasObligatorias= (['Posicion Origen', 'Barcode Producto', 'Posicion Destino', 'Cantidad'])
+                this.tipoCodigo = 'Barcode Producto'
+            }else{
+                //si incluye code empresa usa estas
+                columnasObligatorias = (['Posicion Origen', 'Code Empresa', 'Posicion Destino', 'Cantidad'])
+                this.tipoCodigo= 'Code Empresa'
+            }
+            let columnasFaltantes=[]
+            let filaActual=1
+            let tituloMostrado=false
+            let mensaje=''
+            planilla.forEach(unaFila => {
+                filaActual++
+                columnasObligatorias.forEach(unaColumnaObligatoria => {
+                if (!Object.keys(unaFila).includes(unaColumnaObligatoria)) {
+                    if (!columnasFaltantes.includes(unaColumnaObligatoria)) {
+                        if (!tituloMostrado) {
+                            mensaje = "Faltan las siguientes columnas:"
+                            tituloMostrado=true
+                        }
+                        mensaje += ";Fila: "+filaActual+" - Columna: "+unaColumnaObligatoria
+                    }
+                }
+                })
+            })
+            if (tituloMostrado) {
+                store.dispatch("alertDialog/mostrar", {titulo: "No se puede procesar", mensaje})
+                //this.mostrarMensaje("No se puede procesar", mensaje)
+            } else {
+                this.procesarPlanilla(planilla)
+            }
+        },
+
+        async  descargarExcelEjemplo(){
+            const workbook=new excel.Workbook()
+            const worksheet=workbook.addWorksheet("Pedidos")
+            let cabeceras = []
+            let renglon=1
+            ['']
+            worksheet.views = [{state: 'frozen', ySplit: 1}]
+            console.log(this.tienePART)
+            if(this.tienePART){
+                cabeceras=[
+                {header: 'Fecha', width: 11}, 
+                {header: 'Comprobante', width: 20}, 
+                {header: 'Cliente', width: 30}, 
+                {header: 'Partida', width: 20}, 
+                {header: 'Barcode Producto', width: 20}, 
+                {header: 'Cantidad', width: 15}, 
+                {header: 'Importe', width: 30}, 
+                {header: 'Depósito origen', width: 30}, 
+                {header: 'Empresa', width: 10}, 
+                {header: 'Codigo Postal', width: 15}, 
+                {header: 'Domicilio', width: 30}, 
+                {header: 'Nota del cliente', width: 20}, 
+                {header: 'Método de envío', width: 20}, 
+                {header: 'Orden de retiro OCA', width: 20}, 
+                {header: 'Observaciones', width: 30}, 
+                {header: 'Email Destinatario', width: 20}, 
+                {header: 'PreOrden', width: 10}, 
+            ]
+            }else{
+                cabeceras=[
+                    {header: 'Posicion Origen', width: 25}, 
+                    {header: 'Barcode Producto', width: 25}, 
+                    {header: 'Posicion Destino', width: 30}, 
+                    {header: 'Cantidad', width: 20}, 
+                ]
+            }
+
+            worksheet.columns=[...cabeceras]
+            renglon++
+                                
+
+            worksheet.eachRow ( (row, rowNumber) => {
+            row.eachCell ( (cell, colNumber) => {
+                if (rowNumber==1) {
+                    cell.font={size: 12, bold: true}
+                } else {
+                    if (rowNumber==renglon) {
+                        cell.font={size: 12, bold: false}
+                    } else {
+                        cell.font={size: 10}
+                    }
+                }
+                })
+            } )
+
+            const buf=await workbook.xlsx.writeBuffer()
+            saveAs(new Blob([buf]), `Creacion_Ordenes_gestion.xlsx`)
+        },
+
         async procesarPlanilla(planilla) {
             
             for (const unaFila of planilla) {
@@ -573,7 +694,7 @@ export default {
                         console.error(puteada)
                         this.listaCodigosFallidos.unshift({Lote: unaFila['BoxNumber'], Correcto: false, IdProducto: "ERROR", Unidades: "ERROR", Posicion: puteada})
                     })
-                } else {
+                } else if(this.manejaStockUnitario){
                     try {
                         const posicion=await posiciones.getByNombre(unaFila.Posicion)
                         try {
@@ -593,10 +714,36 @@ export default {
                         console.log("Error en posicion", error)
                         this.listaCodigosFallidos.unshift({Barcode: unaFila['Barcode Producto'], Correcto: false, Descripcion: error})
                     }
-                }
-                
-                    
+                }else{
+                    try {
+                        let articulo = ''
+                        try {
+                            
+                            if(this.tipoCodigo == "Code Empresa"){
+                                //metodo que busca usando el code empresa
+                                articulo = await productos.getByCodeEmpresaAndEmpresa(unaFila['Code Empresa'], this.idEmpresa)
+                            }else{
+                                //metodo que busca usando el barcode
+                                articulo=await productos.getByBarcodeAndEmpresa(unaFila['Barcode Producto'], this.idEmpresa)
+                            }
 
+                            try {
+                                 const response=await productos.registraReposicionamientoExcelCantidad(this.idEmpresa,articulo.Id, unaFila['Posicion Origen'], unaFila['Posicion Destino'], unaFila.Cantidad,unaFila[this.tipoCodigo],this.userName)
+                                 this.listaCodigosLeidos.unshift({Barcode: unaFila[this.tipoCodigo], Correcto: true, Descripcion: articulo.Nombre})
+    
+                            } catch (error) {
+                                console.log(error)
+                                this.listaCodigosFallidos.unshift({Barcode: unaFila[this.tipoCodigo], Correcto: false, Descripcion: error})
+                            }
+                        } catch (error) {
+                            console.log("Error en articulo", error)
+                            this.listaCodigosFallidos.unshift({Barcode: unaFila[this.tipoCodigo], Correcto: false, Descripcion: error})
+                        }
+                    } catch (error) {
+                        console.log("Error en posicion", error)
+                        this.listaCodigosFallidos.unshift({Barcode: unaFila[this.tipoCodigo], Correcto: false, Descripcion: error})
+                    }
+                }
             }
         },
     },

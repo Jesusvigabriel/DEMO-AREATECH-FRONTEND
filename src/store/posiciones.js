@@ -135,6 +135,17 @@ const posiciones= {
             }
         )            
     },
+    async getAllByEmpresaConProductos(idEmpresa) {
+        return new Promise((resolve, reject) => {
+            API.acceder({
+                Ruta: `/posiciones/getAllByEmpresaConProductos/${idEmpresa}`,
+                Cartel: "Obteniendo posiciones y productos..."
+            })
+            .then(data => resolve(data))
+            .catch(err => reject(err))
+        })
+    },
+        
     async getAll() {
         return new Promise (
             function (resolve, reject) {

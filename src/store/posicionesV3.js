@@ -21,6 +21,17 @@ const posicionesV3= {
         )            
     },
 
+    async buscarPorNombre(idEmpresa, nombre) {
+        return new Promise((resolve, reject) => {
+            API.acceder({
+                Ruta: `/posiciones/buscar?empresa=${idEmpresa}&nombre=${encodeURIComponent(nombre)}`,
+                Cartel: "Buscando posiciones..."
+            })
+            .then(data => resolve(data))
+            .catch(err => reject(err))
+        })
+    },
+
     async getPosicionByIdAndEmpresa(id, idEmpresa) {
         return new Promise (
             function (resolve, reject) {
@@ -50,6 +61,21 @@ const posicionesV3= {
             }
         )            
     },
+    async getAllByEmpresaConProductos(idEmpresa) {
+        return new Promise((resolve, reject) => {
+            API.acceder({
+                Ruta: `/posiciones/getAllByEmpresaConProductos/${idEmpresa}`,
+                Cartel: "Obteniendo posiciones y productos..."
+            })
+            .then(data => resolve(data))
+            .catch(err => reject(err))
+        })
+    },
+    async getProductosYPosicionesByOrden(idOrden) {
+        const resp = await API.get(`/ordenes/productos-posiciones/${idOrden}`);
+        return resp.data.datos; // O adaptá si tu backend devuelve distinto
+    },
+    
 
     async getPosicionesByIdAndEmpresaAndLote(id, idEmpresa, lote) {
         return new Promise (
@@ -89,6 +115,41 @@ const posicionesV3= {
                 )
                 .then(data => {resolve(data)})
                 .catch(puteada => {reject(puteada)})
+            }
+        )            
+    },
+    async getAllByEmpresaConDetalle(idEmpresa) {
+        return new Promise((resolve, reject) => {
+          API.acceder({
+            Ruta: `/posiciones/getAllByEmpresaConDetalle/${idEmpresa}`,
+            Cartel: "Obteniendo detalle completo de posiciones..."
+          })
+          .then(data => resolve(data))
+          .catch(err => reject(err))
+        })
+      },
+
+      async getAllByEmpresa(idEmpresa) {
+        return new Promise((resolve, reject) => {
+            API.acceder({
+                Ruta: `/posiciones/getAll/`,  // Ruta corregida
+                Cartel: "Obteniendo posiciones..."
+            })
+            .then(data => resolve(data))
+            .catch(err => reject(err))
+        })
+    },
+
+    async getContent(id) {
+        return new Promise (
+            function (resolve, reject) {
+                API.acceder({Ruta: '/Posiciones/getContentById/'+id, Cartel: "Obteniendo contenido de la posición"})
+                .then(data => {
+                    resolve(data)
+                })
+                .catch(puteada => { 
+                    reject(puteada) 
+                })
             }
         )            
     },

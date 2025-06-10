@@ -13,6 +13,39 @@ const ordenesV3= {
       }
     )            
   },
+  async getProductosYPosicionesByOrden(idOrden) {
+    return new Promise((resolve, reject) => {
+        API.acceder({
+            Metodo: "GET",
+            Ruta: `/ordenes/productos-posiciones/${idOrden}`,
+            Cartel: "Obteniendo productos y posiciones..."
+        })
+        .then(response => {
+            console.log("DEBUG - respuesta productos-posiciones:", response);
+            // Si la respuesta es un array, OK (soporta endpoint legacy)
+            if (Array.isArray(response)) {
+                resolve(response);
+            }
+            // Si la respuesta viene como objeto estándar con status/data
+            else if (response && response.status === "OK") {
+                resolve(response.data);
+            }
+            // Si viene mal armado
+            else {
+                const mensaje = response && response.mensaje
+                    ? response.mensaje
+                    : "Respuesta inesperada del endpoint productos-posiciones";
+                reject(new Error(mensaje));
+            }
+        })
+        .catch(error => {
+            reject(error);
+        });
+    });
+},
+
+  
+  
   async getLocalidadByCodigoPostal(codigoPostal){
     return new Promise (
       function (resolve, reject) {
@@ -433,6 +466,30 @@ const ordenesV3= {
     //pdf.save("ordenes.pdf")
     return pdf
   },
+
+  async getPendientesPorPosicion(idPosicion) {
+    return new Promise(
+      function (resolve, reject) {
+        API.acceder({
+          Ruta: `/ordenes/getPendientesPorPosicion/${idPosicion}`,
+          Cartel: "Buscando órdenes pendientes en posición..."
+        })
+        .then(response => { resolve(response); })
+        .catch(puteada => { reject(puteada); })
+      }
+    )
+  },
+  async getAllByEmpresa(idEmpresa) {
+    return new Promise((resolve, reject) => {
+        API.acceder({
+            Ruta: `/productos/getAllByEmpresa/${idEmpresa}`,  // Ruta corregida
+            Cartel: "Obteniendo posiciones..."
+        })
+        .then(data => resolve(data))
+        .catch(err => reject(err))
+    })
+},
+
 
 
   async imprimirStickersBulto(orden, bultos) {
