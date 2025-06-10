@@ -138,7 +138,8 @@
                   :page.sync="pageOrdenes"
                   :page-count="pageCountOrdenes"
                   :pagination-info="paginationInfoOrdenes"
-                  :status-chip-class-fn="getStatusChipClassTextual"
+                  :status-chip-color-fn="getStatusChipColor"
+                  :status-chip-text-color-fn="getStatusChipTextColor"
                   @open-modal="openModal"
                   @ver-guia="verGuiaAsociada"
                 />
@@ -160,7 +161,8 @@
                   :page.sync="pageGuias"
                   :page-count="pageCountGuias"
                   :pagination-info="paginationInfoGuias"
-                  :status-chip-class-fn="getStatusChipClassTextual"
+                  :status-chip-color-fn="getStatusChipColor"
+                  :status-chip-text-color-fn="getStatusChipTextColor"
                   @open-modal="openModal"
                 />
               </v-card-text>
@@ -183,7 +185,8 @@
       :modal-type="modalType"
       :modal-data="modalData"
       :timeline-steps="timelineStepsComputed"
-      :status-chip-class-fn="getStatusChipClassTextual"
+      :status-chip-color-fn="getStatusChipColor"
+      :status-chip-text-color-fn="getStatusChipTextColor"
       @close="closeModal"
     />
   </v-container>
@@ -219,7 +222,7 @@
       * **Columnas:** `N° Orden/Guía`, `Empresa`, `Cliente/Destino`, `Fecha Creación`, `Estado Actual`, `Acciones`.
       * **Buscador:** Permite buscar dentro de la tabla actual.
       * **Paginación:** Controlada manualmente para ambas tablas.
-      * **Chips de Estado:** Los estados se muestran con un `v-chip` con colores dinámicos (definidos en `getStatusChipClassTextual`).
+      * **Chips de Estado:** Los estados se muestran con un `v-chip` cuyo color se obtiene con `getStatusChipColor`.
       * **Botón de Acción (`mdi-eye-outline`):** Abre un modal de detalle para el elemento seleccionado.
       * **NUEVA FUNCIONALIDAD:** Para órdenes en estado "A distribución" y con guía asociada, se muestra un chip "Seguimiento aquí" que redirige a la pestaña de guías y abre el modal de la guía directamente.
 
@@ -1294,47 +1297,65 @@ export default {
     },
 
     /**
-     * `getStatusChipClassTextual`:
-     * Devuelve las clases CSS de Vuetify para aplicar un color específico
-     * a los `v-chip` de estado, tanto para órdenes como para guías.
+     * `getStatusChipColor`:
+     * Devuelve el color de fondo de Vuetify para un `v-chip`
+     * de estado tanto para órdenes como para guías.
      * @param {string} estado - El estado textual del elemento (orden o guía).
-     * @returns {string} Clases CSS de Vuetify.
+     * @returns {string} Color Vuetify para el `v-chip`.
      */
-    getStatusChipClassTextual(estado) {
-      // Clases para estados de Órdenes.
+    getStatusChipColor(estado) {
+      // Colores para estados de Órdenes.
       if (['Pendiente', 'Preparado', 'A distribución', 'Anulado', 'Retira Cliente'].includes(estado)) {
         switch (estado) {
-          case 'Pendiente': return 'grey lighten-4 amber--text text--darken-3'; // Amarillo para advertencia.
-          case 'Preparado': return 'grey lighten-4 blue--text text--darken-2'; // Azul para información.
-          case 'A distribución': return 'grey lighten-4 green--text text--darken-2'; // Verde para éxito/distribución.
-          case 'Anulado': return 'grey lighten-4 red--text text--darken-2'; // Rojo para error/anulado.
-          case 'Retira Cliente': return 'grey lighten-4 deep-purple--text text--darken-2'; // Morado para retiro.
-          default: return 'grey lighten-4 grey--text text--darken-1'; // Gris por defecto.
+          case 'Pendiente': return 'amber lighten-4';
+          case 'Preparado': return 'blue lighten-4';
+          case 'A distribución': return 'green lighten-4';
+          case 'Anulado': return 'red lighten-4';
+          case 'Retira Cliente': return 'deep-purple lighten-4';
+          default: return 'grey lighten-4';
         }
       }
-      // Clases para estados de Guías (basadas en `VistaDeTracking.vue`).
-      else if (['Pedido en preparación', 'Pedido preparado', 'En CD', 'En Planchada', 'Ruteado', 'DESPACHADO', 'En distribución', 'Entregado', 'No entregado', 'Entrega parcial', 'Pedido retirado', 'ANULADO'].includes(estado)) {
-          switch (estado) {
-              case 'Entregado':
-              case 'Pedido preparado':
-              case 'Pedido en preparación':
-              case 'En CD':
-              case 'En Planchada':
-              case 'Ruteado':
-              case 'DESPACHADO':
-              case 'En distribución':
-              case 'Pedido retirado':
-                  return 'grey lighten-4 green--text text--darken-2'; // Verde para estados de progreso positivo.
-              case 'No entregado':
-              case 'ANULADO': // Añadido para guías anuladas
-                  return 'grey lighten-4 red--text text--darken-2'; // Rojo para no entregado o anulado.
-              case 'Entrega parcial':
-                  return 'grey lighten-4 orange--text text--darken-2'; // Naranja/Amarillo para parcial.
-              default:
-                  return 'grey lighten-4 grey--text text--darken-1'; // Gris por defecto.
-          }
+      // Colores para estados de Guías (basadas en `VistaDeTracking.vue`).
+      if (['Pedido en preparación', 'Pedido preparado', 'En CD', 'En Planchada', 'Ruteado', 'DESPACHADO', 'En distribución', 'Entregado', 'Pedido retirado'].includes(estado)) {
+        return 'green lighten-4';
       }
-      return 'grey lighten-4 grey--text text--darken-1'; // Color por defecto si el estado no coincide.
+      if (['No entregado', 'ANULADO'].includes(estado)) {
+        return 'red lighten-4';
+      }
+      if (estado === 'Entrega parcial') {
+        return 'orange lighten-4';
+      }
+      return 'grey lighten-4';
+    },
+
+    /**
+     * `getStatusChipTextColor`:
+     * Define el color del texto para el chip de estado.
+     * Se utiliza junto con `getStatusChipColor`.
+     * @param {string} estado
+     * @returns {string} Color de texto de Vuetify.
+     */
+    getStatusChipTextColor(estado) {
+      if (['Pendiente', 'Preparado', 'A distribución', 'Anulado', 'Retira Cliente'].includes(estado)) {
+        switch (estado) {
+          case 'Pendiente': return 'amber darken-3';
+          case 'Preparado': return 'blue darken-2';
+          case 'A distribución': return 'green darken-2';
+          case 'Anulado': return 'red darken-2';
+          case 'Retira Cliente': return 'deep-purple darken-2';
+          default: return 'grey darken-1';
+        }
+      }
+      if (['Pedido en preparación', 'Pedido preparado', 'En CD', 'En Planchada', 'Ruteado', 'DESPACHADO', 'En distribución', 'Entregado', 'Pedido retirado'].includes(estado)) {
+        return 'green darken-2';
+      }
+      if (['No entregado', 'ANULADO'].includes(estado)) {
+        return 'red darken-2';
+      }
+      if (estado === 'Entrega parcial') {
+        return 'orange darken-2';
+      }
+      return 'grey darken-1';
     },
 
     /**

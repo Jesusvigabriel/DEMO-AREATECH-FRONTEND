@@ -126,7 +126,11 @@
                       Estado Actual:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      <v-chip :class="statusChipClassFn(modalData.NombreEstado || modalData.Estado)" small>
+                      <v-chip
+                        :color="statusChipColorFn(modalData.NombreEstado || modalData.Estado)"
+                        :text-color="statusChipTextColorFn(modalData.NombreEstado || modalData.Estado)"
+                        small
+                      >
                         {{ modalData.NombreEstado || modalData.Estado }}
                       </v-chip>
                     </v-list-item-subtitle>
@@ -202,7 +206,8 @@ export default {
     modalType: String,
     modalData: Object,
     timelineSteps: Array,
-    statusChipClassFn: Function
+    statusChipColorFn: Function,
+    statusChipTextColorFn: Function
   }
 }
 </script>
