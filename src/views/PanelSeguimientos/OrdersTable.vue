@@ -94,7 +94,7 @@
             <v-icon color="primary">mdi-eye-outline</v-icon>
           </v-btn>
           <v-chip
-            v-if="item.Estado === 'A distribuciòn' && item.IdGuia > 0"
+            v-if="item.Estado === 'A distribución' && item.IdGuia > 0"
             small
             class="ml-2"
             color="green lighten-4"

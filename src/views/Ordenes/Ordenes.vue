@@ -209,7 +209,7 @@ export default {
                 break;
             
                 case 3:
-                orden.Estado = "A distribuciòn"
+                orden.Estado = "A distribución"
                 break;
 
                 case 4:
