@@ -738,7 +738,7 @@ export default {
           switch (o.Estado) {
             case 1: o.NombreEstado = 'Pendiente'; break;
             case 2: o.NombreEstado = 'Preparado'; break;
-            case 3: o.NombreEstado = 'A distribuciòn'; break; // Estado textual que indica que tiene guía
+            case 3: o.NombreEstado = 'A distribución'; break; // Estado textual que indica que tiene guía
             case 4: o.NombreEstado = 'Anulado'; break;
             case 5: o.NombreEstado = 'Retira Cliente'; break;
             default: o.NombreEstado = `Desconocido (${o.Estado})`;
@@ -900,7 +900,7 @@ export default {
             switch (dataToModal.Estado) {
               case 1: dataToModal.NombreEstado = 'Pendiente'; break;
               case 2: dataToModal.NombreEstado = 'Preparado'; break;
-              case 3: dataToModal.NombreEstado = 'A distribuciòn'; break;
+              case 3: dataToModal.NombreEstado = 'A distribución'; break;
               case 4: dataToModal.NombreEstado = 'Anulado'; break;
               case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
               default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
@@ -1053,7 +1053,7 @@ export default {
         // Determina si la orden ha alcanzado el estado "Preparado" o posterior para incluir los siguientes pasos.
         const reachedPreparationOrBeyond = [
           'Preparado',
-          'A distribuciòn',
+          'A distribución',
           'Retira Cliente',
         ].includes(currentStatusText);
 
@@ -1080,7 +1080,7 @@ export default {
               fecha: fechaDistribucion,
               descripcion: 'La orden ha sido despachada.',
               statusClass:
-                currentStatusText === 'A distribuciòn'
+                currentStatusText === 'A distribución'
                   ? 'current'
                   : (orden.Fecha ? 'completed' : 'pending'),
             });
@@ -1302,11 +1302,11 @@ export default {
      */
     getStatusChipClassTextual(estado) {
       // Clases para estados de Órdenes.
-      if (['Pendiente', 'Preparado', 'A distribuciòn', 'Anulado', 'Retira Cliente'].includes(estado)) {
+      if (['Pendiente', 'Preparado', 'A distribución', 'Anulado', 'Retira Cliente'].includes(estado)) {
         switch (estado) {
           case 'Pendiente': return 'grey lighten-4 amber--text text--darken-3'; // Amarillo para advertencia.
           case 'Preparado': return 'grey lighten-4 blue--text text--darken-2'; // Azul para información.
-          case 'A distribuciòn': return 'grey lighten-4 green--text text--darken-2'; // Verde para éxito/distribución.
+          case 'A distribución': return 'grey lighten-4 green--text text--darken-2'; // Verde para éxito/distribución.
           case 'Anulado': return 'grey lighten-4 red--text text--darken-2'; // Rojo para error/anulado.
           case 'Retira Cliente': return 'grey lighten-4 deep-purple--text text--darken-2'; // Morado para retiro.
           default: return 'grey lighten-4 grey--text text--darken-1'; // Gris por defecto.
