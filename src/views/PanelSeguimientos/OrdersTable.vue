@@ -71,10 +71,10 @@
           <span class="body-2 font-weight-bold">{{ item.numero }}</span>
         </template>
         <template v-slot:item.nombreEmpresa="{ item }">
-          <span class="body-2">{{ item.nombre || 'N/A' }}</span>
+          <span class="body-2">{{ item.nombre }}</span>
         </template>
         <template v-slot:item.nombreCliente="{ item }">
-          <span class="body-2">{{ item.nombreDestino || 'N/A' }}</span>
+          <span class="body-2">{{ item.nombreDestino }}</span>
         </template>
         <template v-slot:item.fechaCreacion="{ item }">
           <span class="body-2">{{ item.Creada }}</span>

@@ -71,13 +71,13 @@
           <span class="body-2 font-weight-bold">{{ item.Comprobante }}</span>
         </template>
         <template v-slot:item.NombreCliente="{ item }">
-          <span class="body-2">{{ item.NombreCliente || 'N/A' }}</span>
+          <span class="body-2">{{ item.NombreCliente }}</span>
         </template>
         <template v-slot:item.NombreDestino="{ item }">
-          <span class="body-2">{{ item.NombreDestino || 'N/A' }}</span>
+          <span class="body-2">{{ item.NombreDestino }}</span>
         </template>
         <template v-slot:item.Remitos="{ item }">
-          <span class="body-2">{{ item.Remitos || 'N/A' }}</span>
+          <span class="body-2">{{ item.Remitos }}</span>
         </template>
         <template v-slot:item.FechaOriginal="{ item }">
           <span class="body-2">{{ item.FechaOriginal }}</span>

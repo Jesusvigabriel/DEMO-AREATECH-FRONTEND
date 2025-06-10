@@ -48,7 +48,7 @@
                       Empresa:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      {{ modalData.Empresa?.RazonSocial || modalData.NombreCliente || 'N/A' }}
+                      {{ modalData.Empresa?.RazonSocial || modalData.NombreCliente }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -59,7 +59,7 @@
                       Cliente/Destino:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      {{ modalData.Destino?.Nombre || modalData.NombreDestino || 'N/A' }}
+                      {{ modalData.Destino?.Nombre || modalData.NombreDestino }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -70,7 +70,7 @@
                       Email Cliente:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      {{ modalData.EmailDestinatario || 'N/A' }}
+                      {{ modalData.EmailDestinatario }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -80,7 +80,7 @@
                       Remito:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      {{ modalData.Remitos || 'N/A' }}
+                      {{ modalData.Remitos }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -91,7 +91,7 @@
                       Fecha Creación:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      {{ modalType === 'orden' ? (modalData.FechaCreacion ? new Date(modalData.FechaCreacion).toLocaleDateString() : 'N/A') : modalData.FechaOriginal || 'N/A' }}
+                      {{ modalType === 'orden' ? (modalData.FechaCreacion ? new Date(modalData.FechaCreacion).toLocaleDateString() : '') : modalData.FechaOriginal }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -103,7 +103,7 @@
                     </v-list-item-title>
                     <v-list-item-subtitle>
                       <span v-if="modalData.FechaPreparado">{{ new Date(modalData.FechaPreparado).toLocaleDateString() }}</span>
-                      <span v-else>N/A</span>
+                      <span v-else></span>
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -115,7 +115,7 @@
                     </v-list-item-title>
                     <v-list-item-subtitle>
                       <span v-if="modalData.Fecha">{{ new Date(modalData.Fecha).toLocaleDateString() }}</span>
-                      <span v-else>N/A</span>
+                      <span v-else></span>
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>

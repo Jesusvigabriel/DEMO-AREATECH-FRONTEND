@@ -729,10 +729,10 @@ export default {
 
           o.Modificada = o.Modificada
             ? new Date(o.Modificada).toLocaleDateString()
-            : 'N/A';
+            : '';
           o.Preparado = o.Preparado
             ? new Date(o.Preparado).toLocaleDateString()
-            : 'N/A';
+            : '';
 
           // Traduce el estado numérico de la orden a un estado textual legible.
           switch (o.Estado) {
@@ -749,8 +749,8 @@ export default {
           o.tipo = o.preOrden === true || o.preOrden === 1 ? 'Pre-Orden' : 'Orden';
           o.preOrdenDisplay = o.tipo;
 
-          o.nombre = o.nombre || 'N/A';
-          o.nombreDestino = o.nombreDestino || 'N/A';
+          o.nombre = o.nombre || '';
+          o.nombreDestino = o.nombreDestino || '';
           // Aseguramos que IdGuia esté presente, aunque puede ser -1 si no hay guía
           o.IdGuia = o.IdGuia || -1;
         });
@@ -796,10 +796,10 @@ export default {
         // Formatea los datos de cada guía para su visualización en la tabla.
         todas.forEach((g) => {
           g.FechaOriginalDate = new Date(g.FechaOriginal); // Crea un objeto Date para facilitar filtros y ordenamiento.
-          g.FechaOriginal = g.FechaOriginal ? new Date(g.FechaOriginal).toLocaleDateString() : 'N/A'; // Formatea la fecha original.
-          g.NombreCliente = g.NombreCliente || 'N/A';
-          g.NombreDestino = g.NombreDestino || 'N/A';
-          g.Remitos = g.Remitos || 'N/A';
+          g.FechaOriginal = g.FechaOriginal ? new Date(g.FechaOriginal).toLocaleDateString() : '';
+          g.NombreCliente = g.NombreCliente || '';
+          g.NombreDestino = g.NombreDestino || '';
+          g.Remitos = g.Remitos || '';
           g.Estado = g.Estado || 'Desconocido'; // Asegura que el estado exista y sea textual.
         });
 
@@ -844,7 +844,7 @@ export default {
               // Si se obtuvo, la agrega a la lista de guías (opcional, para futuras interacciones)
               // y abre el modal.
               // Formatea la fecha de la guía obtenida directamente para que sea consistente con la lista.
-              retrievedGuia.FechaOriginal = retrievedGuia.FechaOriginal ? new Date(retrievedGuia.FechaOriginal).toLocaleDateString() : 'N/A';
+              retrievedGuia.FechaOriginal = retrievedGuia.FechaOriginal ? new Date(retrievedGuia.FechaOriginal).toLocaleDateString() : '';
               retrievedGuia.Estado = retrievedGuia.Estado || 'Desconocido';
               this.todasLasGuias.push(retrievedGuia); // Añade la guía a la lista para que se muestre en la tabla si corresponde
               this.tab = 'tab-guias';
@@ -893,9 +893,9 @@ export default {
             // Obtiene detalles de productos y formatea fechas para el modal de orden.
             const productosDetalle = await this._obtenerDetalleProductos(dataToModal);
             dataToModal.productosDetalle = productosDetalle;
-            dataToModal.Creada = dataToModal.FechaCreacion ? new Date(dataToModal.FechaCreacion).toLocaleDateString() : 'N/A';
-            dataToModal.Preparado = dataToModal.FechaPreparado ? new Date(dataToModal.FechaPreparado).toLocaleDateString() : 'N/A';
-            dataToModal.FechaDistribucion = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString() : 'N/A';
+            dataToModal.Creada = dataToModal.FechaCreacion ? new Date(dataToModal.FechaCreacion).toLocaleDateString() : '';
+            dataToModal.Preparado = dataToModal.FechaPreparado ? new Date(dataToModal.FechaPreparado).toLocaleDateString() : '';
+            dataToModal.FechaDistribucion = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString() : '';
             // Asegura que el estado textual para el modal se use correctamente.
             switch (dataToModal.Estado) {
               case 1: dataToModal.NombreEstado = 'Pendiente'; break;
@@ -905,7 +905,7 @@ export default {
               case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
               default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
             }
-            dataToModal.nombreCliente = dataToModal.Destino?.Nombre || 'N/A';
+            dataToModal.nombreCliente = dataToModal.Destino?.Nombre || '';
             console.log("openModal: Datos de orden para modal procesados:", dataToModal);
           } else {
             // Lanza un error si el objeto de la orden no es válido.
@@ -919,12 +919,12 @@ export default {
           dataToModal.productosDetalle = []; // Por ahora, se inicializa vacío.
 
           // Formatea fechas específicas de la guía para el modal.
-          dataToModal.FechaOriginal = dataToModal.FechaOriginal ? new Date(dataToModal.FechaOriginal).toLocaleDateString() : 'N/A';
+          dataToModal.FechaOriginal = dataToModal.FechaOriginal ? new Date(dataToModal.FechaOriginal).toLocaleDateString() : '';
           // Para la fecha de no entrega, se usa la `Fecha` de la guía si el estado es `NO ENTREGADO`.
           if (dataToModal.Estado === 'NO ENTREGADO' && dataToModal.Fecha) {
               dataToModal.FechaNoEntregado = new Date(dataToModal.Fecha).toLocaleDateString();
           } else {
-            dataToModal.FechaNoEntregado = 'N/A';
+            dataToModal.FechaNoEntregado = '';
           }
            console.log("openModal: Datos de guía para modal procesados:", dataToModal);
         }
@@ -994,10 +994,10 @@ export default {
       const isRetiraCliente = currentStatusText === 'Retira Cliente'; // Usa el estado textual para la verificación.
 
       // Fechas ya formateadas en el `openModal`.
-      const fechaModificada = orden.Modificada || 'N/A';
-      const fechaCreacion = orden.Creada || 'N/A';
-      const fechaPreparado = orden.Preparado || 'N/A';
-      const fechaDistribucion = orden.FechaDistribucion || 'N/A';
+      const fechaModificada = orden.Modificada || '';
+      const fechaCreacion = orden.Creada || '';
+      const fechaPreparado = orden.Preparado || '';
+      const fechaDistribucion = orden.FechaDistribucion || '';
 
       if (isAnulada) {
         // Si la orden está anulada, solo se muestra el paso de anulación con estado 'current-bad'.
@@ -1006,7 +1006,7 @@ export default {
           nombre: 'Orden Anulada',
           icon: 'mdi-cancel',
           fecha: fechaModificada,
-          descripcion: `La orden ha sido cancelada por ${orden.Usuario || 'N/A'}.`,
+          descripcion: `La orden ha sido cancelada por ${orden.Usuario || ''}.`,
           statusClass: 'current-bad', // Clase para estados negativos actuales.
         });
       } else {
@@ -1030,7 +1030,7 @@ export default {
           nombre: 'Pendiente',
           icon: 'mdi-file-document-edit-outline',
           fecha: fechaCreacion,
-          descripcion: `Ingresada por: ${orden.UsuarioCreoOrd || 'N/A'}.`,
+          descripcion: `Ingresada por: ${orden.UsuarioCreoOrd || ''}.`,
           statusClass:
             currentStatusText === 'Pendiente'
               ? 'current' // Es el estado actual
@@ -1120,8 +1120,8 @@ export default {
       const isRetiraClienteSucursal = guia.Domicilio && guia.Domicilio.toLowerCase().includes("lagos garcia 4470");
 
       // Fechas ya formateadas en el `openModal`.
-      const fechaOriginal = guia.FechaOriginal || 'N/A';
-      const fechaNoEntregado = guia.FechaNoEntregado || 'N/A'; // Fecha específica para estado "No entregado".
+      const fechaOriginal = guia.FechaOriginal || '';
+      const fechaNoEntregado = guia.FechaNoEntregado || ''; // Fecha específica para estado "No entregado".
 
       // Pasos base de la línea de tiempo con un `baseOrder` para facilitar la lógica de avance.
       const baseSteps = [
@@ -1153,8 +1153,8 @@ export default {
           id: 'en_distribucion',
           nombre: 'En distribución',
           icon: 'mdi-truck-fast-outline',
-          // La fecha de distribución podría ser la fecha original si está despachado, o "N/A".
-          fecha: guia.Estado === 'DESPACHADO' ? fechaOriginal : 'N/A', // Usamos la fecha original si está despachado, o "N/A"
+          // La fecha de distribución podría ser la fecha original si está despachado, o vacía.
+          fecha: guia.Estado === 'DESPACHADO' ? fechaOriginal : '',
           descripcion: '¡Tu pedido ya está en camino!',
           baseOrder: 4,
         },
@@ -1189,7 +1189,7 @@ export default {
           id: 'retirado',
           nombre: 'Pedido retirado',
           icon: 'mdi-kabaddi',
-          fecha: currentStatusText === 'ENTREGADO' ? fechaOriginal : 'N/A', // Asume fecha original si fue entregado.
+          fecha: currentStatusText === 'ENTREGADO' ? fechaOriginal : '',
           descripcion: `El pedido fue retirado de nuestro centro de distribución.`,
           // El estado es 'current' si la guía está 'ENTREGADO', sino 'pending'.
           statusClass: currentStatusText === 'ENTREGADO' ? 'current' : 'pending'
