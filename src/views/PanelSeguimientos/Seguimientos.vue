@@ -661,7 +661,8 @@ export default {
     /**
      * `popularListaDeOrdenes`:
      * Método asíncrono para cargar y procesar la lista de órdenes.
-     * Filtra las órdenes por empresa y rango de fechas, las formatea y las ordena.
+     * Obtiene las órdenes ya filtradas por empresa y periodo desde la API,
+     * luego las formatea y las ordena para su visualización.
      */
     async popularListaDeOrdenes() {
       console.log("popularListaDeOrdenes: Iniciando carga de órdenes.");
@@ -682,10 +683,10 @@ export default {
       }
 
       try {
-        // Llama al servicio de órdenes.getOrdenes(). Este endpoint debería devolver el IdGuia.
-        console.log(`popularListaDeOrdenes: Llamando a ordenes.getOrdenes() para idEmpresa: ${this.idEmpresa}, fechas: ${this.fechaDesde} a ${this.fechaHasta}`);
-        const response = await ordenes.getOrdenes(); // Asume que este ya filtra o filtraremos aquí
-        console.log("popularListaDeOrdenes: Respuesta de ordenes.getOrdenes() recibida:", response);
+        // Llama al servicio que obtiene las órdenes filtradas por empresa y periodo
+        console.log(`popularListaDeOrdenes: Llamando a ordenes.getByPeriodoEmpresa con idEmpresa: ${this.idEmpresa}, fechas: ${this.fechaDesde} a ${this.fechaHasta}`);
+        const response = await ordenes.getByPeriodoEmpresa(this.fechaDesde, this.fechaHasta, this.idEmpresa);
+        console.log("popularListaDeOrdenes: Respuesta de ordenes.getByPeriodoEmpresa recibida:", response);
 
         let todas = [];
         // Verifica el formato de la respuesta para obtener los datos.
@@ -698,29 +699,7 @@ export default {
           throw new Error('Formato de órdenes inesperado. Contacte a soporte.');
         }
 
-        // Filtro manual por empresa, en caso de que la API no lo haga directamente.
-        todas = todas.filter(o => o.IdEmpresa === this.idEmpresa);
-        console.log("popularListaDeOrdenes: Órdenes filtradas por empresa (antes de fecha):", todas.length);
-
-        const fechaDesdeNormalized = this.normalizeDateToStartOfDay(this.fechaDesde);
-        const fechaHastaNormalized = this.normalizeDateToStartOfDay(this.fechaHasta);
-
-        todas = todas.filter(o => {
-            // Asegúrate de que Creada es una cadena de fecha válida
-            if (!o.Creada) return false;
-
-            const ordenDateNormalized = this.normalizeDateToStartOfDay(o.Creada);
-
-            let passedDateFilter = true;
-            if (fechaDesdeNormalized) {
-                passedDateFilter = ordenDateNormalized.getTime() >= fechaDesdeNormalized.getTime();
-            }
-            if (fechaHastaNormalized && passedDateFilter) {
-                passedDateFilter = ordenDateNormalized.getTime() <= fechaHastaNormalized.getTime();
-            }
-            return passedDateFilter;
-        });
-        console.log("popularListaDeOrdenes: Órdenes filtradas por fecha:", todas.length);
+        // La API ya retorna las órdenes filtradas por empresa y periodo, por lo que no se requieren filtros adicionales aquí.
 
         // Formatea los datos de cada orden para su visualización en la tabla.
         todas.forEach((o) => {
