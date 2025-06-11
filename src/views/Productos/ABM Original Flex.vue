@@ -21,8 +21,8 @@
 
         <v-data-table v-if="selectorDeposito.dato != null" :headers="cabecerasCRUD" :items="listaPosiciones" class="elevation-1" show-select v-model="posicionesSeleccionadas" item-key="Id">
             <template v-slot:top>
-                <v-toolbar flat color="white">
-                    <v-toolbar-title>Posiciones</v-toolbar-title>
+                <v-toolbar flat color="primary" dark>
+                    <v-toolbar-title class="white--text">Posiciones</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-dialog v-model="mostrarEdicion" max-width="600px">
                         <template v-slot:activator="{on, attrs}">
