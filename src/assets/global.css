@@ -10,3 +10,10 @@ html, body {
 .v-application {
   background-color: var(--v-background-base) !important;
 }
+
+/* Common header style for forms and tables */
+.form-header,
+.v-data-table > thead > tr > th {
+  background-color: var(--v-primary-base);
+  color: white;
+}
