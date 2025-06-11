@@ -447,7 +447,9 @@ export default {
     if (pref !== null) {
       this.$vuetify.theme.dark = pref === 'true';
     }
-    // La carga inicial de menús la maneja el watcher `estaLogueadoConId`
+    // Cargar menús inmediatamente por si la página se recarga
+    this.cargarYAgruparMenus();
+    // La carga inicial también la maneja el watcher `estaLogueadoConId` como salvaguarda
   }
 }
 </script>
