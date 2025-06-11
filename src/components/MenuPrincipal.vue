@@ -332,6 +332,7 @@ export default {
     estaLogueadoConId: {
       immediate: true,
       async handler(val) { // Convertido a async para esperar cargarYAgruparMenus
+        console.log('Watcher estaLogueadoConId disparado con valor:', val);
         if (val) {
           await this.cargarYAgruparMenus(); // Esperar a que los menús se carguen
         } else {
@@ -360,11 +361,13 @@ export default {
     },
     // Trae menús y los agrupa según el "modulo"
     async cargarYAgruparMenus() { // Convertido a async
+      console.log('Entrando a cargarYAgruparMenus con usuario ID:', this.usuarioId);
       this.limpiarMenus(); // Limpia al inicio de la carga
       if (!this.estaLogueadoConId) return;
 
       try {
         const menusDelBackend = await roles.getAllMenuUser(this.usuarioId);
+        console.log('Menús obtenidos del backend:', menusDelBackend);
         // Limpiar de nuevo aquí puede ser redundante si la primera limpieza es suficiente,
         // pero no daña y asegura un estado limpio si hay llamadas concurrentes o reintentos.
         this.limpiarMenus(); 
@@ -405,6 +408,9 @@ export default {
               ruta: "/seguimientos",           // Ruta definida en Vue Router
               modulo: "seguimientos"           // Identificador del módulo
             });
+            console.log('Se añadió "Panel de Seguimientos" al menú');
+          } else {
+            console.log('El menú "Panel de Seguimientos" ya existía');
           }
         }
 
@@ -425,6 +431,7 @@ export default {
 
       } catch (error) {
         console.error("Error al cargar y agrupar los menús:", error);
+        console.log('Error capturado en cargarYAgruparMenus:', error);
         this.limpiarMenus(); // En caso de error, limpiar menús para evitar estado inconsistente
       }
     },
