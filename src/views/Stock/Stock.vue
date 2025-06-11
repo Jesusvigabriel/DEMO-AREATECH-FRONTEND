@@ -15,30 +15,58 @@
         </v-row>
         <v-row v-show="empresaLoggeada()>0" justify="center" class="p-1">
             <v-row v-if="listaArticulosCompleta.length>0" justify="center">
-                <v-col class="p-1" cols="12" sm="6" md="4">
-                    <v-btn @click="clickDescargarExcel" color="success" block>Descargar Excel <v-icon>mdi-microsoft-excel</v-icon></v-btn>
+                <v-col class="p-1" cols="12" sm="4" md="3">
+                    <v-select
+                        v-model="tipoExcel"
+                        :items="opcionesExcel"
+                        label="Tipo de Excel"
+                        dense
+                    ></v-select>
+                </v-col>
+                <v-col class="p-1" cols="12" sm="4" md="3">
+                    <v-btn @click="clickDescargarExcel" class="stock-action-btn" block>
+                        Descargar Excel <v-icon class="btn-icon">mdi-microsoft-excel</v-icon>
+                    </v-btn>
                 </v-col>
                 <v-col class="p-1" cols="12" sm="6" md="4">
-                    <v-btn @click="popularListaProductos" color="success" block>Actualizar información <v-icon>mdi-refresh</v-icon></v-btn>
+                    <v-btn @click="popularListaProductos" class="stock-action-btn" block>
+                        Actualizar información <v-icon class="btn-icon">mdi-refresh</v-icon>
+                    </v-btn>
                 </v-col>
             </v-row>
         </v-row>
         <v-row v-show="empresaLoggeada()<=0" justify="center" class="p-3">
             <v-row v-if="listaArticulosCompleta.length>0" justify="center">
                 <v-row justify="center">
-                    <v-col class="p-1" cols="12" sm="6" md="4">
-                        <v-btn @click="clickDescargarExcel" color="success" block>Descargar Excel <v-icon>mdi-microsoft-excel</v-icon></v-btn>
+                    <v-col class="p-1" cols="12" sm="4" md="3">
+                        <v-select
+                            v-model="tipoExcel"
+                            :items="opcionesExcel"
+                            label="Tipo de Excel"
+                            dense
+                        ></v-select>
+                    </v-col>
+                    <v-col class="p-1" cols="12" sm="4" md="3">
+                        <v-btn @click="clickDescargarExcel" class="stock-action-btn" block>
+                            Descargar Excel <v-icon class="btn-icon">mdi-microsoft-excel</v-icon>
+                        </v-btn>
                     </v-col>
                     <v-col class="p-1" cols="12" sm="6" md="4">
-                        <v-btn @click="popularListaProductos" color="success" block>Actualizar información <v-icon>mdi-refresh</v-icon></v-btn>
+                        <v-btn @click="popularListaProductos" class="stock-action-btn" block>
+                            Actualizar información <v-icon class="btn-icon">mdi-refresh</v-icon>
+                        </v-btn>
                     </v-col>
                 </v-row>
                 <v-row justify="center" v-show="!tieneLOTE">
                     <v-col class="p-1" v-show="estoyEnFuente" cols="12" sm="6" md="4">
-                        <v-btn @click="repararTodosLosArticulos" color="red" block dark>Reparar <v-icon>mdi-tool</v-icon></v-btn>
+                        <v-btn @click="repararTodosLosArticulos" color="red" block dark class="stock-action-btn">
+                            Reparar <v-icon class="btn-icon">mdi-tool</v-icon>
+                        </v-btn>
                     </v-col>
                     <v-col class="p-1" cols="12" sm="6" md="4">
-                        <v-btn @click="verificarDiferenciasStockMovimiento" color="purple" block dark>Diferencias <v-icon>mdi-tool</v-icon></v-btn>
+                        <v-btn @click="verificarDiferenciasStockMovimiento" color="purple" block dark class="stock-action-btn">
+                            Diferencias <v-icon class="btn-icon">mdi-tool</v-icon>
+                        </v-btn>
                     </v-col>
                 </v-row>
             </v-row>
@@ -331,6 +359,11 @@ export default {
             listaArticulosCompleta: [],
             listaArticulosMostrar: [],
             listaArticulosProductos: [],
+            tipoExcel: 'todo',
+            opcionesExcel: [
+                { text: 'Todo el stock', value: 'todo' },
+                { text: 'Stock sin posicionar', value: 'no-pos' }
+            ],
             tieneLOTE: false,
             tienePART: false,
             verSoloConStockSinPosicionar: false,
@@ -1180,6 +1213,10 @@ export default {
   
 
   async clickDescargarExcel() {
+    if (this.tipoExcel === 'no-pos') {
+      await this.descargarExcelNoPosicionado();
+      return;
+    }
     // 1) Creo el workbook y la hoja
     const workbook  = new excel.Workbook();
     const worksheet = workbook.addWorksheet("Stock");
@@ -1287,6 +1324,49 @@ export default {
     // 6) Genero el buffer y disparo la descarga
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_Stock.xlsx`);
+  },
+
+  async descargarExcelNoPosicionado() {
+    const workbook  = new excel.Workbook();
+    const worksheet = workbook.addWorksheet('SinPosicionar');
+
+    worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = 'A1:E1';
+    worksheet.columns = [
+      { header: 'Producto',   width: 100 },
+      { header: 'Barcode',    width: 40 },
+      { header: 'CodeEmpresa',width: 40 },
+      { header: 'Unidades',   width: 25 },
+      { header: 'Id',         width: 25 }
+    ];
+
+    let rowIndex = 1;
+    this.listaArticulosCompleta.forEach(item => {
+      if (item.StockSinPosicionar && item.StockSinPosicionar > 0) {
+        rowIndex++;
+        worksheet.getRow(rowIndex).values = [
+          item.Nombre || item.Productos || item.NombreProducto,
+          item.Barcode || item.SerialNumber || item.barcode,
+          item.CodeEmpresa || item.codeEmpresa,
+          item.StockSinPosicionar,
+          item.Id || item.IdProducto
+        ];
+      }
+    });
+
+    rowIndex++;
+    const sumCell = worksheet.getCell(`D${rowIndex}`);
+    sumCell.value = { formula: `SUM(D2:D${rowIndex-1})` };
+    sumCell.font  = { bold: true };
+
+    worksheet.eachRow((row, idx) => {
+      row.eachCell(cell => {
+        cell.font = idx === 1 ? { size: 16, bold: true } : { size: 14 };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_StockSinPosicionar.xlsx`);
   },
 
  
@@ -1603,3 +1683,24 @@ export default {
 
 }
 </script>
+
+<style scoped>
+.stock-action-btn {
+  background-image: linear-gradient(45deg, #66bb6a, #43a047);
+  color: #fff !important;
+  font-weight: 600;
+  text-transform: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.stock-action-btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+}
+
+.stock-action-btn .btn-icon {
+  margin-left: 4px;
+}
+</style>
