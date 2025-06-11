@@ -11,7 +11,7 @@ html, body {
   background-color: var(--v-background-base) !important;
 }
 
-/* Common header style for forms and tables */
+/* Common header style for forms and table headers */
 .form-header,
 .v-data-table > thead > tr > th {
   background-color: var(--v-primary-base);
