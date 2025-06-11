@@ -84,6 +84,7 @@ import ordenes from "@/store/ordenesV3"
 import ordenesV2 from "@/store/ordenes"
 import empresasV3 from '@/store/empresasV3'
 import posiciones from '@/store/posicionesV3'
+import destinos from '@/store/destinos'
 import {xlsx, read, utils, writeFile} from 'xlsx'
 import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
 import roles from '@/store/roles'
@@ -171,10 +172,10 @@ export default {
       this.filtrarOrdenes()
     },
 
-    popularListaDeOrdenes() {
+    async popularListaDeOrdenes() {
       roles.getUserRolesById(store.state.usuarios.usuarioActual.Id)
       .then(response => {
-        if (!store.state.usuarios.usuarioActual.IdEmpresa ) { 
+        if (!store.state.usuarios.usuarioActual.IdEmpresa ) {
           if(response[0].IdRole == 1){
             this.rolPermitido=true
           }else{
@@ -187,9 +188,9 @@ export default {
       .catch(error => {
         console.log(error)
       })
-      ordenes.getOrdenes()
-        .then(response => {
-           response.forEach(orden => {
+      try {
+        const response = await ordenes.getOrdenes()
+        for (const orden of response) {
 
             // Acorto las fechas
             orden.Creada=new Date(orden.Creada).toLocaleDateString()
@@ -226,23 +227,30 @@ export default {
 
 
             //Indico el Tipo
-             if ( orden.preOrden == true ) {
-                orden.tipo = 
-                orden.preOrden = "Pre-Orden"
-             } else 
-             {orden.tipo = "Orden"
-              orden.preOrden= "Orden"
-             }
+            if (orden.preOrden == true) {
+              orden.tipo =
+              orden.preOrden = "Pre-Orden"
+            } else {
+              orden.tipo = "Orden"
+              orden.preOrden = "Orden"
+            }
 
-           });
-           response.sort( (a, b) => a.Creada>b.Creada ?  -1 : 1)
-           this.ordenes=response
-           if( this.PreOrdenes ){
-             this.traerPreOrdenes()
-           } else this.filtrarOrdenes()
-           //this.filtrarOrdenes()
-        })
-        .catch(error => {console.log("Error", error)})
+            // Obtengo nombre del destinatario
+            try {
+              const dest = await destinos.getOneById(orden.Eventual)
+              orden.nombreDestino = dest.Nombre
+            } catch (e) {
+              orden.nombreDestino = ''
+            }
+        }
+        response.sort((a, b) => (a.Creada > b.Creada ? -1 : 1))
+        this.ordenes = response
+        if (this.PreOrdenes) {
+          this.traerPreOrdenes()
+        } else this.filtrarOrdenes()
+      } catch (error) {
+        console.log("Error", error)
+      }
     },
 
     traerPreOrdenes() {
