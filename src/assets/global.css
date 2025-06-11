@@ -6,3 +6,7 @@ html, body {
 * {
   font-family: inherit;
 }
+
+.v-application {
+  background-color: var(--v-background-base) !important;
+}
