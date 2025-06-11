@@ -10,3 +10,19 @@ html, body {
 .v-application {
   background-color: var(--v-background-base) !important;
 }
+
+/* Row striping for data tables */
+.v-data-table tbody tr:nth-child(odd) {
+  background-color: #f8f5f5;
+}
+.v-data-table tbody tr:nth-child(even) {
+  background-color: #d8ecfa;
+}
+
+/* Row striping for plain tables */
+table tbody tr:nth-child(odd) {
+  background-color: #f8f5f5;
+}
+table tbody tr:nth-child(even) {
+  background-color: #d8ecfa;
+}
