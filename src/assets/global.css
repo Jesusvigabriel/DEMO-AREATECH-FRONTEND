@@ -1,0 +1,8 @@
+html, body {
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Ensure Vuetify components also inherit the font */
+* {
+  font-family: inherit;
+}

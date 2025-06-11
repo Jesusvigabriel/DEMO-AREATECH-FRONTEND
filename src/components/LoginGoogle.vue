@@ -129,7 +129,7 @@ export default {
 
 .btn-text {
   color: #3c4043;
-  font-family: 'Google Sans', 'Roboto', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.25px;

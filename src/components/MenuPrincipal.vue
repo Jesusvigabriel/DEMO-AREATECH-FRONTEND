@@ -496,7 +496,7 @@ export default {
 /* Fuente y compactado en los dropdowns */
 .v-toolbar__content {
   font-size: 13px !important;
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: 'DM Sans', sans-serif;
   letter-spacing: 0;
   line-height: 1.1;
 }

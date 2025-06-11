@@ -138,7 +138,7 @@ export default {
 
 <style scoped>
 .remito-container {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   padding: 32px;
   background-color: #fff;
