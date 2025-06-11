@@ -39,7 +39,7 @@ export default new Vuetify({
         info:       '#B0B3B8',    // Texto secundario, iconos muted
         success:    '#5beb51',    // (opcional, podés suavizarlo si te parece muy vivo)
         warning:    '#E6B800',    // Amarillo más cálido para warnings
-        background: '#181A1B',    // Fondo general, casi negro
+        background: '#2f2f2f',    // Fondo general para modo oscuro
         surface:    '#232526',    // Cards, paneles, menús flotantes
         menubar:    '#212124',    // Misma barra superior (o quitá el degradé para minimal total)
         card:       '#232526',    // Cards y paneles secundarios

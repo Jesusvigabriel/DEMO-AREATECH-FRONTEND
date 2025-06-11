@@ -239,7 +239,7 @@ export default {
 
 /* ======== ESTILOS PARA MODO OSCURO ======== */
 .modo-dark {
-  background-color: #181818 !important;
+  background-color: #2f2f2f !important;
   color: #fafafa !important;
 }
 .modo-dark .v-card,
