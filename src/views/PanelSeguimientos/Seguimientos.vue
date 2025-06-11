@@ -374,16 +374,16 @@ export default {
       const fechaDesdeNormalized = this.normalizeDateToStartOfDay(this.fechaDesde);
       const fechaHastaNormalized = this.normalizeDateToStartOfDay(this.fechaHasta);
 
-      // 2) Filtrar por rango de fechas (basado en `fechaCreacionDate` de la orden)
+      // 2) Filtrar por rango de fechas (basado en `CreadaDate` de la orden)
       if (fechaDesdeNormalized) {
         filtrado = filtrado.filter((o) => {
-          const ordenDateNormalized = this.normalizeDateToStartOfDay(o.Creada);
+          const ordenDateNormalized = this.normalizeDateToStartOfDay(o.CreadaDate);
           return ordenDateNormalized && ordenDateNormalized.getTime() >= fechaDesdeNormalized.getTime();
         });
       }
       if (fechaHastaNormalized) {
         filtrado = filtrado.filter((o) => {
-          const ordenDateNormalized = this.normalizeDateToStartOfDay(o.Creada);
+          const ordenDateNormalized = this.normalizeDateToStartOfDay(o.CreadaDate);
           return ordenDateNormalized && ordenDateNormalized.getTime() <= fechaHastaNormalized.getTime();
         });
       }
@@ -459,13 +459,13 @@ export default {
       // 2) Filtrar por rango de fechas (basado en `FechaOriginalDate` de la guía)
       if (fechaDesdeNormalized) {
         filtrado = filtrado.filter((g) => {
-          const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginal);
+          const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginalDate);
           return guiaDateNormalized && guiaDateNormalized.getTime() >= fechaDesdeNormalized.getTime();
         });
       }
       if (fechaHastaNormalized) {
         filtrado = filtrado.filter((g) => {
-          const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginal);
+          const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginalDate);
           return guiaDateNormalized && guiaDateNormalized.getTime() <= fechaHastaNormalized.getTime();
         });
       }
@@ -706,8 +706,9 @@ export default {
 
         // Formatea los datos de cada orden para su visualización en la tabla.
         todas.forEach((o) => {
-          // No necesitamos o.fechaCreacionDate aquí ya que se usa en el filtro
-          o.Creada = new Date(o.Creada).toLocaleDateString(); // Formatea la fecha de creación.
+          // Guarda la fecha original como objeto Date para filtros y ordenamiento
+          o.CreadaDate = new Date(o.Creada);
+          o.Creada = o.CreadaDate.toLocaleDateString(); // Formatea la fecha de creación para mostrar
 
           o.Modificada = o.Modificada
             ? new Date(o.Modificada).toLocaleDateString()
@@ -739,7 +740,7 @@ export default {
 
         // Ordena las órdenes por fecha de creación de forma descendente (más recientes primero).
         todas.sort(
-          (a, b) => new Date(b.Creada).getTime() - new Date(a.Creada).getTime()
+          (a, b) => b.CreadaDate.getTime() - a.CreadaDate.getTime()
         );
         this.todasLasOrdenes = todas;
         console.log("popularListaDeOrdenes: Total de órdenes procesadas:", this.todasLasOrdenes.length);
