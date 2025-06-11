@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-toolbar flat dense color="grey lighten-4">
-      <v-toolbar-title class="subtitle-1 font-weight-medium text--primary">
+    <v-toolbar flat dense color="primary" dark>
+      <v-toolbar-title class="subtitle-1 font-weight-medium">
         Seguimiento de Guías
       </v-toolbar-title>
     </v-toolbar>
