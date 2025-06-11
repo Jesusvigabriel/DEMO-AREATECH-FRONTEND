@@ -126,6 +126,11 @@
             <!-- PESTAÑA: Seguimiento de Órdenes -->
             <v-tab-item value="tab-ordenes">
               <v-card-text>
+                <v-card class="mb-4" outlined>
+                  <v-card-text style="height:200px">
+                    <Doughnut :chart-data="ordersChartData" :options="chartOptions" />
+                  </v-card-text>
+                </v-card>
                 <OrdersTable
                   :loading="loading"
                   :error="errorAlCargar"
@@ -149,6 +154,11 @@
             <!-- PESTAÑA: Seguimiento de Guías -->
             <v-tab-item value="tab-guias">
               <v-card-text>
+                <v-card class="mb-4" outlined>
+                  <v-card-text style="height:200px">
+                    <Doughnut :chart-data="guidesChartData" :options="chartOptions" />
+                  </v-card-text>
+                </v-card>
                 <GuidesTable
                   :loading="loading"
                   :error="errorAlCargar"
@@ -270,10 +280,19 @@ import guias from '@/store/guias' // Importamos el módulo de guías
 import OrdersTable from './OrdersTable.vue'
 import GuidesTable from './GuidesTable.vue'
 import SeguimientoModal from './SeguimientoModal.vue'
+import { Doughnut } from 'vue-chartjs/legacy'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 export default {
   name: 'SeguimientosOrdenesGuias', // Nuevo nombre para el componente
-  components: { SelectorEmpresa, OrdersTable, GuidesTable, SeguimientoModal },
+  components: { SelectorEmpresa, OrdersTable, GuidesTable, SeguimientoModal, Doughnut },
   data() {
     return {
       tab: null, // Controla la pestaña activa ('tab-ordenes' o 'tab-guias'). Por defecto, null para que no se seleccione ninguna al inicio o la primera se activa si Vuetify lo hace.
@@ -338,6 +357,13 @@ export default {
 
       rolPermitido: false, // Controla permisos basados en el rol del usuario.
       unidadesTotalesEnBase: 0, // Dato específico para clientes textiles (no relacionado con seguimiento general).
+
+      // Opciones generales para los gráficos
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+      },
 
       // ---------------------------------------
       // Paginación de la tabla de Órdenes
@@ -519,6 +545,36 @@ export default {
     },
 
     /**
+     * Dataset para el gráfico de estados de órdenes
+     */
+    ordersChartData() {
+      const counts = {}
+      this.todasLasOrdenes.forEach(o => {
+        const estado = o.Estado
+        counts[estado] = (counts[estado] || 0) + 1
+      })
+      const labels = Object.keys(counts)
+      const data = labels.map(l => counts[l])
+      const backgroundColor = labels.map(l => this.orderStateColor(l))
+      return { labels, datasets: [{ data, backgroundColor }] }
+    },
+
+    /**
+     * Dataset para el gráfico de estados de guías
+     */
+    guidesChartData() {
+      const counts = {}
+      this.todasLasGuias.forEach(g => {
+        const estado = g.Estado
+        counts[estado] = (counts[estado] || 0) + 1
+      })
+      const labels = Object.keys(counts)
+      const data = labels.map(l => counts[l])
+      const backgroundColor = labels.map(l => this.guideStateColor(l))
+      return { labels, datasets: [{ data, backgroundColor }] }
+    },
+
+    /**
      * `timelineStepsComputed`:
      * Propiedad computada que determina qué línea de tiempo se debe construir
      * y mostrar en el modal (si es una orden o una guía), basándose en `modalType`.
@@ -555,6 +611,45 @@ export default {
       // Para evitar el TypeError, simplemente modificamos el objeto y luego lo usamos.
       date.setHours(0, 0, 0, 0);
       return date; // Retorna el objeto Date modificado
+    },
+
+    /**
+     * Devuelve color para el estado de una orden
+     */
+    orderStateColor(estado) {
+      switch (estado) {
+        case 'Pendiente': return '#FFC107';
+        case 'Preparado': return '#1976D2';
+        case 'A distribuciòn': return '#4CAF50';
+        case 'Anulado': return '#F44336';
+        case 'Retira Cliente': return '#673AB7';
+        default: return '#9E9E9E';
+      }
+    },
+
+    /**
+     * Devuelve color para el estado de una guía
+     */
+    guideStateColor(estado) {
+      switch (estado) {
+        case 'No entregado':
+        case 'ANULADO':
+          return '#F44336';
+        case 'Entrega parcial':
+          return '#FF9800';
+        case 'Entregado':
+        case 'Pedido preparado':
+        case 'Pedido en preparación':
+        case 'En CD':
+        case 'En Planchada':
+        case 'Ruteado':
+        case 'DESPACHADO':
+        case 'En distribución':
+        case 'Pedido retirado':
+          return '#4CAF50';
+        default:
+          return '#9E9E9E';
+      }
     },
 
     /**
