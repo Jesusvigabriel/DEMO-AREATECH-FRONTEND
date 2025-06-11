@@ -274,7 +274,5 @@ export default {
 }
 </style>
 
-<!-- Fuente Roboto -->
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-</style>
+<!-- Fuentes -->
+<!-- DM Sans se carga globalmente desde public/index.html -->
