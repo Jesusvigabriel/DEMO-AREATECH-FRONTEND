@@ -32,7 +32,7 @@ export default new Vuetify({
       dark: {
        
         // -------- Tema oscuro (fondo oscuro) --------
-        primary:    '#212224',    // Barra superior y acentos
+        primary:    '#212124',    // Barra superior y acentos
         secondary:  '#2A2D2E',    // Bordes sutiles o detalles secundarios
         accent:     '#313437',    // Hover/focus en botones, feedback visual suave
         error:      '#FF6B6B',    // Error (sin cambios)
@@ -41,7 +41,7 @@ export default new Vuetify({
         warning:    '#E6B800',    // Amarillo más cálido para warnings
         background: '#181A1B',    // Fondo general, casi negro
         surface:    '#232526',    // Cards, paneles, menús flotantes
-        menubar:    '#212224',    // Misma barra superior (o quitá el degradé para minimal total)
+        menubar:    '#212124',    // Misma barra superior (o quitá el degradé para minimal total)
         card:       '#232526',    // Cards y paneles secundarios
         darkblue:   '#232526' ,   // No usás azul, lo mantengo como gris oscuro 
       }
