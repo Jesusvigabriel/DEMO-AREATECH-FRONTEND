@@ -15,14 +15,14 @@ export default new Vuetify({
     themes: {
       light: {
         // -------- Tema claro (fondo blanco) --------
-        primary:    '#0374e4',       // Azul claro principal
+        primary:    '#191043',       // Azul claro principal
         secondary:  '#0557c1',       // Azul medio
         accent:     '#032284',       // Azul oscuro para resaltar
         error:      '#ff5252',       // Rojo de error
         info:       '#888888',       // Gris para iconos/estados
         success:    '#5beb51',       // Verde claro para "en uso"
         warning:    '#ffe082',       // Amarillo para advertencias
-        background: '#ffffff',       // Fondo general blanco
+        background: '#f8f5f5',       // Fondo general blanco
         surface:    '#f4f6fa',       // Para tarjetas, tablas, paneles
         menubar:    'linear-gradient(115deg, #0374e4 65%, #032284 98%)', // Degradado barra azul (para ambas)
         card:       '#ffffff',       // Fondo blanco tarjetas (por defecto)
