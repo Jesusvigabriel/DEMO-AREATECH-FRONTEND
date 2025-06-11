@@ -152,12 +152,44 @@ export default {
     itemsPerPage: Number,
     itemsPerPageOptions: Array,
     cabeceras: Array,
-    items: Array,
+    items: Array, // Este array DEBE contener los datos ya formateados y listos.
     page: Number,
     pageCount: Number,
     paginationInfo: String,
     statusChipColorFn: Function,
     statusChipTextColorFn: Function
+  },
+  watch: {
+    // Agregamos watchers para ver qué props está recibiendo y si cambian
+    idEmpresa(newVal, oldVal) {
+      console.log(`[OrdersTable] idEmpresa cambió de ${oldVal} a ${newVal}`);
+    },
+    loading(newVal, oldVal) {
+      console.log(`[OrdersTable] loading cambió de ${oldVal} a ${newVal}`);
+    },
+    error(newVal, oldVal) {
+      console.log(`[OrdersTable] error cambió de ${oldVal} a ${newVal}`);
+    },
+    items: {
+      handler(newVal, oldVal) {
+        console.log(`[OrdersTable] items actualizados. Cantidad: ${newVal ? newVal.length : 0}`);
+        if (newVal && newVal.length > 0) {
+          console.log('[OrdersTable] Primer item recibido:', newVal[0]);
+        }
+      },
+      deep: true, // Para observar cambios dentro del array de items
+      immediate: true // Para que se ejecute al inicio
+    },
+    page(newVal) {
+      console.log(`[OrdersTable] Página actual: ${newVal}`);
+    },
+    itemsPerPage(newVal) {
+      console.log(`[OrdersTable] Ítems por página: ${newVal}`);
+    }
+  },
+  created() {
+    console.log('[OrdersTable] Componente OrdersTable creado.');
+    // Los valores iniciales de las props se pueden ver aquí, pero los watchers son más útiles para cambios.
   }
 }
 </script>

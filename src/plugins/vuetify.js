@@ -24,7 +24,7 @@ export default new Vuetify({
         warning:    '#ffe082',       // Amarillo para advertencias
         background: '#f8f5f5',       // Fondo general blanco
         surface:    '#f4f6fa',       // Para tarjetas, tablas, paneles
-        menubar:    'linear-gradient(115deg, #0374e4 65%, #032284 98%)', // Degradado barra azul (para ambas)
+        menubar:    '#191043', // Degradado barra azul (para ambas)
         card:       '#ffffff',       // Fondo blanco tarjetas (por defecto)
         // Colores adicionales a mano para usar en dark también:
         darkblue:   '#1e2b36',       // Para algún widget, footer o detalles
