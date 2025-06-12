@@ -16,10 +16,12 @@ const AccesosAAPI = {
 
                     axios({method: payload.Metodo, url: payload.Ruta, headers: payload.Cabeceras})
                         .then(datos => {
-                            if (datos.data.Estado=="OK") {
-                                resolve(datos.data)
+                            const data = datos.data
+                            const estadoOk = data && (data.Estado === "OK" || data.status === "OK")
+                            if (estadoOk) {
+                                resolve(data)
                             } else {
-                                reject(datos.data)
+                                reject(data)
                             }
                         })
                         .catch(error => {
