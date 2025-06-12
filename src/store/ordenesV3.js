@@ -287,6 +287,17 @@ const ordenesV3= {
     )            
   },
 
+  async getOrdenesByEmpresaPeriodoConDestinos(idEmpresa, fechaDesde, fechaHasta) {
+    return new Promise((resolve, reject) => {
+      API.acceder({
+        Ruta: `/ordenes/byEmpresaPeriodoConDestinos/${idEmpresa}/${fechaDesde}/${fechaHasta}`,
+        Cartel: "Obteniendo órdenes..."
+      })
+      .then(response => resolve(response))
+      .catch(error => reject(error))
+    })
+  },
+
   async informarEtiquetaImpresa(id) {
     return new Promise (
       function (resolve, reject) {
