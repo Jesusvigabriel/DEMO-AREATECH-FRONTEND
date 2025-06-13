@@ -1957,10 +1957,11 @@ import { saveAs } from 'file-saver'
         }
 
         this.ordenesFiltradasParaTabla.forEach((orden) => {
-          const sheetName = `${orden.Numero}`.substring(0, 31)
+          const numero = orden.Numero || orden.numero || orden.IdOrden
+          const sheetName = String(numero).substring(0, 31)
           const sheet = workbook.addWorksheet(sheetName)
 
-          sheet.getRow(1).values = ['N° Orden', orden.Numero]
+          sheet.getRow(1).values = ['N° Orden', numero]
           sheet.getRow(2).values = ['Empresa', orden.NombreEmpresa || '']
           sheet.getRow(3).values = [
             'Cliente',
