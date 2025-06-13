@@ -1346,7 +1346,7 @@ import { saveAs } from 'file-saver'
           en_cd: 'despachada',
           en_distribucion: 'despachada',
           retirado: 'despachada',
-          entregado: 'despachada',
+          entregado: 'entregado',
           parcial: 'despachada',
           no_entregado: 'despachada'
         };
@@ -1412,6 +1412,7 @@ import { saveAs } from 'file-saver'
         ) {
           switch (estado) {
             case 'Entregado':
+              return 'chip-entregado';
             case 'Pedido preparado':
             case 'Pedido en preparación':
             case 'En CD':
@@ -1858,6 +1859,15 @@ import { saveAs } from 'file-saver'
     background-color: #2d8bba;
   }
 
+  .timeline-step.entregado .timeline-icon-container,
+  .timeline-line.entregado {
+    background-color: #4caf50;
+    color: #fff;
+  }
+  .timeline-step.entregado::before {
+    background-color: #4caf50;
+  }
+
   /* === Chip color classes (comparten valores con el timeline) === */
   .chip-pendiente {
     background-color: #c81e2b;
@@ -1871,6 +1881,11 @@ import { saveAs } from 'file-saver'
 
   .chip-despachada {
     background-color: #2d8bba;
+    color: #fff;
+  }
+
+  .chip-entregado {
+    background-color: #4caf50;
     color: #fff;
   }
   </style>
