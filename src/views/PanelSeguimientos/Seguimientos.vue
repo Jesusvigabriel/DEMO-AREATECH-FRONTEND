@@ -1861,37 +1861,58 @@
         // Clases para estados de Órdenes.
         if (['Pendiente', 'Preparado', 'A distribuciòn', 'Anulado', 'Retira Cliente'].includes(estado)) {
           switch (estado) {
-            case 'Pendiente': return 'grey lighten-4 amber--text text--darken-3'; // Amarillo para advertencia.
-            case 'Preparado': return 'grey lighten-4 blue--text text--darken-2'; // Azul para información.
-            case 'A distribuciòn': return 'grey lighten-4 green--text text--darken-2'; // Verde para éxito/distribución.
-            case 'Anulado': return 'grey lighten-4 red--text text--darken-2'; // Rojo para error/anulado.
-            case 'Retira Cliente': return 'grey lighten-4 deep-purple--text text--darken-2'; // Morado para retiro.
-            default: return 'grey lighten-4 grey--text text--darken-1'; // Gris por defecto.
+            case 'Pendiente':
+              return 'warning lighten-2 white--text'; // Advertencia.
+            case 'Preparado':
+              return 'info lighten-1 white--text'; // Información.
+            case 'A distribuciòn':
+              return 'success lighten-1 white--text'; // Distribución en progreso.
+            case 'Anulado':
+              return 'error lighten-2 white--text'; // Anulado o error.
+            case 'Retira Cliente':
+              return 'deep-purple accent-4 white--text'; // Retiro en sucursal.
+            default:
+              return 'secondary lighten-2 white--text'; // Por defecto.
           }
         }
         // Clases para estados de Guías (basadas en `VistaDeTracking.vue`).
-        else if (['Pedido en preparación', 'Pedido preparado', 'En CD', 'En Planchada', 'Ruteado', 'DESPACHADO', 'En distribución', 'Entregado', 'No entregado', 'Entrega parcial', 'Pedido retirado', 'ANULADO'].includes(estado)) {
-            switch (estado) {
-                case 'Entregado':
-                case 'Pedido preparado':
-                case 'Pedido en preparación':
-                case 'En CD':
-                case 'En Planchada':
-                case 'Ruteado':
-                case 'DESPACHADO':
-                case 'En distribución':
-                case 'Pedido retirado':
-                    return 'grey lighten-4 green--text text--darken-2'; // Verde para estados de progreso positivo.
-                case 'No entregado':
-                case 'ANULADO': // Añadido para guías anuladas
-                    return 'grey lighten-4 red--text text--darken-2'; // Rojo para no entregado o anulado.
-                case 'Entrega parcial':
-                    return 'grey lighten-4 orange--text text--darken-2'; // Naranja/Amarillo para parcial.
-                default:
-                    return 'grey lighten-4 grey--text text--darken-1'; // Gris por defecto.
-            }
+        else if (
+          [
+            'Pedido en preparación',
+            'Pedido preparado',
+            'En CD',
+            'En Planchada',
+            'Ruteado',
+            'DESPACHADO',
+            'En distribución',
+            'Entregado',
+            'No entregado',
+            'Entrega parcial',
+            'Pedido retirado',
+            'ANULADO',
+          ].includes(estado)
+        ) {
+          switch (estado) {
+            case 'Entregado':
+            case 'Pedido preparado':
+            case 'Pedido en preparación':
+            case 'En CD':
+            case 'En Planchada':
+            case 'Ruteado':
+            case 'DESPACHADO':
+            case 'En distribución':
+            case 'Pedido retirado':
+              return 'success lighten-2 white--text'; // Progreso positivo.
+            case 'No entregado':
+            case 'ANULADO':
+              return 'error lighten-2 white--text'; // Error o anulado.
+            case 'Entrega parcial':
+              return 'warning lighten-2 white--text'; // Parcial.
+            default:
+              return 'secondary lighten-2 white--text'; // Por defecto.
+          }
         }
-        return 'grey lighten-4 grey--text text--darken-1'; // Color por defecto si el estado no coincide.
+        return 'secondary lighten-2 white--text'; // Por defecto si no coincide.
       },
   
       /**
