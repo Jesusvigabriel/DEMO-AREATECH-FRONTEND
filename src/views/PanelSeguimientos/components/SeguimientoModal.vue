@@ -371,8 +371,12 @@ export default {
 .timeline-step.despachada .timeline-icon-container,
 .timeline-line.despachada { background-color: #2d8bba; color: #fff; }
 .timeline-step.despachada::before { background-color: #2d8bba; }
+.timeline-step.entregado .timeline-icon-container,
+.timeline-line.entregado { background-color: #4caf50; color: #fff; }
+.timeline-step.entregado::before { background-color: #4caf50; }
 .chip-pendiente { background-color: #c81e2b; color: #fff; }
 .chip-preparada { background-color: #f8b421; color: #fff; }
 .chip-despachada { background-color: #2d8bba; color: #fff; }
+.chip-entregado { background-color: #4caf50; color: #fff; }
 </style>
 
