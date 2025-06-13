@@ -2071,9 +2071,9 @@
     para darle un fondo azul suave y texto azul oscuro.
   */
   .blue-header th {
-    background-color: #e3f2fd; /* Azul muy suave */
-    color: #1a237e;            /* Texto azul oscuro para contraste */
-    font-weight: 600;          /* Negrita ligera en encabezados */
+    background-color: var(--v-primary-base);
+    color: #fff;
+    font-weight: 600;
   }
   
   /* ============================ */
