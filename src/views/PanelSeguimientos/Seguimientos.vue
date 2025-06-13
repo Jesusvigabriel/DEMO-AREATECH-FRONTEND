@@ -446,7 +446,7 @@
                           Empresa:
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                          {{ modalData.Empresa?.RazonSocial || modalData.NombreCliente || 'N/A' }}
+                          {{ modalData.NombreEmpresa || modalData.Empresa?.RazonSocial || modalData.NombreCliente || 'N/A' }}
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
@@ -1498,6 +1498,7 @@
                 case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
                 default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
               }
+              dataToModal.NombreEmpresa = dataToModal.NombreEmpresa || this.estaEmpresa.RazonSocial || 'N/A';
               console.log("openModal: Datos de orden para modal procesados:", dataToModal);
             } else {
               throw new Error('No se encontraron detalles válidos para esta orden.');
