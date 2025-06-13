@@ -998,20 +998,31 @@ import { saveAs } from 'file-saver'
               throw new Error('No se encontraron detalles válidos para esta orden.');
             }
           } else if (type === 'guia') {
-            // Si es una guía, se espera que `item` ya sea el objeto completo de la guía de la tabla.
+            // Para las guías, obtenemos el detalle completo desde la API utilizando su Id.
             console.log("openModal: Procesando datos de guía para modal:", item);
-            dataToModal = { ...item }; // Clona el objeto para evitar mutaciones directas en la lista de la tabla.
-            dataToModal.productos = []; // Las guías no tienen un `productos` por defecto como las órdenes.
-  
+
+            const response = await guias.getById(item.Id);
+            const guiaCompleta = (response && response.data)
+              ? response.data
+              : (response && response.Id ? response : null);
+
+            if (!guiaCompleta) {
+              throw new Error('No se encontraron detalles válidos para esta guía.');
+            }
+
+            dataToModal = { ...item, ...guiaCompleta };
+            dataToModal.productos = Array.isArray(guiaCompleta.productos) ? guiaCompleta.productos : [];
+
             // Formatea fechas específicas de la guía para el modal.
             dataToModal.FechaOriginal = dataToModal.FechaOriginal ? new Date(dataToModal.FechaOriginal).toLocaleDateString('es-AR') : 'N/A';
             // Para la fecha de no entrega, se usa la `Fecha` de la guía si el estado es `NO ENTREGADO`.
             if (dataToModal.Estado === 'NO ENTREGADO' && dataToModal.Fecha) {
-                dataToModal.FechaNoEntregado = new Date(dataToModal.Fecha).toLocaleDateString('es-AR');
+              dataToModal.FechaNoEntregado = new Date(dataToModal.Fecha).toLocaleDateString('es-AR');
             } else {
               dataToModal.FechaNoEntregado = 'N/A';
             }
-             console.log("openModal: Datos de guía para modal procesados:", dataToModal);
+
+            console.log("openModal: Datos de guía para modal procesados:", dataToModal);
           }
   
           // Si se obtuvieron datos válidos para el modal, los asigna y lo muestra.
