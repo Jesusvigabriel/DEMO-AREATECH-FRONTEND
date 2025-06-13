@@ -407,13 +407,13 @@ import { saveAs } from 'file-saver'
         // 2) Filtrar por rango de fechas (basado en `FechaOriginalDate` de la guía)
         if (fechaDesdeNormalized) {
           filtrado = filtrado.filter((g) => {
-            const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginal);
+            const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginalDate);
             return guiaDateNormalized && guiaDateNormalized.getTime() >= fechaDesdeNormalized.getTime();
           });
         }
         if (fechaHastaNormalized) {
           filtrado = filtrado.filter((g) => {
-            const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginal);
+            const guiaDateNormalized = this.normalizeDateToStartOfDay(g.FechaOriginalDate);
             return guiaDateNormalized && guiaDateNormalized.getTime() <= fechaHastaNormalized.getTime();
           });
         }
