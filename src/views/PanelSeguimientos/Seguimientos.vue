@@ -1580,96 +1580,82 @@
             descripcion: `La orden ha sido cancelada.`,
             statusClass: 'current-bad', // Clase para estados negativos actuales.
           });
-        } else {
-          // Paso "Pre-Orden" (solo si la orden es una pre-orden).
-          if (isPreOrden) {
-            timelineSteps.push({
-              id: 'pre_orden',
-              nombre: 'Pre-Orden',
-              icon: 'mdi-file-cabinet-outline',
-              fecha: fechaAltaRegistro,
-              descripcion: 'Orden creada como pre-orden.',
-              // Si el estado actual NO es "Pendiente" o "Preparado" y es una pre-orden, ya está completado.
-              statusClass:
-                currentStatusText !== 'Pendiente' && currentStatusText !== 'Preparado' ? 'completed' : 'current',
-            });
-          }
-  
-          // Paso "Pendiente"
+          return timelineSteps;
+        }
+
+        // Paso "Pre-Orden" (solo si la orden es una pre-orden).
+        if (isPreOrden) {
           timelineSteps.push({
-            id: 'pendiente',
-            nombre: 'Pendiente',
-            icon: 'mdi-file-document-edit-outline',
+            id: 'pre_orden',
+            nombre: 'Pre-Orden',
+            icon: 'mdi-file-cabinet-outline',
             fecha: fechaAltaRegistro,
-            descripcion: `La orden está pendiente.`,
-            statusClass:
-              currentStatusText === 'Pendiente'
-                ? 'current'
-                : (orden.AltaRegistro ? 'completed' : 'pending'),
+            descripcion: 'Orden creada como pre-orden.',
           });
-  
-          // Paso "Preparada"
+        }
+
+        // Paso "Pendiente"
+        timelineSteps.push({
+          id: 'pendiente',
+          nombre: 'Pendiente',
+          icon: 'mdi-file-document-edit-outline',
+          fecha: fechaAltaRegistro,
+          descripcion: `La orden está pendiente.`,
+        });
+
+        // Paso "Preparada"
+        timelineSteps.push({
+          id: 'preparado',
+          nombre: 'Preparada',
+          icon: 'mdi-package-variant-closed-check',
+          fecha: fechaOrden, // Usamos la fecha de la orden como fecha de preparado
+          descripcion: 'Los productos han sido preparados.',
+        });
+
+        if (isRetiraCliente) {
+          // Paso "Retira Cliente"
           timelineSteps.push({
-            id: 'preparado',
-            nombre: 'Preparada',
-            icon: 'mdi-package-variant-closed-check',
-            fecha: fechaOrden, // Usamos la fecha de la orden como fecha de preparado
-            descripcion: 'Los productos han sido preparados.',
-            statusClass:
-              currentStatusText === 'Preparado'
-                ? 'current'
-                : (orden.Estado >= 2 ? 'completed' : 'pending'), // Marcamos como completado si el estado es 2 (Preparado) o superior
+            id: 'retira_cliente',
+            nombre: 'Retira Cliente',
+            icon: 'mdi-account-check-outline',
+            fecha: fechaOrden, // Fecha de la orden como fecha de retiro
+            descripcion: 'La orden está lista para retiro por el cliente.',
           });
-  
-          // Determina si la orden ha alcanzado el estado "Preparado" o posterior para incluir los siguientes pasos.
-          const reachedPreparationOrBeyond = [
-            'Preparado',
-            'A distribuciòn',
-            'Retira Cliente',
-          ].includes(currentStatusText);
-  
-          if (reachedPreparationOrBeyond) {
-            if (isRetiraCliente) {
-              // Paso "Retira Cliente"
-              timelineSteps.push({
-                id: 'retira_cliente',
-                nombre: 'Retira Cliente',
-                icon: 'mdi-account-check-outline',
-                fecha: fechaOrden, // Fecha de la orden como fecha de retiro
-                descripcion: 'La orden está lista para retiro por el cliente.',
-                statusClass:
-                  currentStatusText === 'Retira Cliente'
-                    ? 'current'
-                    : (orden.Estado >= 5 ? 'completed' : 'pending'), // Marcamos como completado si el estado es 5 (Retira Cliente) o superior
-              });
-            } else {
-              // Paso "A Distribución"
-              timelineSteps.push({
-                id: 'a_distribucion',
-                nombre: 'A Distribución',
-                icon: 'mdi-truck-fast-outline',
-                fecha: fechaOrden, // Fecha de la orden como fecha de distribución
-                descripcion: 'La orden ha sido despachada.',
-                statusClass:
-                  currentStatusText === 'A distribuciòn'
-                    ? 'current'
-                    : (orden.Estado >= 3 ? 'completed' : 'pending'), // Marcamos como completado si el estado es 3 (A Distribución) o superior
-              });
-            }
-          }
+        } else {
+          // Paso "A Distribución"
+          timelineSteps.push({
+            id: 'a_distribucion',
+            nombre: 'A Distribución',
+            icon: 'mdi-truck-fast-outline',
+            fecha: fechaOrden, // Fecha de la orden como fecha de distribución
+            descripcion: 'La orden ha sido despachada.',
+          });
         }
-        // Re-evaluación final de las clases de estado para asegurar la secuencia 'completed' -> 'current' -> 'pending'.
-        // Esto asegura que todos los pasos anteriores al 'current' se marquen como 'completed'.
-        let foundCurrent = false;
-        for (let i = timelineSteps.length - 1; i >= 0; i--) {
-          const step = timelineSteps[i];
-          if (step.statusClass === 'current' || step.statusClass === 'current-bad') {
-            foundCurrent = true;
-          } else if (foundCurrent && step.statusClass === 'pending') {
-            // Si ya encontramos el estado actual y este paso era "pending", se marca como "completed".
+
+        // Mapeo de estados textuales al ID de paso correspondiente para evaluar el avance.
+        const stateToId = {
+          'Pre-Orden': 'pre_orden',
+          Pendiente: 'pendiente',
+          Preparado: 'preparado',
+          'A distribuciòn': 'a_distribucion',
+          'Retira Cliente': 'retira_cliente',
+        };
+        const currentStepId = stateToId[currentStatusText] || null;
+        const currentIndex = timelineSteps.findIndex(step => step.id === currentStepId);
+
+        // Asigna la clase de estado basándose en la posición relativa al estado actual.
+        timelineSteps.forEach((step, index) => {
+          if (currentIndex === -1) {
+            step.statusClass = 'pending';
+          } else if (index < currentIndex) {
             step.statusClass = 'completed';
+          } else if (index === currentIndex) {
+            step.statusClass = 'current';
+          } else {
+            step.statusClass = 'pending';
           }
-        }
+        });
+
         console.log("_construirTimelineOrden: Timeline construido:", timelineSteps);
         return timelineSteps;
       },
