@@ -242,7 +242,7 @@
                     </template>
                   </v-simple-table>
                   <v-alert v-else type="info" class="ma-4" dense outlined>
-                    No hay productos registrados en esta orden.
+                    No hay productos registrados en esta {{ modalType === 'orden' ? 'orden' : 'guía' }}.
                   </v-alert>
                 </v-card-text>
               </v-card>
