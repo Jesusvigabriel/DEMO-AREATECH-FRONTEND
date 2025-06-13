@@ -662,6 +662,9 @@
           <v-divider />
   
           <v-card-actions class="justify-end">
+            <v-btn color="primary" text @click="descargarOrdenExcelIndividual(modalData)">
+              Descargar Orden
+            </v-btn>
             <v-btn text color="primary" @click="closeModal">Cerrar</v-btn>
           </v-card-actions>
         </v-card>
@@ -2029,6 +2032,77 @@ import { saveAs } from 'file-saver'
           new Blob([buffer]),
           `ordenes_${this.fechaDesde}_${this.fechaHasta}.xlsx`
         )
+      },
+
+      async descargarOrdenExcelIndividual(orden) {
+        if (!orden) return
+
+        const workbook = new excel.Workbook()
+
+        const statusColors = {
+          Pendiente: 'FFC81E2B',
+          Preparada: 'FFF8B421',
+          Despachada: 'FF2D8BBA',
+        }
+
+        const numero = orden.Numero || orden.numero || orden.IdOrden
+        const sheetName = String(numero).substring(0, 31)
+        const sheet = workbook.addWorksheet(sheetName)
+
+        sheet.getRow(1).values = ['N° Orden', numero]
+        sheet.getRow(2).values = ['Empresa', orden.NombreEmpresa || '']
+        sheet.getRow(3).values = ['Cliente', orden.NombreDestino || '']
+        sheet.getRow(4).values = [
+          'Fecha',
+          orden.Fecha ? new Date(orden.Fecha).toLocaleDateString('es-AR') : '',
+        ]
+        sheet.getRow(5).values = ['Estado', orden.NombreEstado || orden.Estado || '']
+
+        const estadoCelda = sheet.getCell('B5')
+        const color = statusColors[orden.NombreEstado || orden.Estado]
+        if (color) {
+          estadoCelda.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: color },
+          }
+        }
+
+        sheet.getRow(7).values = [
+          'Cantidad',
+          'Producto',
+          'Barcode',
+          'Código Empresa',
+          'Precio',
+        ]
+
+        if (Array.isArray(orden.productos)) {
+          orden.productos.forEach((prod) => {
+            sheet.addRow([
+              prod.Unidades,
+              prod.NombreProducto || '',
+              prod.Barcode || '',
+              prod.CodeEmpresa || '',
+              prod.Precio != null ? Number(prod.Precio).toFixed(2) : '',
+            ])
+          })
+        }
+
+        sheet.eachRow((row, idx) => {
+          row.eachCell((cell) => {
+            cell.font = idx <= 7 ? { size: 14, bold: idx <= 5 } : { size: 14 }
+          })
+        })
+        sheet.columns = [
+          { width: 15 },
+          { width: 30 },
+          { width: 30 },
+          { width: 25 },
+          { width: 15 },
+        ]
+
+        const buffer = await workbook.xlsx.writeBuffer()
+        saveAs(new Blob([buffer]), `orden_${numero}.xlsx`)
       },
   
       /**
