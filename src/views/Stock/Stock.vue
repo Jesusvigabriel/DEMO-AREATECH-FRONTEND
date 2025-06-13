@@ -15,17 +15,6 @@
         </v-row>
         <v-row v-show="empresaLoggeada()>0" justify="center" class="p-1">
             <v-row v-if="listaArticulosCompleta.length>0" justify="center">
-                <v-col class="p-1" cols="12" sm="4" md="3">
-                    <v-select
-                        v-model="tipoExcel"
-                        :items="opcionesExcel"
-                        label="Tipo de Excel"
-                        dense
-                    ></v-select>
-                </v-col>
-                <v-col class="p-1" cols="12" sm="4" md="3">
-                    <v-btn @click="clickDescargarExcel" color="success" block>Descargar Excel <v-icon>mdi-microsoft-excel</v-icon></v-btn>
-                </v-col>
                 <v-col class="p-1" cols="12" sm="6" md="4">
                     <v-btn @click="popularListaProductos" color="success" block>Actualizar información <v-icon>mdi-refresh</v-icon></v-btn>
                 </v-col>
@@ -34,17 +23,6 @@
         <v-row v-show="empresaLoggeada()<=0" justify="center" class="p-3">
             <v-row v-if="listaArticulosCompleta.length>0" justify="center">
                 <v-row justify="center">
-                    <v-col class="p-1" cols="12" sm="4" md="3">
-                        <v-select
-                            v-model="tipoExcel"
-                            :items="opcionesExcel"
-                            label="Tipo de Excel"
-                            dense
-                        ></v-select>
-                    </v-col>
-                    <v-col class="p-1" cols="12" sm="4" md="3">
-                        <v-btn @click="clickDescargarExcel" color="success" block>Descargar Excel <v-icon>mdi-microsoft-excel</v-icon></v-btn>
-                    </v-col>
                     <v-col class="p-1" cols="12" sm="6" md="4">
                         <v-btn @click="popularListaProductos" color="success" block>Actualizar información <v-icon>mdi-refresh</v-icon></v-btn>
                     </v-col>
@@ -67,7 +45,7 @@
     cols="12" sm="6" md="3"
     class="pa-2"
   >
-    <v-card outlined tile class="d-flex flex-column">
+    <v-card outlined tile class="d-flex flex-column cursor-pointer" @click="card.handler">
       <!-- Mitad superior: usa v-sheet para el color de tema-->
       <v-sheet
         :color="card.color"
@@ -347,11 +325,6 @@ export default {
             listaArticulosCompleta: [],
             listaArticulosMostrar: [],
             listaArticulosProductos: [],
-            tipoExcel: 'todo',
-            opcionesExcel: [
-                { text: 'Todo el stock', value: 'todo' },
-                { text: 'Stock sin posicionar', value: 'no-pos' }
-            ],
             tieneLOTE: false,
             tienePART: false,
             verSoloConStockSinPosicionar: false,
@@ -1200,119 +1173,6 @@ export default {
         },
   
 
-  async clickDescargarExcel() {
-    if (this.tipoExcel === 'no-pos') {
-      await this.descargarExcelNoPosicionado();
-      return;
-    }
-    // 1) Creo el workbook y la hoja
-    const workbook  = new excel.Workbook();
-    const worksheet = workbook.addWorksheet("Stock");
-
-    // 2) Caso A: empresa con posiciones SIN lotes → llamada única optimizada
-    if (this.empresaElegida.StockPosicionado && !this.tieneLOTE) {
-      // 2a) Traigo todo el detalle de posiciones en una sola llamada
-      const detalle = await posicionesV3.getAllByEmpresaConDetalle(this.idEmpresa);
-      console.log("📊 Datos recibidos para detalle:", detalle);
-
-      // 2b) Configuro columnas, filtro y freeze pane
-      worksheet.columns = [
-        { header: 'Producto',      width: 40 },
-        { header: 'IdProducto',    width: 15 },
-        { header: 'Posición',      width: 30 },
-        { header: 'Unidades',      width: 15 },
-         { header: 'Barcode',       width: 30 },    
-         { header: 'CodeEmpresa',   width: 25 }
-      ];
-      worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
-      worksheet.autoFilter = 'A1:D1';
-
-      // 2c) Relleno filas con los datos
-      let rowIndex = 2;
-      detalle.forEach(item => {
-        worksheet.getRow(rowIndex++).values = [
-          item.NombreProducto,
-          item.IdProducto,
-          item.NombrePosicion,
-          item.Unidades,
-          item.barrCode,       
-        item.codeEmpresa 
-        ];
-      });
-
-      // 2d) Agrego fila de totales al final
-      const totRow = rowIndex;
-      worksheet.getCell(`C${totRow}`).value = 'TOTAL';
-      worksheet.getCell(`D${totRow}`).value = { formula: `SUM(D2:D${totRow-1})` };
-      worksheet.getCell(`D${totRow}`).font = { bold: true };
-    }
-
-    // 3) Caso B: empresa con posiciones Y lotes → tu lógica original para lotes
-    else if (this.empresaElegida.StockPosicionado && this.tieneLOTE) {
-      worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
-      worksheet.autoFilter = 'A1:F1';
-      worksheet.columns = [
-        { header: 'Producto',      width: 100 },
-        { header: 'BoxNumber',     width: 40 },
-        { header: 'SerialNumber',  width: 40 },
-        { header: 'ProductNumber', width: 40 },
-        { header: 'Posición',      width: 30 },
-        { header: 'Unidades',      width: 25 }
-      ];
-      let rowIndex = 1;
-      for (const art of this.listaArticulosCompleta) {
-        const d = JSON.parse(art.LoteDetalle)[0];
-        rowIndex++;
-        worksheet.getRow(rowIndex).values = [
-          d.productoNombre,
-          d.lote,
-          d.barcode,
-          d.codeEmpresa,
-          d.posicion,
-          d.unidades
-        ];
-      }
-    }
-
-    // 4) Caso C: empresas sin posiciones → tu lógica original para sin posiciones
-    else {
-      worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
-      worksheet.autoFilter = 'A1:E1';
-      worksheet.columns = [
-        { header: 'Producto',   width: 100 },
-        { header: 'Barcode',    width: 40 },
-        { header: 'CodeEmpresa',width: 40 },
-        { header: 'Unidades',   width: 25 },
-        { header: 'Id',         width: 25 }
-      ];
-      let rowIndex = 1;
-      this.listaArticulosCompleta.forEach(item => {
-        rowIndex++;
-        worksheet.getRow(rowIndex).values = [
-          item.Nombre,
-          item.Barcode,
-          item.CodeEmpresa,
-          item.Stock,
-          item.Id
-        ];
-      });
-      rowIndex++;
-      const sumCell = worksheet.getCell(`D${rowIndex}`);
-      sumCell.value = { formula: `SUM(D2:D${rowIndex-1})` };
-      sumCell.font  = { bold: true };
-    }
-
-    // 5) Formateo general: encabezados grandes, celdas normales
-    worksheet.eachRow((row, idx) => {
-      row.eachCell(cell => {
-        cell.font = idx === 1 ? { size: 16, bold: true } : { size: 14 };
-      });
-    });
-
-    // 6) Genero el buffer y disparo la descarga
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_Stock.xlsx`);
-  },
 
   async descargarExcelNoPosicionado() {
     const workbook  = new excel.Workbook();
@@ -1355,6 +1215,141 @@ export default {
 
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_StockSinPosicionar.xlsx`);
+  },
+
+  async descargarStockTotal() {
+    const workbook  = new excel.Workbook();
+    const worksheet = workbook.addWorksheet('StockTotal');
+
+    worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = 'A1:E1';
+    worksheet.columns = [
+      { header: 'Producto',   width: 100 },
+      { header: 'Barcode',    width: 40 },
+      { header: 'CodeEmpresa',width: 40 },
+      { header: 'Unidades',   width: 25 },
+      { header: 'Id',         width: 25 }
+    ];
+
+    let rowIndex = 1;
+    this.listaArticulosCompleta.forEach(item => {
+      rowIndex++;
+      worksheet.getRow(rowIndex).values = [
+        item.Nombre || item.Productos || item.NombreProducto,
+        item.Barcode || item.SerialNumber || item.barcode,
+        item.CodeEmpresa || item.codeEmpresa,
+        item.Stock,
+        item.Id || item.IdProducto
+      ];
+    });
+
+    rowIndex++;
+    const sumCell = worksheet.getCell(`D${rowIndex}`);
+    sumCell.value = { formula: `SUM(D2:D${rowIndex-1})` };
+    sumCell.font  = { bold: true };
+
+    worksheet.eachRow((row, idx) => {
+      row.eachCell(cell => {
+        cell.font = idx === 1 ? { size: 16, bold: true } : { size: 14 };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_StockTotal.xlsx`);
+  },
+
+  async descargarStockPosicionado() {
+    const workbook  = new excel.Workbook();
+    const worksheet = workbook.addWorksheet('StockPosicionado');
+
+    worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = 'A1:E1';
+    worksheet.columns = [
+      { header: 'Producto',   width: 100 },
+      { header: 'Barcode',    width: 40 },
+      { header: 'CodeEmpresa',width: 40 },
+      { header: 'Posicionado',width: 25 },
+      { header: 'Id',         width: 25 }
+    ];
+
+    let rowIndex = 1;
+    this.listaArticulosCompleta.forEach(item => {
+      if (item.StockPosicionado && item.StockPosicionado > 0) {
+        rowIndex++;
+        worksheet.getRow(rowIndex).values = [
+          item.Nombre || item.Productos || item.NombreProducto,
+          item.Barcode || item.SerialNumber || item.barcode,
+          item.CodeEmpresa || item.codeEmpresa,
+          item.StockPosicionado,
+          item.Id || item.IdProducto
+        ];
+      }
+    });
+
+    rowIndex++;
+    const sumCell = worksheet.getCell(`D${rowIndex}`);
+    sumCell.value = { formula: `SUM(D2:D${rowIndex-1})` };
+    sumCell.font  = { bold: true };
+
+    worksheet.eachRow((row, idx) => {
+      row.eachCell(cell => {
+        cell.font = idx === 1 ? { size: 16, bold: true } : { size: 14 };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_StockPosicionado.xlsx`);
+  },
+
+  async descargarStockSinPosicionar() {
+    await this.descargarExcelNoPosicionado();
+  },
+
+  async descargarStockComprometido() {
+    const workbook  = new excel.Workbook();
+    const worksheet = workbook.addWorksheet('StockComprometido');
+
+    worksheet.views      = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = 'A1:F1';
+    worksheet.columns = [
+      { header: 'Producto',   width: 100 },
+      { header: 'Barcode',    width: 40 },
+      { header: 'CodeEmpresa',width: 40 },
+      { header: 'Comprometido', width: 25 },
+      { header: 'Ordenes', width: 50 },
+      { header: 'Id',       width: 25 }
+    ];
+
+    let rowIndex = 1;
+    for (const item of this.listaArticulosCompleta) {
+      if (item.StockComprometido && item.StockComprometido > 0) {
+        const detalle = await ordenesV3.getOrdenDetalleByIdProducto(item.Id || item.IdProducto);
+        const ord = detalle.map(o => `${o.Numero}:${o.Unidades}`).join(', ');
+        rowIndex++;
+        worksheet.getRow(rowIndex).values = [
+          item.Nombre || item.Productos || item.NombreProducto,
+          item.Barcode || item.SerialNumber || item.barcode,
+          item.CodeEmpresa || item.codeEmpresa,
+          item.StockComprometido,
+          ord,
+          item.Id || item.IdProducto
+        ];
+      }
+    }
+
+    rowIndex++;
+    const sumCell = worksheet.getCell(`D${rowIndex}`);
+    sumCell.value = { formula: `SUM(D2:D${rowIndex-1})` };
+    sumCell.font  = { bold: true };
+
+    worksheet.eachRow((row, idx) => {
+      row.eachCell(cell => {
+        cell.font = idx === 1 ? { size: 16, bold: true } : { size: 14 };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `${this.empresaElegida.Nombre}_StockComprometido.xlsx`);
   },
 
  
@@ -1490,25 +1485,29 @@ export default {
         label: 'Stock total',
         value: this.stockTotal,
         color: 'primary',              // clave de tu tema
-        icon:  'mdi-package-variant'   // icono MDI
+        icon:  'mdi-package-variant',  // icono MDI
+        handler: this.descargarStockTotal
       },
       {
         label: 'Posicionado',
         value: this.stockPosicionado,
         color: pctPos < 0.5 ? 'orange' : 'green',
-        icon:  'mdi-warehouse'
+        icon:  'mdi-warehouse',
+        handler: this.descargarStockPosicionado
       },
       {
         label: 'Sin posicionar',
         value: this.stockSinPosicionar,
         color: this.stockSinPosicionar > 1000 ? 'orange' : 'green',
-        icon:  'mdi-package-variant-closed'
+        icon:  'mdi-package-variant-closed',
+        handler: this.descargarStockSinPosicionar
       },
       {
         label: 'Comprometido',
         value: this.stockComprometido,
         color: this.stockComprometido > 0 ? 'red' : 'primary',
-        icon:  'mdi-handshake-outline'
+        icon:  'mdi-handshake-outline',
+        handler: this.descargarStockComprometido
       }
     ]
   },
