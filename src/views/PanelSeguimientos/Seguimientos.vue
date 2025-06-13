@@ -149,6 +149,7 @@
         :getStatusChipClassTextual="getStatusChipClassTextual"
         @close="closeModal"
         @descargar-orden-excel-individual="descargarOrdenExcelIndividual"
+        @descargar-guia-excel-individual="descargarGuiaExcelIndividual"
       />
     </v-container>
   </template>
@@ -1598,6 +1599,105 @@ import { saveAs } from 'file-saver'
 
         const buffer = await workbook.xlsx.writeBuffer()
         saveAs(new Blob([buffer]), `orden_${numero}.xlsx`)
+      },
+
+      async descargarGuiaExcelIndividual(guia) {
+        if (!guia) return
+
+        const workbook = new excel.Workbook()
+
+        const statusColors = {
+          'Pedido en preparación': 'FFC81E2B',
+          'Pedido preparado': 'FFF8B421',
+          DESPACHADO: 'FF2D8BBA',
+          'En distribución': 'FF2D8BBA',
+          ENTREGADO: 'FF4CAF50',
+          'ANULADO': 'FFF44336'
+        }
+
+        const numero = guia.Comprobante || guia.Id || guia.Numero || ''
+        const sheetName = String(numero).substring(0, 31)
+        const sheet = workbook.addWorksheet(sheetName)
+
+        sheet.getRow(1).values = ['N° Guía', numero]
+        sheet.getRow(2).values = ['Empresa', guia.NombreCliente || guia.Empresa?.RazonSocial || '']
+        sheet.getRow(3).values = ['Destino', guia.NombreDestino || '']
+        sheet.getRow(4).values = ['Remito', guia.Remitos || '']
+        sheet.getRow(5).values = [
+          'Fecha',
+          guia.FechaOriginal ? new Date(guia.FechaOriginal).toLocaleDateString('es-AR') : ''
+        ]
+        sheet.getRow(6).values = ['Estado', guia.Estado || '']
+
+        const estadoCelda = sheet.getCell('B6')
+        const color = statusColors[guia.Estado]
+        if (color) {
+          estadoCelda.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: color }
+          }
+        }
+
+        sheet.getRow(8).values = [
+          'Cantidad',
+          'Producto',
+          'Barcode',
+          'Código Empresa',
+          'Precio'
+        ]
+
+        if (Array.isArray(guia.productos)) {
+          guia.productos.forEach((prod) => {
+            sheet.addRow([
+              prod.Unidades,
+              prod.NombreProducto || '',
+              prod.Barcode || '',
+              prod.CodeEmpresa || '',
+              prod.Precio != null ? Number(prod.Precio).toFixed(2) : ''
+            ])
+          })
+        }
+
+        const historial =
+          guia.historialEstados || guia.historial || guia.Historial || guia.Estados
+
+        if (Array.isArray(historial) && historial.length) {
+          const sheetHist = workbook.addWorksheet('Historial')
+          sheetHist.columns = [{ width: 25 }, { width: 20 }]
+          sheetHist.getRow(1).values = ['Estado', 'Fecha']
+          historial.forEach((h) => {
+            sheetHist.addRow([
+              h.estado || h.Estado || h.nombre || h.Nombre || '',
+              h.fecha
+                ? new Date(h.fecha).toLocaleDateString('es-AR')
+                : h.Fecha
+                ? new Date(h.Fecha).toLocaleDateString('es-AR')
+                : ''
+            ])
+          })
+          sheetHist.eachRow((row, idx) => {
+            row.eachCell((cell) => {
+              cell.font = idx === 1 ? { size: 14, bold: true } : { size: 14 }
+            })
+          })
+        }
+
+        sheet.eachRow((row, idx) => {
+          row.eachCell((cell) => {
+            cell.font = idx <= 8 ? { size: 14, bold: idx <= 6 } : { size: 14 }
+          })
+        })
+        sheet.columns = [
+          { width: 15 },
+          { width: 30 },
+          { width: 30 },
+          { width: 25 },
+          { width: 15 }
+        ]
+
+        const buffer = await workbook.xlsx.writeBuffer()
+        saveAs(new Blob([buffer]), `guia_${numero}.xlsx`)
       },
   
       /**

@@ -254,8 +254,19 @@
       <v-divider />
 
       <v-card-actions class="justify-end">
-        <v-btn color="primary" text @click="$emit('descargar-orden-excel-individual', modalData)">
-          Descargar Orden
+        <v-btn
+          color="primary"
+          text
+          @click="
+            $emit(
+              modalType === 'guia'
+                ? 'descargar-guia-excel-individual'
+                : 'descargar-orden-excel-individual',
+              modalData
+            )
+          "
+        >
+          Descargar {{ modalType === 'guia' ? 'Guía' : 'Orden' }}
         </v-btn>
         <v-btn text color="primary" @click="$emit('close')">Cerrar</v-btn>
       </v-card-actions>
