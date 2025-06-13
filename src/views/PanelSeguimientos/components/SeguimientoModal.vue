@@ -177,7 +177,10 @@
                     <span class="subtitle-2 font-weight-medium">
                       {{ paso.nombre }}
                     </span>
-                    <span v-if="paso.fecha" class="caption text--secondary">
+                    <span
+                      v-if="paso.fecha && paso.fecha !== 'N/A' && paso.fecha !== 'Invalid date'"
+                      class="caption text--secondary"
+                    >
                       – {{ paso.fecha }}
                     </span>
                     <span v-if="paso.descripcion" class="caption mt-1 text--secondary">
