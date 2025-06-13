@@ -99,8 +99,8 @@
             <v-tabs-items v-model="tab">
               <v-tab-item value="tab-ordenes">
                 <v-card-text>
-                  <v-toolbar flat dense color="grey lighten-4">
-                    <v-toolbar-title class="subtitle-1 font-weight-medium text--primary">
+                  <v-toolbar flat dense class="header-menubar">
+                    <v-toolbar-title class="subtitle-1 font-weight-medium">
                       Seguimiento de Órdenes
                     </v-toolbar-title>
                   </v-toolbar>
@@ -252,8 +252,8 @@
   
               <v-tab-item value="tab-guias">
                 <v-card-text>
-                  <v-toolbar flat dense color="grey lighten-4">
-                    <v-toolbar-title class="subtitle-1 font-weight-medium text--primary">
+                  <v-toolbar flat dense class="header-menubar">
+                    <v-toolbar-title class="subtitle-1 font-weight-medium">
                       Seguimiento de Guías
                     </v-toolbar-title>
                   </v-toolbar>

@@ -8,7 +8,7 @@
           <v-col cols="12" sm="8" md="6" lg="4">
             <v-card :class="['elevation-6', 'login-card', { 'modo-dark': $vuetify.theme.dark }]">
               <!-- Barra superior con título e icono -->
-              <v-toolbar color="primary" dark flat>
+              <v-toolbar flat class="header-menubar">
                 <v-toolbar-title class="text-h5">Bienvenido</v-toolbar-title>
                 <v-spacer />
                 <v-icon large>mdi-forklift</v-icon>
