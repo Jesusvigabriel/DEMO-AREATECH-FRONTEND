@@ -27,11 +27,11 @@ chip:
 
 | Estado (Órdenes)      | Clases del chip |
 |-----------------------|-----------------|
-| Pendiente             | `warning lighten-2 white--text` |
-| Preparado             | `info lighten-1 white--text` |
-| A distribución        | `success lighten-1 white--text` |
+| Pendiente             | `chip-pendiente` |
+| Preparado             | `chip-preparada` |
+| A distribución        | `chip-despachada` |
 | Anulado               | `error lighten-2 white--text` |
-| Retira Cliente        | `deep-purple accent-4 white--text` |
+| Retira Cliente        | `chip-despachada` |
 
 | Estado (Guías)        | Clases del chip |
 |-----------------------|-----------------|
