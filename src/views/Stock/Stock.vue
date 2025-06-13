@@ -7,7 +7,7 @@
         </v-row>
         <v-row v-if="idEmpresa>0" class="py-0">
             <v-col class="py-0 my-0">
-                <v-checkbox class="my-0" @change="changeVerSoloConStock" v-model="verSoloConStock" label="Ver solo artículos con stock"></v-checkbox>
+                <v-checkbox class="my-0" @change="changeVerSoloConStock" v-model="verSoloConStock" :label="verSoloConStock ? 'Ver todos los artículos' : 'Ver solo artículos con stock'"></v-checkbox>
             </v-col>
             <v-col class="py-0" v-show="empresaElegida.StockPosicionado">
                 <v-checkbox class="my-0" @change="changeVerSoloStockSinPosicionar" v-model="verSoloConStockSinPosicionar" label="Ver solo artículos con stock sin posicionar"></v-checkbox>
@@ -328,7 +328,7 @@ export default {
             tieneLOTE: false,
             tienePART: false,
             verSoloConStockSinPosicionar: false,
-            verSoloConStock: false,
+            verSoloConStock: true,
             stockTotal: 0,
             stockSinPosicionar: 0,
             stockPosicionado: 0,
@@ -1567,7 +1567,10 @@ export default {
                     console.log(error)
                 })
             }else{
-                productosV3.getAllProductosByEmpresa(this.idEmpresa)
+                const apiCall = this.verSoloConStock
+                    ? productosV3.getAllConStock(this.idEmpresa)
+                    : productosV3.getAllProductosByEmpresa(this.idEmpresa)
+                apiCall
                     .then(respuesta => {
                         respuesta.forEach(unProducto => {
                             if(unProducto.StockComprometido == null){
