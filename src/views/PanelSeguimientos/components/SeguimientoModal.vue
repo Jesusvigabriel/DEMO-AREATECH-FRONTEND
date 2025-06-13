@@ -254,19 +254,8 @@
       <v-divider />
 
       <v-card-actions class="justify-end">
-        <v-btn
-          color="primary"
-          text
-          @click="
-            $emit(
-              modalType === 'guia'
-                ? 'descargar-guia-excel-individual'
-                : 'descargar-orden-excel-individual',
-              modalData
-            )
-          "
-        >
-          Descargar {{ modalType === 'guia' ? 'Guía' : 'Orden' }}
+        <v-btn color="primary" text @click="download">
+          {{ modalType === 'orden' ? 'Descargar Orden' : 'Descargar Guía' }}
         </v-btn>
         <v-btn text color="primary" @click="$emit('close')">Cerrar</v-btn>
       </v-card-actions>
@@ -285,6 +274,16 @@ export default {
     loading: Boolean,
     errorAlCargar: [String, Object],
     getStatusChipClassTextual: Function
+  },
+  methods: {
+    download() {
+      const event =
+        this.modalType === 'orden'
+          ? 'descargar-orden-excel-individual'
+          : 'descargar-guia-excel-individual'
+
+      this.$emit(event, this.modalData)
+    }
   }
 }
 </script>
