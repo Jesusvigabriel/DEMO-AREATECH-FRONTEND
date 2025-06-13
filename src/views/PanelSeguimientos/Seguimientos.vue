@@ -1897,17 +1897,16 @@ import { saveAs } from 'file-saver'
         if (['Pendiente', 'Preparado', 'A distribuciòn', 'Anulado', 'Retira Cliente'].includes(estado)) {
           switch (estado) {
             case 'Pendiente':
-              return 'warning lighten-2 white--text'; // Advertencia.
+              return 'chip-pendiente'
             case 'Preparado':
-              return 'info lighten-1 white--text'; // Información.
+              return 'chip-preparada'
             case 'A distribuciòn':
-              return 'success lighten-1 white--text'; // Distribución en progreso.
-            case 'Anulado':
-              return 'error lighten-2 white--text'; // Anulado o error.
             case 'Retira Cliente':
-              return 'deep-purple accent-4 white--text'; // Retiro en sucursal.
+              return 'chip-despachada'
+            case 'Anulado':
+              return 'error lighten-2 white--text'
             default:
-              return 'secondary lighten-2 white--text'; // Por defecto.
+              return 'secondary lighten-2 white--text'
           }
         }
         // Clases para estados de Guías (basadas en `VistaDeTracking.vue`).
@@ -2373,5 +2372,21 @@ import { saveAs } from 'file-saver'
   }
   .timeline-step.despachada::before {
     background-color: #2d8bba;
+  }
+
+  /* === Chip color classes (comparten valores con el timeline) === */
+  .chip-pendiente {
+    background-color: #c81e2b;
+    color: #fff;
+  }
+
+  .chip-preparada {
+    background-color: #f8b421;
+    color: #fff;
+  }
+
+  .chip-despachada {
+    background-color: #2d8bba;
+    color: #fff;
   }
   </style>
