@@ -395,11 +395,19 @@ const productosV3= {
                 .then(data => {
                     resolve(data)
                 })
-                .catch(puteada => { 
-                    reject(puteada) 
+                .catch(puteada => {
+                    reject(puteada)
                 })
             }
-        )            
+        )
+    },
+
+    async getAllConStock(idEmpresa) {
+        return new Promise((resolve, reject) => {
+            API.acceder({Ruta: `/productos/allConStock/${idEmpresa}`, Cartel: 'Obteniendo datos ...'})
+                .then(data => resolve(data))
+                .catch(err => reject(err));
+        });
     },
 
     async getMovimientosByPeriodoAndEmpresaAndArticulo(idEmpresa, fechaDesde, fechaHasta, idArticulo) {
