@@ -1,15 +1,10 @@
 <template>
     <v-container fluid class="pa-4">
-      <!-- =================================================================== -->
-      <!-- Sección del Encabezado Principal del Componente                     -->
-      <!-- Muestra el título principal de la vista "Seguimiento"               -->
-      <!-- =================================================================== -->
       <v-row>
         <v-col>
           <v-sheet elevation="0" class="mb-6">
             <v-row align="center" justify="space-between">
               <v-col cols="12" md="6">
-                <!-- Título grande para la sección de seguimiento -->
                 <span class="text-h4 font-weight-semibold">
                   Seguimiento
                 </span>
@@ -19,17 +14,11 @@
         </v-col>
       </v-row>
   
-      <!-- =================================================================== -->
-      <!-- Sección de Filtros: Selector de Empresa y Rangos de Fechas          -->
-      <!-- Permite al usuario seleccionar una empresa y un rango de fechas     -->
-      <!-- para filtrar las órdenes y guías que se mostrarán.                  -->
-      <!-- =================================================================== -->
       <v-row>
         <v-col cols="12">
           <v-card elevation="2" class="mb-6">
             <v-card-text>
               <v-row dense align="center" no-gutters>
-                <!-- Bloque: Selector de Empresa -->
                 <v-col cols="12" md="4" class="pr-4">
                   <v-row>
                     <v-col cols="12">
@@ -38,8 +27,6 @@
                       </span>
                     </v-col>
                     <v-col cols="12">
-                      <!-- Componente `SelectorEmpresa` para elegir la empresa -->
-                      <!-- Emite un evento `eligioEmpresa` con el ID de la empresa seleccionada -->
                       <SelectorEmpresa
                         @eligioEmpresa="eligioEmpresa"
                         :idEmpresaInicialmenteSeleccionada="idEmpresa"
@@ -52,7 +39,6 @@
                   </v-row>
                 </v-col>
   
-                <!-- Bloque: Campo de Fecha Desde -->
                 <v-col cols="12" md="4" class="pr-4">
                   <v-row>
                     <v-col cols="12">
@@ -61,8 +47,6 @@
                       </span>
                     </v-col>
                     <v-col cols="12">
-                      <!-- Campo de texto para seleccionar la fecha de inicio del rango -->
-                      <!-- Al cambiar la fecha, se recargan ambas listas (órdenes y guías) -->
                       <v-text-field
                         v-model="fechaDesde"
                         type="date"
@@ -75,7 +59,6 @@
                   </v-row>
                 </v-col>
   
-                <!-- Bloque: Campo de Fecha Hasta -->
                 <v-col cols="12" md="4">
                   <v-row>
                     <v-col cols="12">
@@ -84,8 +67,6 @@
                       </span>
                     </v-col>
                     <v-col cols="12">
-                      <!-- Campo de texto para seleccionar la fecha de fin del rango -->
-                      <!-- Al cambiar la fecha, se recargan ambas listas (órdenes y guías) -->
                       <v-text-field
                         v-model="fechaHasta"
                         type="date"
@@ -103,15 +84,9 @@
         </v-col>
       </v-row>
   
-      <!-- =================================================================== -->
-      <!-- Sección de Pestañas: Alterna entre Órdenes y Guías                  -->
-      <!-- Utiliza `v-tabs` para permitir al usuario elegir qué tipo de        -->
-      <!-- seguimiento desea ver.                                              -->
-      <!-- =================================================================== -->
       <v-row>
         <v-col cols="12">
           <v-card elevation="2">
-            <!-- Pestañas para "Órdenes" y "Guías" -->
             <v-tabs v-model="tab" background-color="grey lighten-4" color="primary" show-arrows>
               <v-tab href="#tab-ordenes">
                 Órdenes
@@ -121,9 +96,7 @@
               </v-tab>
             </v-tabs>
   
-            <!-- Contenido de las Pestañas -->
             <v-tabs-items v-model="tab">
-              <!-- PESTAÑA: Seguimiento de Órdenes -->
               <v-tab-item value="tab-ordenes">
                 <v-card-text>
                   <v-toolbar flat dense color="grey lighten-4">
@@ -132,7 +105,6 @@
                     </v-toolbar-title>
                   </v-toolbar>
   
-                  <!-- Estado de carga (spinner) para órdenes -->
                   <div v-if="loading" class="text-center py-10">
                     <v-progress-circular indeterminate size="40" color="primary" />
                     <div class="mt-2">
@@ -142,7 +114,6 @@
                     </div>
                   </div>
   
-                  <!-- Mensaje de error al cargar órdenes -->
                   <div v-else-if="errorAlCargar" class="text-center py-10">
                     <v-icon size="36" color="error">mdi-alert-circle-outline</v-icon>
                     <div class="mt-2">
@@ -152,7 +123,6 @@
                     </div>
                   </div>
   
-                  <!-- Mensaje si no se ha seleccionado ninguna empresa para órdenes -->
                   <div v-else-if="idEmpresa <= 0" class="text-center py-10">
                     <v-icon size="36" color="grey">mdi-office-building</v-icon>
                     <div class="mt-2">
@@ -162,10 +132,8 @@
                     </div>
                   </div>
   
-                  <!-- Contenido principal: Buscador, Selector de filas y Tabla de Órdenes -->
                   <div v-else>
                     <v-row align="center" justify="space-between" class="mb-4">
-                      <!-- Buscador de órdenes -->
                       <v-col cols="12" md="6">
                         <v-text-field
                           v-model="textoBusqueda"
@@ -177,7 +145,6 @@
                         />
                       </v-col>
   
-                      <!-- Desplegable "Filas por página" para órdenes -->
                       <v-col cols="12" md="3">
                         <v-select
                           v-model="itemsPerPage"
@@ -190,7 +157,6 @@
                       </v-col>
                     </v-row>
   
-                    <!-- Tabla de datos de Órdenes -->
                     <v-data-table
                       :headers="cabecerasOrdenes"
                       :items="ordenesFiltradasParaTabla"
@@ -202,54 +168,41 @@
                       hide-default-footer
                       header-class="blue-header"
                     >
-                      <!-- Slot personalizado para la columna "N° Orden" (texto en negrita) -->
-                      <template v-slot:item.numero="{ item }">
+                      <template v-slot:item.Numero="{ item }">
                         <span class="body-2 font-weight-bold">
-                          {{ item.numero }}
+                          {{ item.Numero }}
                         </span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Empresa" -->
-                      <template v-slot:item.nombreEmpresa="{ item }">
-                        <span class="body-2">{{ item.nombre || 'N/A' }}</span>
+                      <template v-slot:item.NombreDestino="{ item }">
+                        <span class="body-2">{{ item.NombreDestino || 'N/A' }}</span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Cliente" -->
-                      <template v-slot:item.nombreCliente="{ item }">
-                        <span class="body-2">{{ item.nombreDestino || 'N/A' }}</span>
+                      <template v-slot:item.Fecha="{ item }">
+                        <span class="body-2">{{ item.Fecha ? new Date(item.Fecha).toLocaleDateString('es-AR') : 'N/A' }}</span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Fecha Creación" -->
-                      <template v-slot:item.fechaCreacion="{ item }">
-                        <span class="body-2">{{ item.Creada }}</span>
-                      </template>
-  
-                      <!-- Slot personalizado para la columna "Estado Actual" (chip con color) -->
-                      <template v-slot:item.estadoActual="{ item }">
+                      <template v-slot:item.Estado="{ item }">
                         <v-chip
-                          :class="getStatusChipClassTextual(item.Estado)"
+                          :class="getStatusChipClassTextual(item.NombreEstado || item.Estado)"
                           small
                         >
-                          {{ item.Estado }}
+                          {{ item.NombreEstado || item.Estado }}
                         </v-chip>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Acciones" (botón de ojo para ver detalle y botón de seguimiento de guía) -->
                       <template v-slot:item.acciones="{ item }">
-                        <!-- Botón para ver detalles de la orden -->
                         <v-btn
                           icon
                           small
                           @click="openModal('orden', item.IdOrden)"
-                          :aria-label="`Ver detalles orden ${item.numero}`"
+                          :aria-label="`Ver detalles orden ${item.Numero}`"
                         >
                           <v-icon color="primary">mdi-eye-outline</v-icon>
                         </v-btn>
   
-                        <!-- Condición para mostrar el botón/chip de seguimiento de guía -->
-                        <!-- Se muestra si la orden está en estado 'A distribución' (despachada) y tiene un IdGuia válido. -->
                         <v-chip
-                          v-if="item.Estado === 'A distribuciòn' && item.IdGuia > 0"
+                          v-if="item.NombreEstado === 'A distribuciòn' && item.IdGuia > 0"
                           small
                           class="ml-2"
                           color="green lighten-4"
@@ -263,7 +216,6 @@
                         </v-chip>
                       </template>
   
-                      <!-- Pie de tabla: Paginación manual y texto "Mostrando X de Y" -->
                       <template v-slot:footer.prepend>
                         <v-row align="center" justify="space-between" class="px-4">
                           <v-col cols="12" md="6">
@@ -284,7 +236,6 @@
                         </v-row>
                       </template>
   
-                      <!-- Slot "no-data" si no hay órdenes para los filtros seleccionados -->
                       <template v-slot:no-data>
                         <v-alert type="warning" dense text>
                           No se encontraron órdenes para los filtros seleccionados.
@@ -295,7 +246,6 @@
                 </v-card-text>
               </v-tab-item>
   
-              <!-- PESTAÑA: Seguimiento de Guías -->
               <v-tab-item value="tab-guias">
                 <v-card-text>
                   <v-toolbar flat dense color="grey lighten-4">
@@ -304,7 +254,6 @@
                     </v-toolbar-title>
                   </v-toolbar>
   
-                  <!-- Estado de carga (spinner) para guías -->
                   <div v-if="loading" class="text-center py-10">
                     <v-progress-circular indeterminate size="40" color="primary" />
                     <div class="mt-2">
@@ -314,7 +263,6 @@
                     </div>
                   </div>
   
-                  <!-- Mensaje de error al cargar guías -->
                   <div v-else-if="errorAlCargar" class="text-center py-10">
                     <v-icon size="36" color="error">mdi-alert-circle-outline</v-icon>
                     <div class="mt-2">
@@ -324,7 +272,6 @@
                     </div>
                   </div>
   
-                  <!-- Mensaje si no se ha seleccionado ninguna empresa para guías -->
                   <div v-else-if="idEmpresa <= 0" class="text-center py-10">
                     <v-icon size="36" color="grey">mdi-office-building</v-icon>
                     <div class="mt-2">
@@ -334,10 +281,8 @@
                     </div>
                   </div>
   
-                  <!-- Contenido principal: Buscador, Selector de filas y Tabla de Guías -->
                   <div v-else>
                     <v-row align="center" justify="space-between" class="mb-4">
-                      <!-- Buscador de guías -->
                       <v-col cols="12" md="6">
                         <v-text-field
                           v-model="textoBusquedaGuias"
@@ -349,7 +294,6 @@
                         />
                       </v-col>
   
-                      <!-- Desplegable "Filas por página" para guías -->
                       <v-col cols="12" md="3">
                         <v-select
                           v-model="itemsPerPageGuias"
@@ -362,7 +306,6 @@
                       </v-col>
                     </v-row>
   
-                    <!-- Tabla de datos de Guías -->
                     <v-data-table
                       :headers="cabecerasGuias"
                       :items="guiasFiltradasParaTabla"
@@ -374,34 +317,28 @@
                       hide-default-footer
                       header-class="blue-header"
                     >
-                      <!-- Slot personalizado para la columna "N° Guía" (texto en negrita) -->
                       <template v-slot:item.Comprobante="{ item }">
                         <span class="body-2 font-weight-bold">
                           {{ item.Comprobante }}
                         </span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Empresa" -->
                       <template v-slot:item.NombreCliente="{ item }">
                         <span class="body-2">{{ item.NombreCliente || 'N/A' }}</span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Destino" -->
                       <template v-slot:item.NombreDestino="{ item }">
                         <span class="body-2">{{ item.NombreDestino || 'N/A' }}</span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Remito" -->
                       <template v-slot:item.Remitos="{ item }">
                         <span class="body-2">{{ item.Remitos || 'N/A' }}</span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Fecha Creación" -->
                       <template v-slot:item.FechaOriginal="{ item }">
                         <span class="body-2">{{ item.FechaOriginal }}</span>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Estado Actual" (chip con color) -->
                       <template v-slot:item.Estado="{ item }">
                         <v-chip
                           :class="getStatusChipClassTextual(item.Estado)"
@@ -411,7 +348,6 @@
                         </v-chip>
                       </template>
   
-                      <!-- Slot personalizado para la columna "Acciones" (botón de ojo para ver detalle) -->
                       <template v-slot:item.acciones="{ item }">
                         <v-btn
                           icon
@@ -423,7 +359,6 @@
                         </v-btn>
                       </template>
   
-                      <!-- Pie de tabla: Paginación manual y texto "Mostrando X de Y" -->
                       <template v-slot:footer.prepend>
                         <v-row align="center" justify="space-between" class="px-4">
                           <v-col cols="12" md="6">
@@ -444,7 +379,6 @@
                         </v-row>
                       </template>
   
-                      <!-- Slot "no-data" si no hay guías para los filtros seleccionados -->
                       <template v-slot:no-data>
                         <v-alert type="warning" dense text>
                           No se encontraron guías para los filtros seleccionados.
@@ -459,20 +393,12 @@
         </v-col>
       </v-row>
   
-      <!-- =================================================================== -->
-      <!-- Diálogo (Modal): Detalle de Orden o Guía Específica                 -->
-      <!-- Muestra información detallada de una orden o guía seleccionada,     -->
-      <!-- incluyendo datos generales, una línea de tiempo de progreso y       -->
-      <!-- detalles de productos (para órdenes).                               -->
-      <!-- =================================================================== -->
       <v-dialog v-model="showModal" scrollable max-width="650px">
         <v-card>
           <v-card-title class="justify-space-between">
-            <!-- Título del modal dinámico según el tipo (Orden o Guía) y su número/comprobante -->
             <span class="text-h6">
               Detalle de {{ modalType === 'orden' ? 'Orden' : 'Guía' }}: {{ modalData?.Numero || modalData?.Comprobante || '' }}
             </span>
-            <!-- Botón para cerrar el modal -->
             <v-btn icon @click="closeModal" aria-label="Cerrar detalle">
               <v-icon>mdi-close</v-icon>
             </v-btn>
@@ -481,7 +407,6 @@
           <v-divider />
   
           <v-card-text>
-            <!-- Spinner mientras se cargan los detalles del modal -->
             <div v-if="loading && !modalData" class="text-center py-6">
               <v-progress-circular indeterminate size="36" color="primary" />
               <div class="mt-2">
@@ -491,7 +416,6 @@
               </div>
             </div>
   
-            <!-- Mensaje de error al cargar detalles del modal -->
             <div v-else-if="errorAlCargar && !modalData" class="text-center py-6">
               <v-icon size="36" color="error">mdi-alert-circle-outline</v-icon>
               <div class="mt-2">
@@ -501,10 +425,8 @@
               </div>
             </div>
   
-            <!-- Contenido del detalle del modal (visible si hay datos cargados) -->
             <div v-else-if="modalData">
               <v-row dense>
-                <!-- Columna izquierda: Datos Generales de la orden/guía -->
                 <v-col cols="12" md="6">
                   <v-list dense>
                     <v-list-item>
@@ -535,24 +457,47 @@
                           Cliente/Destino:
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                          {{ modalData.Destino?.Nombre || modalData.NombreDestino || 'N/A' }}
+                          {{ modalData.NombreDestino || 'N/A' }}
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
+                    
+                    <v-list-item v-if="modalType === 'orden'">
+                      <v-list-item-content>
+                        <v-list-item-title class="subtitle-2 font-weight-medium">
+                          Domicilio Destino:
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ modalData.DomicilioDestino || 'N/A' }}
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
   
-                    <!-- Campo "Email Cliente" solo para órdenes -->
-                    <!-- <v-list-item v-if="modalType === 'orden'">
+
+                    
+                    <v-list-item v-if="modalType === 'orden'">
                       <v-list-item-content>
                         <v-list-item-title class="subtitle-2 font-weight-medium">
-                          Email Cliente:
+                          Código Postal Destino:
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                          {{ modalData.EmailDestinatario || 'N/A' }}
+                          {{ modalData.CodigoPostalDestino || 'N/A' }}
                         </v-list-item-subtitle>
                       </v-list-item-content>
-                    </v-list-item> -->
-                    <!-- Campo "Remito" solo para guías -->
-                    <v-list-item v-if="modalType === 'guia'">
+                    </v-list-item>
+  
+                     <v-list-item v-if="modalType === 'orden'">
+                      <v-list-item-content>
+                        <v-list-item-title class="subtitle-2 font-weight-medium">
+                          Observaciones Destino:
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ modalData.ObservacionesDestino || 'N/A' }}
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
+  
+                    <v-list-item v-else>
                       <v-list-item-content>
                         <v-list-item-title class="subtitle-2 font-weight-medium">
                           Remito:
@@ -570,23 +515,19 @@
                         </v-list-item-title>
                         <v-list-item-subtitle>
                           {{
-                            modalType === 'orden' ? (modalData.FechaCreacion ? new Date(modalData.FechaCreacion).toLocaleDateString() : 'N/A') : modalData.FechaOriginal || 'N/A'
+                            modalType === 'orden' ? (modalData.Fecha ? new Date(modalData.Fecha).toLocaleDateString('es-AR') : 'N/A') : modalData.FechaOriginal || 'N/A'
                           }}
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
   
-                    <!-- Campos de fecha específicos para órdenes -->
                     <v-list-item v-if="modalType === 'orden'">
                       <v-list-item-content>
                         <v-list-item-title class="subtitle-2 font-weight-medium">
-                          Preparado:
+                          Valor:
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                          <span v-if="modalData.FechaPreparado">{{
-                            new Date(modalData.FechaPreparado).toLocaleDateString()
-                          }}</span>
-                          <span v-else>N/A</span>
+                          $ {{ parseFloat(modalData.Valor).toFixed(2) }}
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
@@ -594,13 +535,10 @@
                     <v-list-item v-if="modalType === 'orden'">
                       <v-list-item-content>
                         <v-list-item-title class="subtitle-2 font-weight-medium">
-                          Fecha Distribución/Retiro:
+                          Observaciones Orden:
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                          <span v-if="modalData.Fecha">{{
-                            new Date(modalData.Fecha).toLocaleDateString()
-                          }}</span>
-                          <span v-else>N/A</span>
+                          {{ modalData.Observaciones || 'N/A' }}
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
@@ -611,7 +549,6 @@
                           Estado Actual:
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                          <!-- Chip que muestra el estado actual con color condicional -->
                           <v-chip
                             :class="getStatusChipClassTextual(modalData.NombreEstado || modalData.Estado)"
                             small
@@ -624,13 +561,11 @@
                   </v-list>
                 </v-col>
   
-                <!-- Columna derecha: Línea de Tiempo de la Orden/Guía -->
                 <v-col cols="12" md="6">
                   <span class="subtitle-1 font-weight-medium mb-2">
                     Progreso de la {{ modalType === 'orden' ? 'Orden' : 'Guía' }}:
                   </span>
                   <v-sheet elevation="0">
-                    <!-- Renderiza los pasos de la línea de tiempo (órdenes o guías) -->
                     <div
                       v-for="(paso, index) in timelineStepsComputed"
                       :key="paso.id + index"
@@ -653,7 +588,6 @@
                           {{ paso.descripcion }}
                         </span>
                       </div>
-                      <!-- Línea vertical que conecta los pasos del timeline -->
                       <div
                         v-if="index < timelineStepsComputed.length - 1"
                         class="timeline-line"
@@ -663,42 +597,66 @@
                 </v-col>
               </v-row>
   
-              <!-- Separador antes de la sección de productos -->
               <v-divider class="my-4" />
   
-              <!-- Sección: Detalle de Productos (solo para órdenes) -->
-              <span class="subtitle-1 font-weight-medium mb-2">
-                Detalle de Productos:
-              </span>
-              <div v-if="modalData.productosDetalle && modalData.productosDetalle.length > 0">
-                <v-list dense>
-                  <v-list-item
-                    v-for="(prod, prodIndex) in modalData.productosDetalle"
-                    :key="prodIndex"
-                  >
-                    <v-list-item-content>
-                      <span class="body-2">
-                        {{ prod.Unidades }} x {{ prod.Productos }}
-                        <span v-if="prod.Barcode"> (Código: {{ prod.Barcode }})</span>
-                        <span v-if="prod.CodeEmpresa"> (Cod.Empresa: {{ prod.CodeEmpresa }})</span>
-                        <span v-if="prod.lote"> (Box: {{ prod.lote }})</span>
-                        <span v-if="prod.Partida"> (Partida: {{ prod.Partida }})</span>
-                      </span>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </div>
-              <div v-else>
-                <span class="body-2 text--secondary">
-                  No hay productos en esta orden.
-                </span>
-              </div>
+              <v-row>
+                <v-col cols="12">
+                  <v-card outlined>
+                    <v-card-title class="subtitle-1 font-weight-medium">
+                      <v-icon left>mdi-format-list-bulleted</v-icon>
+                      Detalle de Productos
+                    </v-card-title>
+                    <v-divider />
+                    <v-card-text class="pa-0">
+                      <v-simple-table v-if="modalData.productos && modalData.productos.length > 0" dense>
+                        <template v-slot:default>
+                          <thead>
+                            <tr>
+                              <th class="text-left">Cantidad</th>
+                              <th class="text-left">Producto</th>
+                              <th class="text-left">Códigos</th>
+                              <th class="text-right">Precio</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(prod, index) in modalData.productos" :key="index">
+                              <td class="text-left">{{ prod.Unidades }} u</td>
+                              <td class="text-left">
+                                <div class="font-weight-medium">{{ prod.NombreProducto }}</div>
+                                <div v-if="prod.Alto || prod.Ancho || prod.Largo || prod.Peso" class="caption text--secondary">
+                                  Dim: {{ prod.Alto || '0' }}x{{ prod.Ancho || '0' }}x{{ prod.Largo || '0' }}m, 
+                                  Peso: {{ prod.Peso || '0' }}kg
+                                </div>
+                              </td>
+                              <td class="text-left">
+                                <div v-if="prod.Barcode">
+                                  <v-icon x-small>mdi-barcode</v-icon> {{ prod.Barcode }}
+                                </div>
+                                <div v-if="prod.CodeEmpresa">
+                                  <v-icon x-small>mdi-tag</v-icon> {{ prod.CodeEmpresa }}
+                                </div>
+                              </td>
+                              <td class="text-right">
+                                <div v-if="prod.Precio">
+                                  ${{ parseFloat(prod.Precio).toFixed(2) }}
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </template>
+                      </v-simple-table>
+                      <v-alert v-else type="info" class="ma-4" dense outlined>
+                        No hay productos registrados en esta orden.
+                      </v-alert>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
             </div>
           </v-card-text>
   
           <v-divider />
   
-          <!-- Acciones del modal (botón para cerrar) -->
           <v-card-actions class="justify-end">
             <v-btn text color="primary" @click="closeModal">Cerrar</v-btn>
           </v-card-actions>
@@ -754,15 +712,13 @@
     ==========================================================================
     Ajustes y Correcciones Realizadas:
   
-    * **Corrección de `TypeError` en manejo de fechas:** El error `fechaDesdeObj.setHours(...).getTime is not a function` se resolvió asegurando que `Date.prototype.setHours()` se utiliza correctamente. Ahora, se normalizan los objetos `Date` al inicio del día antes de comparar sus valores numéricos (`getTime()`). Se introdujo un método auxiliar `normalizeDateToStartOfDay` para una gestión más limpia y reutilizable de las fechas.
-    * **Reemplazo de `<v-typography>`:** Se reemplazaron todas las instancias de `<v-typography>` por elementos HTML estándar (`<span>`, `<div>`) con las clases de tipografía de Vuetify correspondientes (ej. `text-h4`, `subtitle-2`, `body-2`, `caption`, `text-h6`, `subtitle-1`). Esto resuelve la advertencia de Vue "Unknown custom element: <v-typography>".
-    * **Corrección en `openModal` para Órdenes:**
-      * Se aseguró que `item.IdOrden` se pase correctamente a la función `@click="openModal('orden', item.IdOrden)"`.
-      * Se ajustó la lógica dentro de `openModal` para manejar las respuestas de la API de forma más robusta. Ahora, si la API o el store Vuex devuelve el objeto de la orden/guía directamente (sin un wrapper `data`), el componente lo reconoce y utiliza correctamente. Esto resuelve el `TypeError` y el problema de que el modal de órdenes no cargaba.
-    * **Manejo de Fechas en Filtros:** Los campos de fecha (`fechaDesde`, `fechaHasta`) ahora disparan la recarga de ambas listas (`popularAmbasListas`) al cambiar.
-    * **Consistencia en Nombres de Propiedades:** Asegura que los estados (`Estado`, `NombreEstado`) se usen de manera consistente para la visualización y la lógica del timeline.
-    * **`console.log` para Depuración:** Se han añadido numerosos `console.log` en puntos estratégicos de los métodos asíncronos (`fetchEmpresas`, `eligioEmpresa`, `popularAmbasListas`, `popularListaDeOrdenes`, `popularListaDeGuias`, `openModal`, `_obtenerDetalleProductos`, `_construirTimelineOrden`, `_construirTimelineGuia`, `closeModal`) para ayudar a rastrear el flujo de datos, los parámetros de entrada y las respuestas de la API. Esto es crucial para identificar problemas de comunicación con el backend (como errores 404 o datos inesperados).
-    * **Manejo de Errores Asíncronos:** Las funciones asíncronas ahora incluyen `try-catch` para capturar errores de la API y propagarlos o mostrarlos al usuario, mejorando la robustez.
+    * **Uso del nuevo endpoint `getOrdenesByEmpresaPeriodoConDestinos`:** El método `popularListaDeOrdenes` ahora utiliza este nuevo endpoint para obtener los datos de las órdenes.
+    * **Procesamiento de la respuesta para órdenes:** La respuesta del nuevo endpoint se agrupa para consolidar la información de una orden con sus múltiples productos y campos de destino.
+    * **Actualización de las cabeceras de la tabla de órdenes:** Se han ajustado para reflejar los nuevos campos disponibles como `NombreDestino` y `Fecha`.
+    * **Visualización del modal de órdenes:** Se han añadido y ajustado los campos en el modal de detalle de órdenes para mostrar `DomicilioDestino`, `LocalidadDestino`, `CodigoPostalDestino`, `ObservacionesDestino`, `Valor` y las `Observaciones` de la orden.
+    * **Manejo de productos en el modal de órdenes:** Se ha adaptado la sección de productos del modal para mostrar los datos devueltos por el nuevo endpoint (Barcode, CodeEmpresa, Precio, Alto, Ancho, Largo, Peso).
+    * **Consistencia en nombres de campos:** Se ha verificado que los nombres de los campos utilizados en la plantilla (`item.Numero`, `item.NombreDestino`, `item.Fecha`, `item.Estado`) coincidan con los nombres de las propiedades en el objeto `item` después del procesamiento de `popularListaDeOrdenes`.
+    * Se eliminó la llamada a `_obtenerDetalleProductos` para las órdenes, ya que la nueva API ya devuelve todos los productos anidados.
   
     ==========================================================================
     Dependencias de Vuex (asumidas):
@@ -778,8 +734,6 @@
   
   import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
   import store from '@/store'
-  import { mapState } from 'vuex'
-  import ordenesV3 from '@/store/ordenesV3'
   import ordenes from '@/store/ordenesV3' // Módulo Vuex para órdenes
   import empresasV3 from '@/store/empresasV3' // Módulo Vuex para empresas
   import roles from '@/store/roles' // Módulo Vuex para roles de usuario
@@ -808,10 +762,10 @@
         // Se utiliza para configurar las columnas de la v-data-table de órdenes.
         // ---------------------------------------
         cabecerasOrdenes: [
-          { text: 'N° Orden', value: 'numero', sortable: true },
-          { text: 'Empresa', value: 'nombre', sortable: true },
-          { text: 'Cliente', value: 'nombreDestino', sortable: true },
-          { text: 'Fecha Creación', value: 'Creada', sortable: true },
+          { text: 'N° Orden', value: 'Numero', sortable: true }, // Cambiado a 'Numero'
+          { text: 'Empresa', value: 'NombreEmpresa', sortable: true }, // Podrías necesitar mapear esto si no viene directamente
+          { text: 'Cliente', value: 'NombreDestino', sortable: true }, // Nuevo campo
+          { text: 'Fecha Creación', value: 'Fecha', sortable: true }, // Cambiado a 'Fecha' de la orden
           { text: 'Estado Actual', value: 'Estado', sortable: true },
           {
             text: 'Acciones',
@@ -871,62 +825,52 @@
       /**
        * `ordenesFiltradasParaTabla`:
        * Propiedad computada que filtra la lista completa de órdenes (`todasLasOrdenes`)
-       * según la empresa seleccionada y el rango de fechas. Luego aplica la paginación manual.
-       * Esta función solo prepara los datos para la tabla de órdenes.
+       * según el campo de búsqueda de texto. Luego aplica la paginación manual.
        * @returns {Array} Array de órdenes filtradas y paginadas.
        */
       ordenesFiltradasParaTabla() {
         // Si no hay empresa seleccionada, no hay órdenes que mostrar.
-        if (this.idEmpresa <= 0) return []
+        if (this.idEmpresa <= 0) return [];
   
-        // 1) Filtrar por empresa seleccionada
-        let filtrado = this.todasLasOrdenes.filter(
-          (o) => o.IdEmpresa === this.idEmpresa
-        )
+        let filteredItems = this.todasLasOrdenes;
   
-        // Convertir strings de fecha a objetos Date para comparación.
-        const fechaDesdeNormalized = this.normalizeDateToStartOfDay(this.fechaDesde);
-        const fechaHastaNormalized = this.normalizeDateToStartOfDay(this.fechaHasta);
-  
-        // 2) Filtrar por rango de fechas (basado en `fechaCreacionDate` de la orden)
-        if (fechaDesdeNormalized) {
-          filtrado = filtrado.filter((o) => {
-            const ordenDateNormalized = this.normalizeDateToStartOfDay(o.Creada);
-            return ordenDateNormalized && ordenDateNormalized.getTime() >= fechaDesdeNormalized.getTime();
-          });
-        }
-        if (fechaHastaNormalized) {
-          filtrado = filtrado.filter((o) => {
-            const ordenDateNormalized = this.normalizeDateToStartOfDay(o.Creada);
-            return ordenDateNormalized && ordenDateNormalized.getTime() <= fechaHastaNormalized.getTime();
+        // Filtrar por texto de búsqueda
+        if (this.textoBusqueda) {
+          const searchText = this.textoBusqueda.toLowerCase();
+          filteredItems = filteredItems.filter(item => {
+            // Busca en Numero, NombreDestino, Observaciones, NombreEstado, productos.NombreProducto
+            return (
+              item.Numero?.toLowerCase().includes(searchText) ||
+              item.NombreDestino?.toLowerCase().includes(searchText) ||
+              item.Observaciones?.toLowerCase().includes(searchText) ||
+              item.NombreEstado?.toLowerCase().includes(searchText) ||
+              item.productos?.some(p => p.NombreProducto?.toLowerCase().includes(searchText))
+            );
           });
         }
   
-        // 3) Aplicar paginación manual a los resultados filtrados.
+        // Aplicar paginación manual a los resultados filtrados.
         if (this.itemsPerPage > 0) {
-          const start = (this.pageOrdenes - 1) * this.itemsPerPage
-          return filtrado.slice(start, start + this.itemsPerPage)
+          const start = (this.pageOrdenes - 1) * this.itemsPerPage;
+          return filteredItems.slice(start, start + this.itemsPerPage);
         } else {
           // Si la opción es "Todos" (value: -1), se devuelve toda la lista filtrada.
-          return filtrado
+          return filteredItems;
         }
       },
   
       /**
        * `pageCountOrdenes`:
        * Calcula el número total de páginas para la paginación de órdenes,
-       * basándose en la cantidad total de órdenes filtradas y los ítems por página.
+       * basándose en la cantidad total de órdenes filtradas por búsqueda y los ítems por página.
        * @returns {number} Número total de páginas.
        */
       pageCountOrdenes() {
         if (this.itemsPerPage > 0) {
-          // Calcula el total de órdenes filtradas por empresa (sin considerar el filtro de fecha aquí para el total de páginas)
-          const total = this.todasLasOrdenes.filter(
-            (o) => o.IdEmpresa === this.idEmpresa
-          ).length
-          return Math.ceil(total / this.itemsPerPage)
+          const totalFilteredBySearch = this.ordenesFiltradasParaTabla.length; // Usar el largo de la lista ya filtrada por búsqueda
+          return Math.ceil(totalFilteredBySearch / this.itemsPerPage);
         }
-        return 1 // Si no hay ítems por página definidos, se asume 1 página.
+        return 1;
       },
   
       /**
@@ -936,17 +880,14 @@
        * @returns {string} Información de paginación.
        */
       paginationInfoOrdenes() {
-        // Calcula el total de órdenes filtradas por empresa.
-        const total = this.todasLasOrdenes.filter(
-          (o) => o.IdEmpresa === this.idEmpresa
-        ).length
+        const total = this.todasLasOrdenes.length; // Total de órdenes cargadas (sin filtros de búsqueda)
         if (this.itemsPerPage > 0) {
-          const start = (this.pageOrdenes - 1) * this.itemsPerPage + 1
-          const end = Math.min(start + this.itemsPerPage - 1, total)
-          return `${start}-${end} de ${total}`
+          const start = (this.pageOrdenes - 1) * this.itemsPerPage + 1;
+          const end = Math.min(start + this.itemsPerPage - 1, total);
+          return `${start}-${end} de ${total}`;
         } else {
           // Si se muestran todos los ítems, el rango es de 1 al total.
-          return `1-${total} de ${total}`
+          return `1-${total} de ${total}`;
         }
       },
   
@@ -983,8 +924,22 @@
             return guiaDateNormalized && guiaDateNormalized.getTime() <= fechaHastaNormalized.getTime();
           });
         }
+        
+        // 3) Filtrar por texto de búsqueda para guías
+        if (this.textoBusquedaGuias) {
+          const searchText = this.textoBusquedaGuias.toLowerCase();
+          filtrado = filtrado.filter(item => {
+            return (
+              item.Comprobante?.toLowerCase().includes(searchText) ||
+              item.NombreCliente?.toLowerCase().includes(searchText) ||
+              item.NombreDestino?.toLowerCase().includes(searchText) ||
+              item.Remitos?.toLowerCase().includes(searchText) ||
+              item.Estado?.toLowerCase().includes(searchText)
+            );
+          });
+        }
   
-        // 3) Aplicar paginación manual a los resultados filtrados.
+        // 4) Aplicar paginación manual a los resultados filtrados.
         if (this.itemsPerPageGuias > 0) {
           const start = (this.pageGuias - 1) * this.itemsPerPageGuias
           return filtrado.slice(start, start + this.itemsPerPageGuias)
@@ -1002,10 +957,8 @@
        */
       pageCountGuias() {
         if (this.itemsPerPageGuias > 0) {
-          // Calcula el total de guías filtradas por empresa.
-          const total = this.todasLasGuias.filter(
-            (g) => g.IdEmpresa === this.idEmpresa
-          ).length
+          // Usa el largo de la lista ya filtrada por búsqueda para calcular las páginas
+          const total = this.guiasFiltradasParaTabla.length; 
           return Math.ceil(total / this.itemsPerPageGuias)
         }
         return 1 // Si no hay ítems por página definidos, se asume 1 página.
@@ -1018,7 +971,7 @@
        * @returns {string} Información de paginación.
        */
       paginationInfoGuias() {
-        // Calcula el total de guías filtradas por empresa.
+        // Calcula el total de guías filtradas por empresa y fecha (sin filtro de búsqueda)
         const total = this.todasLasGuias.filter(
           (g) => g.IdEmpresa === this.idEmpresa
         ).length
@@ -1053,8 +1006,6 @@
       }
     },
     methods: {
-    // En la sección de imports al inicio del script, asegúrate de tener:
-    // import ordenesV3 from '@/store/ordenesV3'
       /**
        * `normalizeDateToStartOfDay`:
        * Método auxiliar para tomar una cadena de fecha o un objeto Date y devolver
@@ -1148,27 +1099,67 @@
        * Se dispara cuando cambian la empresa o las fechas de filtro.
        */
       async popularAmbasListas() {
-        console.log("popularAmbasListas: Intentando cargar órdenes y guías.");
+        console.log("popularAmbasListas: Iniciando carga de datos...");
+        console.log("Parámetros actuales:", {
+          idEmpresa: this.idEmpresa,
+          fechaDesde: this.fechaDesde,
+          fechaHasta: this.fechaHasta
+        });
+        
         // Solo procede si hay una empresa y fechas de filtro válidas.
         if (this.idEmpresa > 0 && this.fechaDesde && this.fechaHasta) {
+          console.log("popularAmbasListas: Parámetros válidos, iniciando carga...");
           this.loading = true; // Activa el spinner de carga general.
           this.errorAlCargar = null; // Limpia errores previos.
+          
           try {
+            console.log("popularAmbasListas: Iniciando carga en paralelo de órdenes y guías...");
+            
             // Ejecuta ambas funciones de carga en paralelo usando `Promise.all`.
             await Promise.all([
-              this.popularListaDeOrdenes(),
-              this.popularListaDeGuias()
+              this.popularListaDeOrdenes().catch(error => {
+                console.error("Error en popularListaDeOrdenes:", error);
+                throw error; // Relanza el error para manejarlo en el catch externo
+              }),
+              this.popularListaDeGuias().catch(error => {
+                console.error("Error en popularListaDeGuias:", error);
+                throw error; // Relanza el error para manejarlo en el catch externo
+              })
             ]);
+            
             console.log("popularAmbasListas: Carga de órdenes y guías completada exitosamente.");
           } catch (error) {
-            console.error("popularAmbasListas: Error al cargar ambas listas:", error);
-            // Muestra un mensaje de error si alguna de las promesas falla.
-            this.errorAlCargar = error.message || "Ocurrió un error al cargar los datos. Intente nuevamente.";
+            console.error("popularAmbasListas: Error al cargar datos:", {
+              error: error,
+              message: error.message,
+              stack: error.stack,
+              response: error.response?.data || 'No hay datos de respuesta'
+            });
+            
+            // Muestra un mensaje de error más descriptivo
+            const errorMessage = error.response?.data?.message || error.message || "Ocurrió un error al cargar los datos. Intente nuevamente.";
+            this.errorAlCargar = errorMessage;
+            
+            // Si es un error de autenticación, redirigir al login
+            if (error.response?.status === 401) {
+              console.warn("Sesión expirada, redirigiendo a login...");
+              this.$router.push('/login');
+            }
+            
+            // Limpia las listas para asegurar consistencia
+            this.todasLasOrdenes = [];
+            this.todasLasGuias = [];
           } finally {
+            console.log("popularAmbasListas: Finalizando carga, desactivando spinner...");
             this.loading = false; // Desactiva el spinner de carga.
           }
         } else {
-          console.log("popularAmbasListas: No hay empresa o fechas seleccionadas, limpiando listas.");
+          console.log("popularAmbasListas: No hay empresa o fechas seleccionadas, limpiando listas.", {
+            tieneEmpresa: this.idEmpresa > 0,
+            tieneFechaDesde: !!this.fechaDesde,
+            tieneFechaHasta: !!this.fechaHasta
+          });
+          
           // Si no hay filtros válidos, limpia las listas y los estados de carga/error.
           this.todasLasOrdenes = [];
           this.todasLasGuias = [];
@@ -1179,81 +1170,165 @@
   
       /**
        * `popularListaDeOrdenes`:
-       * Método asíncrono para cargar y procesar la lista de órdenes.
+       * Método asíncrono para cargar y procesar la lista de órdenes usando el nuevo endpoint.
        * Filtra las órdenes por empresa y rango de fechas, las formatea y las ordena.
        */
       async popularListaDeOrdenes() {
-        if (!this.idEmpresa || !this.fechaDesde || !this.fechaHasta) return;
-        this.loading = true;
-        this.errorAlCargar = '';
-
+        console.log("popularListaDeOrdenes: Iniciando carga de órdenes con el nuevo endpoint.");
+        console.log("Parámetros actuales:", {
+          idEmpresa: this.idEmpresa,
+          fechaDesde: this.fechaDesde,
+          fechaHasta: this.fechaHasta,
+          usuarioActual: store.state.usuarios.usuarioActual
+        });
+        
+        this.todasLasOrdenes = []; // Limpia la lista de órdenes antes de la carga.
+  
+        // Bloque para verificar roles de usuario (se mantiene del código original).
         try {
-          // Verificar roles del usuario
           const userId = store.state.usuarios.usuarioActual?.Id;
-          if (userId) {
-            console.log("popularListaDeOrdenes: Obteniendo roles para userId:", userId);
-            const rolesUser = await roles.getUserRolesById(userId);
-            this.rolPermitido = !store.state.usuarios.usuarioActual.IdEmpresa && rolesUser[0]?.IdRole === 1;
-            console.log("popularListaDeOrdenes: rolPermitido:", this.rolPermitido);
+          console.log("popularListaDeOrdenes: Obteniendo roles para userId:", userId);
+          
+          if (!userId) {
+            console.error("No se pudo obtener el ID del usuario actual");
+            throw new Error('No se pudo identificar al usuario actual');
           }
-
-          console.log('Cargando órdenes para:', {
+          
+          const rolesUser = await roles.getUserRolesById(userId);
+          console.log("Roles del usuario:", rolesUser);
+          
+          this.rolPermitido =
+            !store.state.usuarios.usuarioActual?.IdEmpresa &&
+            rolesUser?.[0]?.IdRole === 1;
+            
+          console.log("popularListaDeOrdenes: rolPermitido:", this.rolPermitido);
+        } catch (error) {
+          console.error("popularListaDeOrdenes: Error al verificar roles de usuario:", error);
+          this.rolPermitido = false;
+        }
+  
+        try {
+          console.log(`popularListaDeOrdenes: Llamando a ordenes.getOrdenesByEmpresaPeriodoConDestinos para idEmpresa: ${this.idEmpresa}, fechas: ${this.fechaDesde} a ${this.fechaHasta}`);
+          
+          console.log("Llamando a getOrdenesByEmpresaPeriodoConDestinos con:", {
             idEmpresa: this.idEmpresa,
             fechaDesde: this.fechaDesde,
             fechaHasta: this.fechaHasta
           });
-
-          // Usar el store para obtener las órdenes
-          const response = await ordenesV3.getOrdenesByEmpresaPeriodoConDestinos(
-            this.idEmpresa,
-            this.fechaDesde,
-            this.fechaHasta
-          );
-
-          console.log('Respuesta del servidor:', response);
           
-          // Procesar la respuesta según el formato esperado
-          let todas = [];
-          if (response && response.status === 'OK' && Array.isArray(response.data)) {
-            todas = response.data;
-          } else if (Array.isArray(response)) {
-            todas = response; // Si la respuesta es directamente el array
-          } else {
-            throw new Error('Formato de respuesta inesperado');
+          // Llama al nuevo método del servicio de órdenes
+          let response;
+          try {
+            console.log(`Solicitando órdenes para empresa ${this.idEmpresa} desde ${this.fechaDesde} hasta ${this.fechaHasta}`);
+            response = await ordenes.getOrdenesByEmpresaPeriodoConDestinos(this.idEmpresa, this.fechaDesde, this.fechaHasta);
+            
+            // Depuración profunda de la respuesta
+            console.log("Respuesta recibida:", response);
+            console.log("Tipo de respuesta:", typeof response);
+            console.log("Es array?", Array.isArray(response));
+            console.log("Tiene propiedad status?", response && 'status' in response);
+            console.log("Tiene propiedad data?", response && 'data' in response);
+            console.log("Data es array?", response && response.data && Array.isArray(response.data));
+            
+          } catch (apiError) {
+            console.error("Error en la llamada a getOrdenesByEmpresaPeriodoConDestinos:", {
+              error: apiError,
+              message: apiError.message,
+              stack: apiError.stack,
+              response: apiError.response?.data || 'No hay datos de respuesta'
+            });
+            throw new Error('Error al conectar con el servidor. Verifica tu conexión e intenta nuevamente.');
           }
-
-          // Aplicar filtros adicionales si es necesario
-          const fechaDesdeNormalized = this.normalizeDateToStartOfDay(this.fechaDesde);
-          const fechaHastaNormalized = this.normalizeDateToStartOfDay(this.fechaHasta);
-
-          todas = todas.filter(o => {
-            // Asegurarse de que la fecha existe
-            if (!o.Fecha) return false;
-
-                const ordenDateNormalized = this.normalizeDateToStartOfDay(o.Creada);
-
-                let passedDateFilter = true;
-                if (fechaDesdeNormalized) {
-                  passedDateFilter = ordenDateNormalized.getTime() >= fechaDesdeNormalized.getTime();
-              }
-              if (fechaHastaNormalized && passedDateFilter) {
-                  passedDateFilter = ordenDateNormalized.getTime() <= fechaHastaNormalized.getTime();
-              }
-              return passedDateFilter;
+  
+          let data = [];
+          
+          // Manejo de la respuesta según el formato esperado
+          if (response && response.status === 'OK' && Array.isArray(response.data)) {
+            // Formato esperado: {status: 'OK', data: [...]}
+            console.log(`Se recibieron ${response.data.length} órdenes del servidor`);
+            data = response.data;
+            
+            // Verificar si hay errores en la respuesta
+            if (response.errors && response.errors.length > 0) {
+              console.warn('La respuesta contiene errores:', response.errors);
+            }
+          } else if (response && Array.isArray(response)) {
+            // Si por alguna razón la respuesta es directamente un array
+            console.warn('La respuesta es un array directo, no el formato esperado. Total de órdenes:', response.length);
+            data = response;
+          } else if (response && response.data === undefined) {
+            // Si la respuesta no tiene data, asumimos array vacío
+            console.log("La respuesta no contiene datos (array vacío)");
+            data = [];
+          } else {
+            // Formato inesperado
+            console.error("Formato de respuesta inesperado:", response);
+            // Lanzamos un error más descriptivo
+            throw new Error('Formato de respuesta inesperado del servidor. Contacte a soporte.');
+          }
+          
+          console.log(`Total de órdenes a procesar: ${data.length}`);
+  
+          // Agrupar los datos por IdOrden y consolidar los productos
+          const ordenesAgrupadas = {};
+          data.forEach(item => {
+            if (!ordenesAgrupadas[item.IdOrden]) {
+              ordenesAgrupadas[item.IdOrden] = {
+                IdOrden: item.IdOrden,
+                Numero: item.Numero,
+                Fecha: item.Fecha, // Fecha de la orden (que ahora es la fecha de distribución/retiro)
+                Estado: item.Estado, // Estado numérico
+                Tipo: item.Tipo,
+                preOrden: item.preOrden,
+                retira_cliente: item.retira_cliente,
+                Valor: item.Valor,
+                Observaciones: item.Observaciones,
+                id_integracion: item.id_integracion,
+                IdDestino: item.IdDestino,
+                NombreDestino: item.NombreDestino,
+                DomicilioDestino: item.DomicilioDestino,
+                LocalidadDestino: item.LocalidadDestino,
+                CodigoPostalDestino: item.CodigoPostalDestino,
+                ObservacionesDestino: item.ObservacionesDestino,
+                IdEmpresaDestino: item.IdEmpresaDestino,
+                // Propiedades de la empresa de la orden (si vinieran por este endpoint, si no, se usan las del componente)
+                // Aquí asumo que la empresa de la orden es this.estaEmpresa
+                NombreEmpresa: this.estaEmpresa.RazonSocial || 'N/A', 
+                // Para la guía asociada, necesitamos buscarla o determinarla si viene en el JSON
+                IdGuia: item.IdGuia || -1, // Asumo que el IdGuia viene en el item
+                productos: [] // Inicializamos el array de productos
+              };
+            }
+            // Agregamos el producto a la orden correspondiente
+            ordenesAgrupadas[item.IdOrden].productos.push({
+              IdDetalle: item.IdDetalle,
+              Unidades: item.Unidades,
+              Precio: item.Precio,
+              loteCompleto: item.loteCompleto,
+              IdProducto: item.IdProducto,
+              Barcode: item.Barcode,
+              NombreProducto: item.NombreProducto,
+              CodeEmpresa: item.CodeEmpresa,
+              Alto: item.Alto,
+              Ancho: item.Ancho,
+              Largo: item.Largo,
+              Peso: item.Peso
+              // Si hay campos como 'lote' o 'Partida' en el JSON original para los productos, agrégalos aquí.
+              // Por ejemplo: lote: item.lote, Partida: item.Partida
+            });
           });
-          console.log("popularListaDeOrdenes: Órdenes filtradas por fecha:", todas.length);
+  
+          let todasOrdenes = Object.values(ordenesAgrupadas);
+          console.log("popularListaDeOrdenes: Órdenes agrupadas y productos consolidados:", todasOrdenes.length);
   
           // Formatea los datos de cada orden para su visualización en la tabla.
-          todas.forEach((o) => {
-            // No necesitamos o.fechaCreacionDate aquí ya que se usa en el filtro
-            o.Creada = new Date(o.Creada).toLocaleDateString(); // Formatea la fecha de creación.
-  
-            o.Modificada = o.Modificada
-              ? new Date(o.Modificada).toLocaleDateString()
-              : 'N/A';
-            o.Preparado = o.Preparado
-              ? new Date(o.Preparado).toLocaleDateString()
-              : 'N/A';
+          todasOrdenes.forEach((o) => {
+            // La 'Fecha' que viene es la Fecha de distribución/retiro.
+            // Para la "Fecha Creación" en la tabla, usaremos la "Fecha" del JSON que representa la Fecha de la orden
+            // (que en este nuevo endpoint es la fecha de distribución/retiro).
+            // Si necesitas la fecha de AltaRegistro para la columna "Fecha Creación", cámbialo aquí.
+            o.Fecha = o.Fecha ? new Date(o.Fecha).toLocaleDateString('es-AR') : 'N/A';
+            // o.AltaRegistro = o.AltaRegistro ? new Date(o.AltaRegistro).toLocaleDateString('es-AR') : 'N/A'; // Si quieres usar AltaRegistro
   
             // Traduce el estado numérico de la orden a un estado textual legible.
             switch (o.Estado) {
@@ -1265,26 +1340,29 @@
               default: o.NombreEstado = `Desconocido (${o.Estado})`;
             }
             // Asigna el estado textual al campo `Estado` que la tabla usa para la columna.
-            o.Estado = o.NombreEstado;
+            o.Estado = o.NombreEstado; // Para la tabla
   
             o.tipo = o.preOrden === true || o.preOrden === 1 ? 'Pre-Orden' : 'Orden';
             o.preOrdenDisplay = o.tipo;
   
-            o.nombre = o.nombre || 'N/A';
-            o.nombreDestino = o.nombreDestino || 'N/A';
             // Aseguramos que IdGuia esté presente, aunque puede ser -1 si no hay guía
             o.IdGuia = o.IdGuia || -1;
           });
   
-          // Ordena las órdenes por fecha de creación de forma descendente (más recientes primero).
-          todas.sort(
-            (a, b) => new Date(b.Creada).getTime() - new Date(a.Creada).getTime()
+          // Ordena las órdenes por fecha de la orden de forma descendente (más recientes primero).
+          // Usamos la propiedad 'Fecha' que ya ha sido procesada y formateada como fecha de la orden.
+          todasOrdenes.sort(
+            (a, b) => {
+              const dateA = new Date(a.Fecha.split('/').reverse().join('-')); // Convertir a formato YYYY-MM-DD para Date
+              const dateB = new Date(b.Fecha.split('/').reverse().join('-'));
+              return dateB.getTime() - dateA.getTime();
+            }
           );
-          this.todasLasOrdenes = todas;
-          console.log("popularListaDeOrdenes: Total de órdenes procesadas:", this.todasLasOrdenes.length);
+  
+          this.todasLasOrdenes = todasOrdenes;
+          console.log("popularListaDeOrdenes: Total de órdenes procesadas y listas para la tabla:", this.todasLasOrdenes.length);
         } catch (error) {
           console.error("popularListaDeOrdenes: Error al cargar órdenes:", error);
-          // Lanza el error para que `popularAmbasListas` lo capture.
           throw new Error('No se pudieron cargar las órdenes. Intente nuevamente.');
         }
       },
@@ -1317,7 +1395,7 @@
           // Formatea los datos de cada guía para su visualización en la tabla.
           todas.forEach((g) => {
             g.FechaOriginalDate = new Date(g.FechaOriginal); // Crea un objeto Date para facilitar filtros y ordenamiento.
-            g.FechaOriginal = g.FechaOriginal ? new Date(g.FechaOriginal).toLocaleDateString() : 'N/A'; // Formatea la fecha original.
+            g.FechaOriginal = g.FechaOriginal ? new Date(g.FechaOriginal).toLocaleDateString('es-AR') : 'N/A'; // Formatea la fecha original.
             g.NombreCliente = g.NombreCliente || 'N/A';
             g.NombreDestino = g.NombreDestino || 'N/A';
             g.Remitos = g.Remitos || 'N/A';
@@ -1365,7 +1443,7 @@
                 // Si se obtuvo, la agrega a la lista de guías (opcional, para futuras interacciones)
                 // y abre el modal.
                 // Formatea la fecha de la guía obtenida directamente para que sea consistente con la lista.
-                retrievedGuia.FechaOriginal = retrievedGuia.FechaOriginal ? new Date(retrievedGuia.FechaOriginal).toLocaleDateString() : 'N/A';
+                retrievedGuia.FechaOriginal = retrievedGuia.FechaOriginal ? new Date(retrievedGuia.FechaOriginal).toLocaleDateString('es-AR') : 'N/A';
                 retrievedGuia.Estado = retrievedGuia.Estado || 'Desconocido';
                 this.todasLasGuias.push(retrievedGuia); // Añade la guía a la lista para que se muestre en la tabla si corresponde
                 this.tab = 'tab-guias';
@@ -1403,21 +1481,15 @@
           let dataToModal;
           if (type === 'orden') {
             // Si es una orden, se espera que `item` sea el ID de la orden.
-            console.log(`openModal: Llamando a ordenes.getById con ID: ${item}`);
-            const response = await ordenes.getById(item);
-            console.log("openModal: Respuesta de ordenes.getById recibida:", response);
-  
-            // Ajuste crucial: Determina si la respuesta contiene un wrapper 'data' o si el objeto es directo.
-            dataToModal = (response && response.data) ? response.data : (response && response.Id ? response : null);
-  
-            if (dataToModal && dataToModal.Id) {
-              // Obtiene detalles de productos y formatea fechas para el modal de orden.
-              const productosDetalle = await this._obtenerDetalleProductos(dataToModal);
-              dataToModal.productosDetalle = productosDetalle;
-              dataToModal.Creada = dataToModal.FechaCreacion ? new Date(dataToModal.FechaCreacion).toLocaleDateString() : 'N/A';
-              dataToModal.Preparado = dataToModal.FechaPreparado ? new Date(dataToModal.FechaPreparado).toLocaleDateString() : 'N/A';
-              dataToModal.FechaDistribucion = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString() : 'N/A';
-              // Asegura que el estado textual para el modal se use correctamente.
+            // Buscamos la orden directamente de `todasLasOrdenes` que ya contiene todos los detalles.
+            dataToModal = this.todasLasOrdenes.find(o => o.IdOrden === item);
+            
+            if (dataToModal) {
+              // Los productos ya vienen agrupados en dataToModal.productos
+              // Formatea fechas específicas de la orden para el modal.
+              dataToModal.Fecha = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString('es-AR') : 'N/A';
+              // No necesitamos FechaCreacion, FechaPreparado, FechaDistribucion si ya se usa 'Fecha' como la principal
+              // Mapeo de estado numérico a textual
               switch (dataToModal.Estado) {
                 case 1: dataToModal.NombreEstado = 'Pendiente'; break;
                 case 2: dataToModal.NombreEstado = 'Preparado'; break;
@@ -1426,24 +1498,21 @@
                 case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
                 default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
               }
-              dataToModal.nombreCliente = dataToModal.Destino?.Nombre || 'N/A';
               console.log("openModal: Datos de orden para modal procesados:", dataToModal);
             } else {
-              // Lanza un error si el objeto de la orden no es válido.
               throw new Error('No se encontraron detalles válidos para esta orden.');
             }
           } else if (type === 'guia') {
             // Si es una guía, se espera que `item` ya sea el objeto completo de la guía de la tabla.
             console.log("openModal: Procesando datos de guía para modal:", item);
             dataToModal = { ...item }; // Clona el objeto para evitar mutaciones directas en la lista de la tabla.
-            // Las guías no tienen un `detalle de productos` como las órdenes por defecto en este sistema.
-            dataToModal.productosDetalle = []; // Por ahora, se inicializa vacío.
+            dataToModal.productos = []; // Las guías no tienen un `productos` por defecto como las órdenes.
   
             // Formatea fechas específicas de la guía para el modal.
-            dataToModal.FechaOriginal = dataToModal.FechaOriginal ? new Date(dataToModal.FechaOriginal).toLocaleDateString() : 'N/A';
+            dataToModal.FechaOriginal = dataToModal.FechaOriginal ? new Date(dataToModal.FechaOriginal).toLocaleDateString('es-AR') : 'N/A';
             // Para la fecha de no entrega, se usa la `Fecha` de la guía si el estado es `NO ENTREGADO`.
             if (dataToModal.Estado === 'NO ENTREGADO' && dataToModal.Fecha) {
-                dataToModal.FechaNoEntregado = new Date(dataToModal.Fecha).toLocaleDateString();
+                dataToModal.FechaNoEntregado = new Date(dataToModal.Fecha).toLocaleDateString('es-AR');
             } else {
               dataToModal.FechaNoEntregado = 'N/A';
             }
@@ -1451,7 +1520,7 @@
           }
   
           // Si se obtuvieron datos válidos para el modal, los asigna y lo muestra.
-          if (dataToModal && (dataToModal.Id || dataToModal.Comprobante)) {
+          if (dataToModal && (dataToModal.IdOrden || dataToModal.Id)) { // IdOrden para ordenes, Id para guias
             this.modalData = dataToModal;
             this.showModal = true;
             console.log("openModal: Modal abierto con datos.");
@@ -1469,32 +1538,14 @@
       },
   
       /**
-       * `_obtenerDetalleProductos`:
-       * Método asíncrono auxiliar para obtener los detalles de productos de una orden.
-       * Decide si usar el endpoint de productos con partida (`PART`) o el estándar.
-       * @param {object} orden - El objeto de la orden para la cual obtener los detalles de productos.
-       * @returns {Promise<Array>} Promesa que resuelve a un array de productos o un array vacío en caso de error.
+       * `_obtenerDetalleProductos`: (Método obsoleto para el nuevo endpoint, se mantiene para contexto)
+       * Este método ya no es necesario para las órdenes si la API `getOrdenesByEmpresaPeriodoConDestinos`
+       * ya devuelve los detalles de los productos anidados.
        */
       async _obtenerDetalleProductos(orden) {
-        console.log("_obtenerDetalleProductos: Obteniendo detalle de productos para orden con IdEmpresa:", orden.IdEmpresa);
-        try {
-          // Obtiene la configuración de la empresa para saber si usa "PART".
-          const empresaConfig = await empresasV3.getOneById(orden.IdEmpresa);
-          console.log("_obtenerDetalleProductos: Configuración de empresa para productos:", empresaConfig);
-          if (empresaConfig && empresaConfig.PART) {
-            // Si usa PART, llama al endpoint específico para productos con partida.
-            const productos = await ordenes.getDetalleOrdenAndProductoPartidaById(orden.Id);
-            console.log("_obtenerDetalleProductos: Productos con partida obtenidos:", productos);
-            return productos;
-          }
-          // Si no usa PART, llama al endpoint estándar para productos.
-          const productos = await ordenes.getDetalleOrdenAndProductoById(orden.Id);
-          console.log("_obtenerDetalleProductos: Productos estándar obtenidos:", productos);
-          return productos;
-        } catch (error) {
-          console.error("_obtenerDetalleProductos: Error al obtener detalle de productos:", error);
-          return []; // Retorna un array vacío en caso de error.
-        }
+        console.warn("_obtenerDetalleProductos: Este método ya no debería ser necesario si la API devuelve los productos directamente en la orden.");
+        // Se podría retornar orden.productos si existiera en la respuesta original del getById o dejarlo vacío.
+        return orden.productos || []; 
       },
   
       /**
@@ -1511,14 +1562,12 @@
         const timelineSteps = [];
         const currentStatusText = orden.NombreEstado; // El estado ya está en formato textual.
         const isAnulada = currentStatusText === 'Anulado';
-        const isPreOrden = orden.preOrden === true || orden.preOrden === 1;
-        const isRetiraCliente = currentStatusText === 'Retira Cliente'; // Usa el estado textual para la verificación.
+        const isPreOrden = orden.Tipo === 0 || orden.preOrden === 1; // Usar Tipo 0 para Pre-Orden
+        const isRetiraCliente = currentStatusText === 'Retira Cliente' || orden.retira_cliente === 1; // Usar el campo retira_cliente
   
-        // Fechas ya formateadas en el `openModal`.
-        const fechaModificada = orden.Modificada || 'N/A';
-        const fechaCreacion = orden.Creada || 'N/A';
-        const fechaPreparado = orden.Preparado || 'N/A';
-        const fechaDistribucion = orden.FechaDistribucion || 'N/A';
+        // Fechas desde la respuesta del nuevo endpoint
+        const fechaOrden = orden.Fecha ? new Date(orden.Fecha).toLocaleDateString('es-AR') : 'N/A'; // Fecha de la orden
+        const fechaAltaRegistro = orden.AltaRegistro ? new Date(orden.AltaRegistro).toLocaleDateString('es-AR') : 'N/A';
   
         if (isAnulada) {
           // Si la orden está anulada, solo se muestra el paso de anulación con estado 'current-bad'.
@@ -1526,8 +1575,8 @@
             id: 'anulado',
             nombre: 'Orden Anulada',
             icon: 'mdi-cancel',
-            fecha: fechaModificada,
-            descripcion: `La orden ha sido cancelada por ${orden.Usuario || 'N/A'}.`,
+            fecha: fechaAltaRegistro, // Usamos la fecha de alta como referencia
+            descripcion: `La orden ha sido cancelada.`,
             statusClass: 'current-bad', // Clase para estados negativos actuales.
           });
         } else {
@@ -1537,11 +1586,11 @@
               id: 'pre_orden',
               nombre: 'Pre-Orden',
               icon: 'mdi-file-cabinet-outline',
-              fecha: fechaCreacion,
+              fecha: fechaAltaRegistro,
               descripcion: 'Orden creada como pre-orden.',
-              // Si el estado actual NO es "Pre-Orden", ya está completado; de lo contrario, es el estado actual.
+              // Si el estado actual NO es "Pendiente" o "Preparado" y es una pre-orden, ya está completado.
               statusClass:
-                currentStatusText !== 'Pre-Orden' ? 'completed' : 'current',
+                currentStatusText !== 'Pendiente' && currentStatusText !== 'Preparado' ? 'completed' : 'current',
             });
           }
   
@@ -1550,12 +1599,12 @@
             id: 'pendiente',
             nombre: 'Pendiente',
             icon: 'mdi-file-document-edit-outline',
-            fecha: fechaCreacion,
-            descripcion: `Ingresada por: ${orden.UsuarioCreoOrd || 'N/A'}.`,
+            fecha: fechaAltaRegistro,
+            descripcion: `La orden está pendiente.`,
             statusClass:
               currentStatusText === 'Pendiente'
-                ? 'current' // Es el estado actual
-                : (orden.FechaCreacion ? 'completed' : 'pending'), // Completado si tiene fecha, sino pendiente
+                ? 'current'
+                : (orden.AltaRegistro ? 'completed' : 'pending'),
           });
   
           // Paso "Preparada"
@@ -1563,12 +1612,12 @@
             id: 'preparado',
             nombre: 'Preparada',
             icon: 'mdi-package-variant-closed-check',
-            fecha: fechaPreparado,
+            fecha: fechaOrden, // Usamos la fecha de la orden como fecha de preparado
             descripcion: 'Los productos han sido preparados.',
             statusClass:
               currentStatusText === 'Preparado'
                 ? 'current'
-                : (orden.FechaPreparado ? 'completed' : 'pending'),
+                : (orden.Estado >= 2 ? 'completed' : 'pending'), // Marcamos como completado si el estado es 2 (Preparado) o superior
           });
   
           // Determina si la orden ha alcanzado el estado "Preparado" o posterior para incluir los siguientes pasos.
@@ -1585,12 +1634,12 @@
                 id: 'retira_cliente',
                 nombre: 'Retira Cliente',
                 icon: 'mdi-account-check-outline',
-                fecha: fechaDistribucion,
+                fecha: fechaOrden, // Fecha de la orden como fecha de retiro
                 descripcion: 'La orden está lista para retiro por el cliente.',
                 statusClass:
                   currentStatusText === 'Retira Cliente'
                     ? 'current'
-                    : (orden.Fecha ? 'completed' : 'pending'), // 'Fecha' es la fecha de distribución/retiro
+                    : (orden.Estado >= 5 ? 'completed' : 'pending'), // Marcamos como completado si el estado es 5 (Retira Cliente) o superior
               });
             } else {
               // Paso "A Distribución"
@@ -1598,12 +1647,12 @@
                 id: 'a_distribucion',
                 nombre: 'A Distribución',
                 icon: 'mdi-truck-fast-outline',
-                fecha: fechaDistribucion,
+                fecha: fechaOrden, // Fecha de la orden como fecha de distribución
                 descripcion: 'La orden ha sido despachada.',
                 statusClass:
                   currentStatusText === 'A distribuciòn'
                     ? 'current'
-                    : (orden.Fecha ? 'completed' : 'pending'),
+                    : (orden.Estado >= 3 ? 'completed' : 'pending'), // Marcamos como completado si el estado es 3 (A Distribución) o superior
               });
             }
           }
@@ -1712,7 +1761,7 @@
             icon: 'mdi-kabaddi',
             fecha: currentStatusText === 'ENTREGADO' ? fechaOriginal : 'N/A', // Asume fecha original si fue entregado.
             descripcion: `El pedido fue retirado de nuestro centro de distribución.`,
-            // El estado es 'current' si la guía está 'ENTREGADO', sino 'pending'.
+            // El estado es 'current' if the guide is 'ENTREGADO', otherwise 'pending'.
             statusClass: currentStatusText === 'ENTREGADO' ? 'current' : 'pending'
           });
   
@@ -1909,8 +1958,103 @@
   </script>
   
   <style scoped>
+  /* Estilos para la línea de tiempo */
+  .timeline-step {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    min-height: 40px;
+  }
+  
+  .timeline-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 16px;
+    flex-shrink: 0;
+    background-color: #e0e0e0; /* Color por defecto para estados pendientes */
+    color: #616161;
+  }
+  
+  .timeline-icon {
+    font-size: 18px;
+  }
+  
+  .timeline-content {
+    flex-grow: 1;
+    padding-bottom: 16px;
+  }
+  
+  .timeline-line {
+    position: absolute;
+    left: 16px;
+    top: 32px;
+    bottom: 0;
+    width: 2px;
+    background-color: #e0e0e0;
+  }
+  
+  /* Estados */
+  .completed .timeline-icon-container {
+    background-color: #4caf50; /* Verde para completado */
+    color: white;
+  }
+  
+  .current .timeline-icon-container {
+    background-color: #2196f3; /* Azul para estado actual */
+    color: white;
+    animation: pulse 2s infinite;
+  }
+  
+  .current-bad .timeline-icon-container {
+    background-color: #f44336; /* Rojo para estado actual de error */
+    color: white;
+    animation: pulse 2s infinite;
+  }
+  
+  .completed + .timeline-step:not(.completed) .timeline-line {
+    background: linear-gradient(to bottom, #4caf50, #e0e0e0);
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+    }
+  }
+  
+  /* Estilos para la tabla de productos */
+  .product-table {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .product-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  .product-table tr:not(:last-child) {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .product-table tr:hover {
+    background-color: #f9f9f9;
+  }
+  
   /* ============================ */
-  /* Estilos generales            */
+  /* Estilos generales          */
   /* ============================ */
   
   /*
@@ -1925,7 +2069,7 @@
   }
   
   /* ============================ */
-  /* Estilos para el Timeline     */
+  /* Estilos para el Timeline   */
   /* Estos estilos recrean la apariencia de una línea de tiempo vertical
      con iconos circulares y una línea que conecta los pasos. */
   /* ============================ */
