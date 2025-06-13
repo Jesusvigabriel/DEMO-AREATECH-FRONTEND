@@ -134,7 +134,7 @@
   
                   <div v-else>
                     <v-row align="center" justify="space-between" class="mb-4">
-                      <v-col cols="12" md="6">
+                      <v-col cols="12" md="6" class="d-flex align-center">
                         <v-text-field
                           v-model="textoBusqueda"
                           append-icon="mdi-magnify"
@@ -142,7 +142,11 @@
                           dense
                           outlined
                           clearable
+                          class="flex-grow-1"
                         />
+                        <v-btn icon @click="descargarOrdenesExcel">
+                          <v-icon>mdi-download</v-icon>
+                        </v-btn>
                       </v-col>
   
                       <v-col cols="12" md="3">
@@ -732,12 +736,14 @@
     * `SelectorEmpresa`: Componente para la selección de empresas (se asume su existencia y funcionalidad).
   */
   
-  import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
-  import store from '@/store'
-  import ordenes from '@/store/ordenesV3' // Módulo Vuex para órdenes
-  import empresasV3 from '@/store/empresasV3' // Módulo Vuex para empresas
-  import roles from '@/store/roles' // Módulo Vuex para roles de usuario
-  import guias from '@/store/guias' // Importamos el módulo de guías
+import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
+import store from '@/store'
+import ordenes from '@/store/ordenesV3' // Módulo Vuex para órdenes
+import empresasV3 from '@/store/empresasV3' // Módulo Vuex para empresas
+import roles from '@/store/roles' // Módulo Vuex para roles de usuario
+import guias from '@/store/guias' // Importamos el módulo de guías
+import excel from 'exceljs'
+import { saveAs } from 'file-saver'
   
   export default {
     name: 'SeguimientosOrdenesGuias', // Nuevo nombre para el componente
@@ -1913,6 +1919,40 @@
           }
         }
         return 'secondary lighten-2 white--text'; // Por defecto si no coincide.
+      },
+
+      async descargarOrdenesExcel() {
+        const workbook = new excel.Workbook()
+        const worksheet = workbook.addWorksheet('Ordenes')
+        worksheet.columns = [
+          { header: 'N° Orden', width: 15 },
+          { header: 'Empresa', width: 30 },
+          { header: 'Cliente', width: 30 },
+          { header: 'Fecha', width: 15 },
+          { header: 'Estado', width: 20 },
+        ]
+
+        this.ordenesFiltradasParaTabla.forEach(orden => {
+          worksheet.addRow([
+            orden.Numero,
+            orden.NombreEmpresa || '',
+            orden.NombreDestino || '',
+            orden.Fecha ? new Date(orden.Fecha).toLocaleDateString('es-AR') : '',
+            orden.NombreEstado || orden.Estado || '',
+          ])
+        })
+
+        worksheet.eachRow((row, idx) => {
+          row.eachCell(cell => {
+            cell.font = idx === 1 ? { size: 16, bold: true } : { size: 14 }
+          })
+        })
+
+        const buffer = await workbook.xlsx.writeBuffer()
+        saveAs(
+          new Blob([buffer]),
+          `ordenes_${this.fechaDesde}_${this.fechaHasta}.xlsx`
+        )
       },
   
       /**
