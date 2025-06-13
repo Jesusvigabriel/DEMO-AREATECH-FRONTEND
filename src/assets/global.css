@@ -32,3 +32,9 @@ table tbody tr:nth-child(even) {
   background-color: var(--v-primary-base) !important;
   color: #fff !important;
 }
+
+/* Reusable header class matching the menubar color */
+.header-menubar {
+  background-color: var(--v-menubar-base);
+  color: #fff;
+}

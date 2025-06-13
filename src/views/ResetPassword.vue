@@ -5,7 +5,7 @@
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="6" lg="4">
             <v-card class="elevation-6 login-card">
-              <v-toolbar color="primary" dark flat>
+              <v-toolbar flat class="header-menubar">
                 <v-toolbar-title class="text-h5">
                   Restablecer contraseña
                 </v-toolbar-title>
