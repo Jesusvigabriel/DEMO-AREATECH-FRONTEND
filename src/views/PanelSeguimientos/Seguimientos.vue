@@ -1488,11 +1488,12 @@ import { saveAs } from 'file-saver'
           if (type === 'orden') {
             // Si es una orden, se espera que `item` sea el ID de la orden.
             // Buscamos la orden directamente de `todasLasOrdenes` que ya contiene todos los detalles.
-            dataToModal = this.todasLasOrdenes.find(o => o.IdOrden === item);
-            
+            const found = this.todasLasOrdenes.find(o => o.IdOrden === item);
+            dataToModal = found ? JSON.parse(JSON.stringify(found)) : null;
+
             if (dataToModal) {
               // Los productos ya vienen agrupados en dataToModal.productos
-              // Formatea fechas específicas de la orden para el modal.
+              // Formatea fechas específicas de la orden para el modal sin afectar la lista original.
               dataToModal.Fecha = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString('es-AR') : 'N/A';
               // No necesitamos FechaCreacion, FechaPreparado, FechaDistribucion si ya se usa 'Fecha' como la principal
               // Mapeo de estado numérico a textual
