@@ -402,12 +402,13 @@ const productosV3= {
         )
     },
 
+    // Obtiene todos los productos con stock utilizando la ruta existente de
+    // `getAllProductosByEmpresa` y filtrando los resultados en el frontend.
+    // Ya no es necesario contar con una ruta `/productos/allConStock` en el
+    // backend.
     async getAllConStock(idEmpresa) {
-        return new Promise((resolve, reject) => {
-            API.acceder({Ruta: `/productos/allConStock/${idEmpresa}`, Cartel: 'Obteniendo datos ...'})
-                .then(data => resolve(data))
-                .catch(err => reject(err));
-        });
+        return productosV3.getAllProductosByEmpresa(idEmpresa)
+            .then(productos => productos.filter(p => p.Stock > 0));
     },
 
     async getMovimientosByPeriodoAndEmpresaAndArticulo(idEmpresa, fechaDesde, fechaHasta, idArticulo) {
