@@ -573,9 +573,9 @@
                     <div
                       v-for="(paso, index) in timelineStepsComputed"
                       :key="paso.id + index"
-                      class="timeline-step"
+                      :class="['timeline-step', paso.statusClass, paso.colorClass]"
                     >
-                      <div :class="['timeline-icon-container', paso.statusClass]">
+                      <div :class="['timeline-icon-container', paso.colorClass]">
                         <v-icon class="timeline-icon">{{ paso.icon }}</v-icon>
                       </div>
                       <div class="timeline-content">
@@ -594,7 +594,7 @@
                       </div>
                       <div
                         v-if="index < timelineStepsComputed.length - 1"
-                        class="timeline-line"
+                        :class="['timeline-line', paso.colorClass]"
                       ></div>
                     </div>
                   </v-sheet>
@@ -1663,6 +1663,17 @@ import { saveAs } from 'file-saver'
           }
         });
 
+        const colorMap = {
+          pendiente: 'pendiente',
+          preparado: 'preparada',
+          a_distribucion: 'despachada',
+          retira_cliente: 'despachada',
+          pre_orden: 'pendiente'
+        };
+        timelineSteps.forEach(step => {
+          step.colorClass = colorMap[step.id] || '';
+        });
+
         console.log("_construirTimelineOrden: Timeline construido:", timelineSteps);
         return timelineSteps;
       },
@@ -1841,6 +1852,20 @@ import { saveAs } from 'file-saver'
             step.statusClass = 'completed';
           }
         }
+
+        const colorMap = {
+          preparacion: 'pendiente',
+          preparado: 'preparada',
+          en_cd: 'despachada',
+          en_distribucion: 'despachada',
+          retirado: 'despachada',
+          entregado: 'despachada',
+          parcial: 'despachada',
+          no_entregado: 'despachada'
+        };
+        timelineSteps.forEach(step => {
+          step.colorClass = colorMap[step.id] || '';
+        });
         console.log("_construirTimelineGuia: Timeline construido:", timelineSteps);
         return timelineSteps;
       },
@@ -2245,5 +2270,33 @@ import { saveAs } from 'file-saver'
   .timeline-step.pending .timeline-icon-container {
     background-color: #f5f5f5; /* Vuetify grey lighten-4 */
     color: #757575;            /* Vuetify grey darken-1 */
+  }
+
+  /* Colores por tipo de estado */
+  .timeline-step.pendiente .timeline-icon-container,
+  .timeline-line.pendiente {
+    background-color: #c81e2b;
+    color: #fff;
+  }
+  .timeline-step.pendiente::before {
+    background-color: #c81e2b;
+  }
+
+  .timeline-step.preparada .timeline-icon-container,
+  .timeline-line.preparada {
+    background-color: #f8b421;
+    color: #fff;
+  }
+  .timeline-step.preparada::before {
+    background-color: #f8b421;
+  }
+
+  .timeline-step.despachada .timeline-icon-container,
+  .timeline-line.despachada {
+    background-color: #2d8bba;
+    color: #fff;
+  }
+  .timeline-step.despachada::before {
+    background-color: #2d8bba;
   }
   </style>
