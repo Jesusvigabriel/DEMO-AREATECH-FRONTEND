@@ -80,6 +80,9 @@
       <v-btn class="ml-2" outlined @click="window.print()">
         Imprimir
       </v-btn>
+      <v-btn class="ml-2" outlined @click="$router.back()">
+        Volver
+      </v-btn>
       <v-btn class="ml-2" outlined color="success" @click="descargarExcel">
         Descargar Excel
       </v-btn>
