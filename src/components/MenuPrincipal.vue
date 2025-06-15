@@ -473,18 +473,18 @@ export default {
 .menu-horizontal-compacta {
   display: flex !important;
   flex-wrap: wrap !important; /* permite que los elementos bajen a otra línea */
-  overflow-x: auto !important; /* añade scroll si aún así no entran */
+  overflow-x: hidden !important; /* se elimina la barra de desplazamiento */
   gap: 1px !important;
   align-items: center;
   max-width: 100%;
 }
 .menu-horizontal-compacta > * {
-  flex-shrink: 0 !important; /* evita que los botones se encojan demasiado */
+  flex-shrink: 1 !important; /* permite cierto ajuste del ancho de los botones */
 }
 
-/* Botones más chicos */
-.v-btn {
-  font-size: 12px !important;
+/* Botones compactos */
+.menu-horizontal-compacta .v-btn {
+  font-size: clamp(8px, 1vw, 12px) !important; /* reduce el texto en pantallas pequeñas */
   padding: 0 7px !important;
   margin: 0 !important;
   min-width: 0 !important;
