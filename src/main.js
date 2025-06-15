@@ -20,6 +20,8 @@ Vue.config.productionTip = false
 const apiUrl = process.env.VUE_APP_API_URL
 if (!apiUrl) {
   console.error('⚠️ VUE_APP_API_URL no está definida en .env')
+} else if (apiUrl.includes('localhost')) {
+  axios.defaults.baseURL = apiUrl
 } else {
   axios.defaults.baseURL = apiUrl.replace(/^http:/, 'https:')
 }

@@ -40,3 +40,21 @@ chip:
 | Entrega parcial       | `warning lighten-2 white--text` |
 | Otros                 | `secondary lighten-2 white--text` |
 
+## Running against a local backend
+
+To use the frontend with a backend running on your machine you can create
+a `.env.development` file in the project root:
+
+```bash
+VUE_APP_API_URL="http://localhost:8128"
+```
+
+Then start the development server:
+
+```bash
+npm run serve
+```
+
+Vue CLI will load `.env.development` automatically and API requests will be
+sent to `http://localhost:8128`.
+
