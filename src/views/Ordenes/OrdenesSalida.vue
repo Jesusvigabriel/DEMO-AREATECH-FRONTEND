@@ -388,26 +388,9 @@ async salidaExpress() {
 },
 
         botonPrevisualizarOrdenClick() {
-            let detalle=""
-            let numeroItem=0
-          
-            // iteramos el detalle para mostrar unidades, nombre y barcode por cada producto
-            if(this.tieneLOTE){
-                this.detalleOrdenEnCurso.forEach(element => {
-                numeroItem++
-                detalle+=numeroItem+") "+element.Unidades+" x "+element.Productos+" - BoxNumber:("+element.lote+ ") SerialNumber:("+element.Barcode+") PartNumber:("+ element.PartNumber +") - Salidos: "+element.CantidadSalida+";"   
-                })
-            } else {
-                this.detalleOrdenEnCurso.forEach(element => {
-                numeroItem++
-                detalle+=numeroItem+") "+element.Unidades+" x "+element.Productos+" ("+element.Barcode+")"+" - Salidos: "+element.CantidadSalida+";"   
-                })
+            if (this.selectorOrden.dato) {
+                router.push(`/Ordenes/PrepararOrden/${this.selectorOrden.dato}`)
             }
-            const mensajeAMostrar = {   titulo: 'Detalle de la orden', 
-                                        mensaje: detalle 
-                                    }
-            this.mostrarMensaje(mensajeAMostrar)
-            this.enfocarBarcodeArticulo()         
         },
 
         async clickFinalizarIngresarBultos() {
