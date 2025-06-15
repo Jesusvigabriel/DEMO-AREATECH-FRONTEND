@@ -133,7 +133,10 @@ export default {
         CantidadSalida: 0,
         NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
           d.Descripcion || d.Productos || 'Sin nombre',
-        Posicion: d.Posicion || d.PosicionNombre || d.Ubicacion || null,
+        Posicion:
+          (Array.isArray(d.Posiciones) && d.Posiciones.length
+            ? d.Posiciones.map(p => p.Posicion).join(', ')
+            : d.Posicion || d.PosicionNombre || d.Ubicacion || null),
         Barcode: d.Barcode || d.CodeEmpresa,
         CodeEmpresa: d.CodeEmpresa
       }))
