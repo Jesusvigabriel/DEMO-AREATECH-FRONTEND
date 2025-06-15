@@ -48,6 +48,7 @@
       <thead>
         <tr>
           <th>Producto</th>
+          <th>Barcode</th>
           <th>Posición</th>
           <th>Unidades</th>
           <th>Cant. Salida</th>
@@ -61,6 +62,7 @@
           :class="rowClass(item)"
         >
           <td>{{ item.NombreProducto }}</td>
+          <td>{{ item.Barcode || item.CodeEmpresa }}</td>
           <td>{{ item.Posicion || '-' }}</td>
           <td>{{ item.Unidades }}</td>
           <td class="text-center">
@@ -198,6 +200,7 @@ export default {
       const sheet = workbook.addWorksheet('Orden')
       sheet.columns = [
         { header: 'Producto', key: 'producto', width: 30 },
+        { header: 'Barcode', key: 'barcode', width: 20 },
         { header: 'Posicion', key: 'posicion', width: 15 },
         { header: 'Unidades', key: 'unidades', width: 10 },
         { header: 'Cant. Salida', key: 'salida', width: 12 }
@@ -205,6 +208,7 @@ export default {
       this.detalle.forEach(d => {
         sheet.addRow({
           producto: d.NombreProducto,
+          barcode: d.Barcode,
           posicion: d.Posicion || '',
           unidades: d.Unidades,
           salida: d.CantidadSalida
