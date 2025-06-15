@@ -31,6 +31,16 @@
           dense
         />
       </v-col>
+      <v-col cols="4" v-if="showCantidad">
+        <v-text-field
+          ref="cantidadArticulo"
+          v-model.number="cantidadArticulo"
+          label="Cantidad"
+          type="number"
+          @keydown.enter.prevent="cantidadEnter"
+          dense
+        />
+      </v-col>
     </v-row>
 
     <!-- TABLA DE PRODUCTOS -->
@@ -111,6 +121,9 @@ export default {
       usuario: store.state.usuarios.usuarioActual.Nombre,
       fecha: fechas.getHoy(),
       barcodeArticulo: '',
+      cantidadArticulo: 1,
+      showCantidad: false,
+      selectedItem: null,
       detalle: []
     }
   },
@@ -209,19 +222,37 @@ export default {
       const item = this.detalle.find(d => d.Barcode === codigo || d.CodeEmpresa === codigo)
       if (item) {
         console.log('Item encontrado', item)
-        if (!item.CantidadSalida) item.CantidadSalida = 0
-        if (item.CantidadSalida < item.Unidades) {
-          item.CantidadSalida++
-          this.actualizarValidacion(item)
-        } else {
-          store.dispatch('snackbar/mostrar', 'Cantidad excedida')
-        }
+        this.selectedItem = item
+        this.showCantidad = true
+        this.cantidadArticulo = 1
+        this.barcodeArticulo = ''
+        this.$nextTick(() => this.$refs.cantidadArticulo && this.$refs.cantidadArticulo.focus())
       } else {
         console.log('Barcode inexistente', codigo)
         store.dispatch('snackbar/mostrar', codigo + ': Barcode inexistente')
+        this.cancelarIngreso()
       }
+    },
+
+    cantidadEnter () {
+      if (!this.selectedItem) return
+      let cantidad = Number(this.cantidadArticulo)
+      if (!cantidad || cantidad < 0) cantidad = 1
+      if (this.selectedItem.CantidadSalida + cantidad <= this.selectedItem.Unidades) {
+        this.selectedItem.CantidadSalida += cantidad
+        this.actualizarValidacion(this.selectedItem)
+      } else {
+        store.dispatch('snackbar/mostrar', 'Cantidad excedida')
+      }
+      this.cancelarIngreso()
+    },
+
+    cancelarIngreso () {
+      this.showCantidad = false
+      this.selectedItem = null
+      this.cantidadArticulo = 1
       this.barcodeArticulo = ''
-      this.$nextTick(() => this.$refs.barcodeArticulo.focus())
+      this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
     },
     actualizarValidacion (item) {
       item.validado = item.CantidadSalida === item.Unidades
