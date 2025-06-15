@@ -49,5 +49,10 @@ export default new Vuetify({
     options: {
       customProperties: true // Permite usar colores como variables CSS (var(--v-primary-base))
     }
+  },
+  defaultAssets: {
+    font: {
+      family: 'DM Sans'
+    }
   }
 })
