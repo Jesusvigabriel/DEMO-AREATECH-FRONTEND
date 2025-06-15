@@ -84,7 +84,6 @@ import ordenes from "@/store/ordenesV3"
 import ordenesV2 from "@/store/ordenes"
 import empresasV3 from '@/store/empresasV3'
 import posiciones from '@/store/posicionesV3'
-import destinos from '@/store/destinos'
 import {xlsx, read, utils, writeFile} from 'xlsx'
 import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
 import roles from '@/store/roles'
@@ -122,7 +121,7 @@ export default {
         {text: 'Empresa', value: 'nombre',width: 1},
         {text: 'Tipo', value: 'tipo',width: 1},
         {text: 'Número', value: 'numero',width: 1},
-        {text: 'Destinatario', value: 'nombreDestino',width: 150},
+        {text: 'Dirección', value: 'direccion',width: 150},
         {text: 'Prioridad', value: 'prioridad',width: 1},
         {text: 'Valor', value: 'valor',width: 1},
         {text: 'Estado', value: 'Estado',width: 100},
@@ -235,13 +234,8 @@ export default {
               orden.preOrden = "Orden"
             }
 
-            // Obtengo nombre del destinatario
-            try {
-              const dest = await destinos.getOneById(orden.Eventual)
-              orden.nombreDestino = dest.Nombre
-            } catch (e) {
-              orden.nombreDestino = ''
-            }
+            // La API ya provee la dirección de destino
+            orden.direccion = orden.direccion || ''
         }
         response.sort((a, b) => (a.Creada > b.Creada ? -1 : 1))
         this.ordenes = response
