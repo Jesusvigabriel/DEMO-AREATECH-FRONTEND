@@ -10,23 +10,20 @@
       ></v-app-bar-nav-icon>
 
       <!-- Logo alineado a la izquierda -->
-      <v-toolbar-title class="logo-container">
-        <v-img
-          :src="nombreLogo"
-          contain
-          width="30"
-          height="30"
-          alt="AreaTech"
-        />
-      </v-toolbar-title>
+      <router-link to="/">
+        <v-toolbar-title class="logo-container">
+          <v-img
+            :src="nombreLogo"
+            contain
+            width="30"
+            height="30"
+            alt="AreaTech"
+          />
+        </v-toolbar-title>
+      </router-link>
 
       <!-- Menús horizontales SOLO en desktop (>=960px), compactos -->
       <v-toolbar-items class="ml-4 d-none d-md-flex menu-horizontal-compacta">
-        <!-- HOME -->
-        <v-btn text to="/">
-          <v-icon left small>mdi-home-outline</v-icon>
-          HOME
-        </v-btn>
         <!-- STOCK SOLO SI HAY ITEMS -->
         <v-menu offset-y v-if="ListaDeMenusStock.length > 0">
           <template #activator="{ on, attrs }">
@@ -464,6 +461,8 @@ export default {
 <style scoped>
 .logo-container {
   cursor: pointer;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
 }
 .user-btn {
   text-transform: none;
@@ -501,6 +500,7 @@ export default {
   font-family: 'DM Sans', sans-serif;
   letter-spacing: 0;
   line-height: 1.1;
+  padding-left: 0 !important;
 }
 .v-list-item-title {
   font-size: 13px !important;
