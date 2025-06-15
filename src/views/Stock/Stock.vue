@@ -1463,7 +1463,7 @@ export default {
                 }  
         },
         
- actualizarTotales() {
+  actualizarTotales() {
     // 1) Reseteamos
     this.stockTotal         = 0
     this.stockPosicionado   = 0
@@ -1519,6 +1519,52 @@ export default {
       }
     ]
   },
+
+  // Actualiza las tarjetas utilizando la información resumida del backend
+  actualizarCardsDesdeResumen(res) {
+    this.stockTotal         = Number(res.StockTotal         || 0)
+    this.stockPosicionado   = Number(res.StockPosicionado   || 0)
+    this.stockSinPosicionar = Number(res.StockSinPosicionar || 0)
+    this.stockComprometido  = Number(res.StockComprometido  || 0)
+
+    const pctPos  = this.stockPosicionado  / (this.stockTotal || 1)
+    const pctComp = this.stockComprometido / (this.stockTotal || 1)
+
+    this.cards = [
+      {
+        label: 'Stock total',
+        value: this.stockTotal,
+        color: 'primary',
+        icon: 'mdi-package-variant',
+        categoria: 'total',
+        download: this.descargarStockTotal
+      },
+      {
+        label: 'Posicionado',
+        value: this.stockPosicionado,
+        color: pctPos < 0.5 ? 'orange' : 'green',
+        icon: 'mdi-warehouse',
+        categoria: 'posicionado',
+        download: this.descargarStockPosicionado
+      },
+      {
+        label: 'Sin posicionar',
+        value: this.stockSinPosicionar,
+        color: this.stockSinPosicionar > 1000 ? 'orange' : 'green',
+        icon: 'mdi-package-variant-closed',
+        categoria: 'sinPosicionar',
+        download: this.descargarStockSinPosicionar
+      },
+      {
+        label: 'Comprometido',
+        value: this.stockComprometido,
+        color: pctComp > 0 ? 'red' : 'primary',
+        icon: 'mdi-handshake-outline',
+        categoria: 'comprometido',
+        download: this.descargarStockComprometido
+      }
+    ]
+  },
         actualizarTotalesPartida() {
             this.stockTotal=0
             this.stockSinPosicionar=0
@@ -1566,7 +1612,12 @@ export default {
         },
         seleccionarCategoria(categoria) {
             this.categoriaSeleccionada = categoria
-            this.filtrarLista()
+            // Si aún no cargamos los detalles, los obtenemos al seleccionar la tarjeta
+            if (this.listaArticulosCompleta.length === 0) {
+                this.popularListaProductos()
+            } else {
+                this.filtrarLista()
+            }
         },
         popularListaProductos() {
             this.listaArticulosCompleta=[]
@@ -1662,12 +1713,22 @@ export default {
                             this.cabeceras = this.cabecerasStockPartidasPosicionado
                             this.textil = false
                         }else{
-                            this.cabeceras = this.empresaElegida.StockPosicionado ? this.cabecerasStockPosicionado :  this.cabecerasStockNoPosicionado
+                    this.cabeceras = this.empresaElegida.StockPosicionado ? this.cabecerasStockPosicionado :  this.cabecerasStockNoPosicionado
                             this.textil = false
                             this.tienePART = false
                         }
                     }
-                    this.popularListaProductos()
+
+                    // Obtiene solo el resumen para mostrar en las tarjetas
+                    productosV3.getResumenStock(idEmpresaElegida)
+                        .then(resumen => {
+                            this.actualizarCardsDesdeResumen(resumen)
+                            this.listaArticulosCompleta = []
+                            this.listaArticulosMostrar = []
+                        })
+                        .catch(() => {
+                            this.cards = []
+                        })
                 })
         },
         mostrarMensaje(titulo, mensaje){

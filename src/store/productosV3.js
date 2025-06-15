@@ -411,6 +411,20 @@ const productosV3= {
             .then(productos => productos.filter(p => p.Stock > 0));
     },
 
+    // Devuelve un resumen de stock para las tarjetas de la vista de Stock
+    async getResumenStock(idEmpresa) {
+        return new Promise(
+            function(resolve, reject) {
+                API.acceder({
+                    Ruta: `/productos/resumenStock/${idEmpresa}`,
+                    Cartel: "Obteniendo resumen..."
+                })
+                .then(data => { resolve(data) })
+                .catch(err => { reject(err) })
+            }
+        )
+    },
+
     async getMovimientosByPeriodoAndEmpresaAndArticulo(idEmpresa, fechaDesde, fechaHasta, idArticulo) {
         return new Promise (
             function (resolve, reject) {
