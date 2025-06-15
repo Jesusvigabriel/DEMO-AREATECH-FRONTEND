@@ -473,12 +473,14 @@ export default {
 /* Barra horizontal súper compacta: nunca hace overflow, los botones se achican */
 .menu-horizontal-compacta {
   display: flex !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important; /* permite que los elementos bajen a otra línea */
+  overflow-x: auto !important; /* añade scroll si aún así no entran */
   gap: 1px !important;
   align-items: center;
+  max-width: 100%;
 }
 .menu-horizontal-compacta > * {
-  flex-shrink: 1 !important;
+  flex-shrink: 0 !important; /* evita que los botones se encojan demasiado */
 }
 
 /* Botones más chicos */
