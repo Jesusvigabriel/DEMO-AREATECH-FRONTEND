@@ -2,6 +2,9 @@
   <v-container class="remito-container">
 
     <!-- TÍTULO -->
+    <v-btn icon class="mb-2" @click="$router.back()">
+      <v-icon>mdi-arrow-left</v-icon>
+    </v-btn>
     <h2 class="remito-titulo">ORDEN DE SALIDA</h2>
 
     <!-- CABECERA -->
