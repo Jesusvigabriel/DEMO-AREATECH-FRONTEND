@@ -38,6 +38,7 @@ const routes = [
   { path: '/Informes/Ingresos', name: 'Informes_Ingresos', component: () => import('../views/Informes/Ingresos.vue'), meta: { tituloPagina: 'Informes - Ingresos' } },
   { path: '/ImportacionOrdenes', name: 'ImportacionOrdenes', component: () => import('../views/Ordenes/ImportacionOrdenes.vue'), meta: { tituloPagina: 'Importación de órdenes' } },
   { path: '/OrdenesSalida', name: 'OrdenesSalida', component: () => import('../views/Ordenes/OrdenesSalida.vue'), meta: { tituloPagina: 'Salida de órdenes' } },
+  { path: '/Ordenes/PrepararOrden/:idOrden', name: 'PrepararOrden', component: () => import('../views/Ordenes/PrepararOrden.vue'), meta: { tituloPagina: 'Preparar Orden' } },
   { path: '/Ordenes/CreacionManual', name: 'OrdenesCreacionManual', component: () => import('../views/Ordenes/CreacionManual.vue'), meta: { tituloPagina: 'Creación manual de órdenes' } },
   { path: '/Productos/ABM', name: 'ProductosABM', component: () => import('../views/Productos/ABM.vue'), meta: { tituloPagina: 'Creación de productos' } },
   { path: '/Estadisticas', name: 'Estadisticas', component: () => import('../views/Estadisticas.vue'), meta: { tituloPagina: 'Estadísticas' } },

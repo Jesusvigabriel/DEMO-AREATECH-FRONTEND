@@ -16,6 +16,20 @@
       </div>
     </div>
 
+    <!-- LECTOR DE BARCODES -->
+    <v-row class="mt-4">
+      <v-col cols="6">
+        <v-text-field
+          ref="barcodeArticulo"
+          v-model="barcodeArticulo"
+          label="Barcode artículo"
+          prepend-inner-icon="mdi-barcode-scan"
+          @keydown.enter.prevent="barcodeEnter"
+          dense
+        />
+      </v-col>
+    </v-row>
+
     <!-- TABLA DE PRODUCTOS -->
     <v-simple-table class="remito-table">
       <thead>
@@ -23,16 +37,35 @@
           <th>Producto</th>
           <th>Posición</th>
           <th>Unidades</th>
+          <th>Cant. Salida</th>
           <th>Validado</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in detalle" :key="index">
+        <tr
+          v-for="(item, index) in detalle"
+          :key="index"
+          :class="rowClass(item)"
+        >
           <td>{{ item.NombreProducto }}</td>
           <td>{{ item.Posicion || '-' }}</td>
           <td>{{ item.Unidades }}</td>
+          <td class="text-center">
+            <v-edit-dialog
+              :return-value.sync="item.CantidadSalida"
+              @save="actualizarValidacion(item)"
+            >
+              <div class="d-flex align-center">
+                {{ item.CantidadSalida }}
+                <v-icon small class="ml-1">mdi-pencil</v-icon>
+              </div>
+              <template v-slot:input>
+                <v-text-field v-model.number="item.CantidadSalida" type="number" autofocus></v-text-field>
+              </template>
+            </v-edit-dialog>
+          </td>
           <td>
-            <v-checkbox v-model="item.validado" color="primary" dense hide-details />
+            <v-checkbox v-model="item.validado" color="primary" dense hide-details @change="actualizarValidacion(item)" />
           </td>
         </tr>
       </tbody>
@@ -51,8 +84,8 @@
     </div>
 
     <!-- BOTONES -->
-    <div class="remito-actions no-print">
-      <v-btn color="primary" :disabled="!todoValidado" @click="procesarOrden">
+    <div class="remito-actions no-print" v-if="todoValidado">
+      <v-btn color="primary" @click="procesarOrden">
         Procesar Orden
       </v-btn>
       <v-btn class="ml-2" outlined @click="window.print()">
@@ -78,12 +111,13 @@ export default {
       empresaNombre: '',
       usuario: store.state.usuarios.usuarioActual.Nombre,
       fecha: fechas.getHoy(),
+      barcodeArticulo: '',
       detalle: []
     }
   },
   computed: {
     todoValidado () {
-      return this.detalle.every(d => d.validado)
+      return this.detalle.every(d => d.CantidadSalida === d.Unidades)
     }
   },
   created () {
@@ -95,8 +129,11 @@ export default {
       this.detalle = respuestaDetalle.map(d => ({
         ...d,
         validado: false,
+        CantidadSalida: 0,
         NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre || d.Descripcion || 'Sin nombre',
-        Posicion: d.Posicion || d.PosicionNombre || d.Ubicacion || null
+        Posicion: d.Posicion || d.PosicionNombre || d.Ubicacion || null,
+        Barcode: d.Barcode || d.CodeEmpresa,
+        CodeEmpresa: d.CodeEmpresa
       }))
 
       const orden = await ordenesV3.getById(this.idOrden)
@@ -104,12 +141,13 @@ export default {
       this.empresaId = orden.IdEmpresa || orden.id_empresa
       const emp = orden.Empresa
       this.empresaNombre = emp?.RazonSocial || emp?.Nombre || 'Empresa desconocida'
+      this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
     },
 
     async procesarOrden () {
       const detallePayload = this.detalle.map(i => ({
         IdProducto: i.IdProducto,
-        Cantidad: i.Unidades
+        Cantidad: i.CantidadSalida
       }))
 
       const Cabeceras = {
@@ -131,6 +169,31 @@ export default {
       } catch (e) {
         store.dispatch('snackbar/mostrar', 'Error al procesar la orden')
       }
+    }
+    ,
+    barcodeEnter () {
+      const codigo = this.barcodeArticulo.trim()
+      if (!codigo) return
+      const item = this.detalle.find(d => d.Barcode === codigo || d.CodeEmpresa === codigo)
+      if (item) {
+        if (!item.CantidadSalida) item.CantidadSalida = 0
+        if (item.CantidadSalida < item.Unidades) {
+          item.CantidadSalida++
+          this.actualizarValidacion(item)
+        } else {
+          store.dispatch('snackbar/mostrar', 'Cantidad excedida')
+        }
+      } else {
+        store.dispatch('snackbar/mostrar', codigo + ': Barcode inexistente')
+      }
+      this.barcodeArticulo = ''
+      this.$nextTick(() => this.$refs.barcodeArticulo.focus())
+    },
+    actualizarValidacion (item) {
+      item.validado = item.CantidadSalida === item.Unidades
+    },
+    rowClass (item) {
+      return item.CantidadSalida === item.Unidades ? 'correct-row' : 'incorrect-row'
     }
   }
 }
@@ -187,6 +250,12 @@ export default {
   border: 1px solid #ccc;
   padding: 8px 12px;
   text-align: left;
+}
+.correct-row {
+  background-color: #e8f5e9;
+}
+.incorrect-row {
+  background-color: #ffebee;
 }
 
 .remito-actions {
