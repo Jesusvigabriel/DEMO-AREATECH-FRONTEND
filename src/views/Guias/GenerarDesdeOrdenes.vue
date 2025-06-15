@@ -465,7 +465,11 @@ export default {
         callback: async response => {
           if (response=="Si") {
             for (const unaOrden of this.ordenesSeleccionadas) {
-              await ordenes.marcarRetiraCliente(unaOrden.Id, this.fechaMarcarComoRetiraCliente)
+              try {
+                await ordenes.marcarRetiraCliente(unaOrden.Id, this.fechaMarcarComoRetiraCliente)
+              } catch (e) {
+                store.dispatch('snackbar/mostrar', 'Error al obtener la orden')
+              }
             }
             this.ordenesSeleccionadas=[]
             this.popularListaDeOrdenes()
@@ -644,30 +648,32 @@ export default {
 
       this.refrescarListaOrdenesAProcesar()
     },
-    popularListaDeOrdenes() {
-      ordenes.getPreparadasNoGuias()
-        .then(response => {
-          response.forEach(element => {
-            element.Fecha=element.Fecha.substr(0, 10)
-          });
-          response.sort( (a, b) => a.Fecha>b.Fecha ?  -1 : 1)
-          this.ordenes=response
-          this.filtrarOrdenes()
+    async popularListaDeOrdenes() {
+      try {
+        const response = await ordenes.getPreparadasNoGuias()
+        response.forEach(element => {
+          element.Fecha = element.Fecha.substr(0, 10)
         })
-        .catch(error => {console.log("Error", error)})
+        response.sort((a, b) => a.Fecha > b.Fecha ? -1 : 1)
+        this.ordenes = response
+        this.filtrarOrdenes()
+      } catch (e) {
+        store.dispatch('snackbar/mostrar', 'Error al obtener la orden')
+      }
     },
 
-    popularListaDeOrdenesByIdEmpresa() {
-      ordenes.getPreparadasNoGuiasByIdEmpresa(this.idEmpresa)
-        .then(response => {
-          response.forEach(element => {
-            element.Fecha=element.Fecha.substr(0, 10)
-          });
-          response.sort( (a, b) => a.Fecha>b.Fecha ?  -1 : 1)
-          this.ordenes=response
-          this.filtrarOrdenes()
+    async popularListaDeOrdenesByIdEmpresa() {
+      try {
+        const response = await ordenes.getPreparadasNoGuiasByIdEmpresa(this.idEmpresa)
+        response.forEach(element => {
+          element.Fecha = element.Fecha.substr(0, 10)
         })
-        .catch(error => {console.log("Error", error)})
+        response.sort((a, b) => a.Fecha > b.Fecha ? -1 : 1)
+        this.ordenes = response
+        this.filtrarOrdenes()
+      } catch (e) {
+        store.dispatch('snackbar/mostrar', 'Error al obtener la orden')
+      }
     },
     mostrarMensaje(mensaje, titulo) {
       store.dispatch("alertDialog/mostrar", {titulo, mensaje, botonPrimario: "Entendido"})

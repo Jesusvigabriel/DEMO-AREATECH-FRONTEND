@@ -458,10 +458,14 @@ async registrarProcesamientoOrden() {
             this.mostrarMensaje({titulo: "Registración correcta! 👍", mensaje: "La salida de la orden ha sido registrada exitosamente"});
 
             // Actualización de datos y generación del PDF
-            const datosOrden = await ordenesV3.getById(this.ordenEnCurso[0].Id);
-            const ordenActualizada = await ordenes.actions.getDatosOrden(datosOrden);
-            const pdfEtiqueta = await ordenes.generarOrdenEtiquetaEnPDFChicaUnaPorHoja(ordenActualizada);
-            pdfEtiqueta.save("etiqueta_" + ordenActualizada[0].Orden.Numero + ".pdf");
+            try {
+                const datosOrden = await ordenesV3.getById(this.ordenEnCurso[0].Id);
+                const ordenActualizada = await ordenes.actions.getDatosOrden(datosOrden);
+                const pdfEtiqueta = await ordenes.generarOrdenEtiquetaEnPDFChicaUnaPorHoja(ordenActualizada);
+                pdfEtiqueta.save("etiqueta_" + ordenActualizada[0].Orden.Numero + ".pdf");
+            } catch (e) {
+                store.dispatch('snackbar/mostrar', 'Error al obtener la orden');
+            }
         } catch (error) {
             this.mostrarMensaje({titulo: "Error", mensaje: error});
         }
