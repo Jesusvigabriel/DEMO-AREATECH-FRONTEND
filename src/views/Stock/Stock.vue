@@ -45,7 +45,7 @@
     cols="12" sm="6" md="3"
     class="pa-2"
   >
-    <v-card outlined tile class="d-flex flex-column cursor-pointer" @click="card.handler">
+    <v-card outlined tile class="d-flex flex-column cursor-pointer" @click="seleccionarCategoria(card.categoria)">
       <!-- Mitad superior: usa v-sheet para el color de tema-->
       <v-sheet
         :color="card.color"
@@ -64,6 +64,9 @@
         <div class="text-h5 font-weight-bold" :style="{ color: $vuetify.theme.themes.light[card.color] || card.color }">
           {{ card.value.toLocaleString('es-AR') }}
         </div>
+        <v-btn icon small @click.stop="card.download">
+          <v-icon>mdi-download</v-icon>
+        </v-btn>
       </v-card-text>
     </v-card>
   </v-col>
@@ -433,8 +436,9 @@ export default {
             textoBusqueda: '',
             textil: false,
             // stock comprometido :
-    stockComprometido: 0,
-    cards: []
+            stockComprometido: 0,
+            cards: [],
+            categoriaSeleccionada: 'total'
         }
     },
 
@@ -1486,28 +1490,32 @@ export default {
         value: this.stockTotal,
         color: 'primary',              // clave de tu tema
         icon:  'mdi-package-variant',  // icono MDI
-        handler: this.descargarStockTotal
+        categoria: 'total',
+        download: this.descargarStockTotal
       },
       {
         label: 'Posicionado',
         value: this.stockPosicionado,
         color: pctPos < 0.5 ? 'orange' : 'green',
         icon:  'mdi-warehouse',
-        handler: this.descargarStockPosicionado
+        categoria: 'posicionado',
+        download: this.descargarStockPosicionado
       },
       {
         label: 'Sin posicionar',
         value: this.stockSinPosicionar,
         color: this.stockSinPosicionar > 1000 ? 'orange' : 'green',
         icon:  'mdi-package-variant-closed',
-        handler: this.descargarStockSinPosicionar
+        categoria: 'sinPosicionar',
+        download: this.descargarStockSinPosicionar
       },
       {
         label: 'Comprometido',
         value: this.stockComprometido,
         color: this.stockComprometido > 0 ? 'red' : 'primary',
         icon:  'mdi-handshake-outline',
-        handler: this.descargarStockComprometido
+        categoria: 'comprometido',
+        download: this.descargarStockComprometido
       }
     ]
   },
@@ -1525,19 +1533,39 @@ export default {
         },
 
         filtrarLista(){
+            let lista = this.listaArticulosCompleta
+
+            switch (this.categoriaSeleccionada) {
+                case 'posicionado':
+                    lista = lista.filter(el => el.StockPosicionado > 0)
+                    break
+                case 'sinPosicionar':
+                    lista = lista.filter(el => el.StockSinPosicionar > 0)
+                    break
+                case 'comprometido':
+                    lista = lista.filter(el => el.StockComprometido > 0)
+                    break
+                default:
+                    break
+            }
+
             if (this.verSoloConStockSinPosicionar) {
-                this.listaArticulosMostrar = this.listaArticulosCompleta.filter(element => element.StockSinPosicionar>0)
-            } else {
-                this.listaArticulosMostrar = this.listaArticulosCompleta.filter(element => true)
+                lista = lista.filter(element => element.StockSinPosicionar > 0)
             }
             if (this.verSoloConStock) {
-                this.listaArticulosMostrar = this.listaArticulosMostrar.filter(element => element.Stock>0)
+                lista = lista.filter(element => element.Stock > 0)
             }
+
+            this.listaArticulosMostrar = lista
         },
         changeVerSoloStockSinPosicionar() {
             this.filtrarLista()
         },
         changeVerSoloConStock() {
+            this.filtrarLista()
+        },
+        seleccionarCategoria(categoria) {
+            this.categoriaSeleccionada = categoria
             this.filtrarLista()
         },
         popularListaProductos() {
@@ -1609,6 +1637,7 @@ export default {
             this.tieneLOTE = false
             this.tienePART = false
             this.idEmpresa=idEmpresaElegida
+            this.categoriaSeleccionada = 'total'
             empresas.getOne(idEmpresaElegida)
                 .then(response => {
                     this.verDetalleLote = false
