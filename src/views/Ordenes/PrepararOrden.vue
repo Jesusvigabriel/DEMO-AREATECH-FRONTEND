@@ -86,6 +86,9 @@
       <v-btn class="ml-2" outlined color="success" @click="descargarExcel">
         Descargar Excel
       </v-btn>
+      <v-btn class="ml-2" outlined color="primary" @click="descargarPDF">
+        Descargar PDF
+      </v-btn>
     </div>
 
   </v-container>
@@ -93,6 +96,7 @@
 
 <script>
 import ordenesV3 from '@/store/ordenesV3'
+import ordenes from '@/store/ordenes'
 import store from '@/store'
 import fechas from 'vue-lsi-util/fechas'
 import excel from 'exceljs'
@@ -187,6 +191,16 @@ export default {
       })
       const buf = await workbook.xlsx.writeBuffer()
       saveAs(new Blob([buf]), `orden_${this.numeroOrden}.xlsx`)
+    },
+
+    async descargarPDF () {
+      try {
+        const orden = await ordenes.actions.getById(this.idOrden)
+        const pdf = await ordenes.generarOrdenEnPDF(orden)
+        pdf.save(`orden_${this.numeroOrden}.pdf`)
+      } catch (e) {
+        store.dispatch('snackbar/mostrar', 'Error al generar el PDF')
+      }
     },
 
     barcodeEnter () {
