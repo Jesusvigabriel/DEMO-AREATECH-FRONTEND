@@ -124,7 +124,8 @@ export default {
         ...d,
         validado: false,
         CantidadSalida: 0,
-        NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre || d.Descripcion || 'Sin nombre',
+        NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
+          d.Descripcion || d.Productos || 'Sin nombre',
         Posicion: d.Posicion || d.PosicionNombre || d.Ubicacion || null,
         Barcode: d.Barcode || d.CodeEmpresa,
         CodeEmpresa: d.CodeEmpresa
