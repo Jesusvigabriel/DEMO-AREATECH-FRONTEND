@@ -305,7 +305,8 @@ const ordenes= {
                                 renglon += 6
                                 pdf.setFontSize(8)
                                 pdf.text(detalle.Cantidad+"", margenCantidad, renglon)
-                                pdf.text(unArticulo.Barcode+"", margenSerialNumber, renglon)
+                                const codigo = unArticulo.Barcode || unArticulo.SerialNumber || unArticulo.barcode || ""
+                                pdf.text(codigo+"", margenSerialNumber, renglon)
                                 pdf.text(detalle.Posicion+"", margenPosicionLote, renglon)
                                 pdf.text(unArticulo.lote+"", margenBoxnumber, renglon)
                                 //compara para saber si el tamaño que va a ocupar el texto esta dentro del maximo permitido
@@ -378,7 +379,8 @@ const ordenes= {
                             pdf.setFontSize(8)
                             pdf.text(detalle.Cantidad+"", margenCantidad, renglon)
                             pdf.text(unArticulo.Partida+"", margenBarcode - 20, renglon)
-                            pdf.text(unArticulo.Barcode+"", margenBarcode, renglon)
+                            const codigo = unArticulo.Barcode || unArticulo.SerialNumber || unArticulo.barcode || ""
+                            pdf.text(codigo+"", margenBarcode, renglon)
                             pdf.text(detalle.Posicion+"", margenPosicion, renglon)
                             //compara para saber si el tamaño que va a ocupar el texto esta dentro del maximo permitido
                             if (pdf.getStringUnitWidth(tamañoProducto) * 6 > maxProductCellWidth){
@@ -447,7 +449,8 @@ const ordenes= {
                             pdf.setFontSize(8)
                             
                             pdf.text(detalle.Cantidad+"", margenCantidad, renglon)
-                            pdf.text(unArticulo.Barcode+"", margenBarcode, renglon)
+                            const codigo = unArticulo.Barcode || unArticulo.SerialNumber || unArticulo.barcode || ""
+                            pdf.text(codigo+"", margenBarcode, renglon)
                             pdf.text(detalle.Posicion+"", margenPosicion, renglon)
                             //compara para saber si el tamaño que va a ocupar el texto esta dentro del maximo permitido
                             if (pdf.getStringUnitWidth(tamañoProducto) * 6 > maxProductCellWidth){
@@ -621,7 +624,8 @@ const ordenes= {
                             renglon += 6
                             pdf.setFontSize(8)    
                             pdf.text(detalle.Cantidad+"", margenCantidad, renglon)
-                            pdf.text(unArticulo.Barcode+"", margenBarcode, renglon)
+                            const codigo = unArticulo.Barcode || unArticulo.SerialNumber || unArticulo.barcode || ""
+                            pdf.text(codigo+"", margenBarcode, renglon)
                             pdf.text(detalle.Posicion+"", margenPosicion, renglon)
                             //Revisa si el text es mas grande que el tamaño de celda
                             if (pdf.getStringUnitWidth(tamañoProducto) * 6 > maxProductCellWidth){
@@ -702,7 +706,8 @@ const ordenes= {
                 
                 pdf.setFontSize(8)    
                 pdf.text(unArticulo.Unidades+"", margenCantidad, renglon)
-                pdf.text(unArticulo.Barcode+"", margenBarcode+10, renglon)
+                const codigo = unArticulo.Barcode || unArticulo.SerialNumber || unArticulo.barcode || ""
+                pdf.text(codigo+"", margenBarcode+10, renglon)
                 //si el texto es mas grande que el tamaño de la celda
                 if (pdf.getStringUnitWidth(tamañoProducto) * 6 > maxProductCellWidth){
                     cont = 0
