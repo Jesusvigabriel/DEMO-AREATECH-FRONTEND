@@ -33,7 +33,7 @@
                     <v-expansion-panel-content>
                         <!-- In -->
                         <v-expansion-panel >
-                            <v-expansion-panel-header><h3>Almacen - Ingreso</h3></v-expansion-panel-header>
+                            <v-expansion-panel-header><h3 class='capitalize-words'>Almacen - Ingreso</h3></v-expansion-panel-header>
                             <v-expansion-panel-content>
                                 <v-card>
                             <v-card-title class="py-0 my-2">
@@ -70,7 +70,7 @@
 
                            <!-- Out -->
                         <v-expansion-panel>
-                            <v-expansion-panel-header><h3>Almacen - Egreso</h3></v-expansion-panel-header>
+                            <v-expansion-panel-header><h3 class='capitalize-words'>Almacen - Egreso</h3></v-expansion-panel-header>
                             <v-expansion-panel-content>
                                 <v-card>
                             <v-card-title class="py-0 my-2">
@@ -105,7 +105,7 @@
 
                            <!-- Almacenaje -->
                         <v-expansion-panel>
-                            <v-expansion-panel-header><h3>Almacen - Almacenaje</h3></v-expansion-panel-header>
+                            <v-expansion-panel-header><h3 class='capitalize-words'>Almacen - Almacenaje</h3></v-expansion-panel-header>
                             <v-expansion-panel-content>
                                 <v-card>
                             <v-card-title class="py-0 my-2">
@@ -196,7 +196,7 @@
 
                          <!-- Entrega - B2B -->
                          <v-expansion-panel>
-                            <v-expansion-panel-header><h3>Entrega - B2B </h3></v-expansion-panel-header>
+                            <v-expansion-panel-header><h3 class='capitalize-words'>Entrega - B2B </h3></v-expansion-panel-header>
                             <v-expansion-panel-content>
                                 <v-card>
                             <v-card-title class="py-0 my-2">

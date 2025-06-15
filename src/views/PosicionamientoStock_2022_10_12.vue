@@ -8,7 +8,7 @@
                     dark
                     dismissible
                 >
-                    <h3>Posicionamiento de stock</h3>
+                    <h3 class='capitalize-words'>Posicionamiento de stock</h3>
                     Esta opción debe ser utilizada <b><u>únicamente</u></b> para posicionar unidades que se encontraban sin ubicación asignada.<br>
                     <b><u>No debe ser utilizada para reacomodar unidades</u></b>, es decir, para sacar unidades que ya estaban posicionadas y cambiarles la ubicación.<br>
                     Si desea <b><u>mover unidades de una posición previamente asignada a otra</u></b> <v-btn color="green" @click="clickEnReposicionamiento" >haga click aquí para ir a <b>👉 Reposicionamiento 👈</b></v-btn>

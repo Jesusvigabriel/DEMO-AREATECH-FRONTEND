@@ -8,7 +8,7 @@
                     dark
                     dismissible
                 >
-                    <h3>Reposicionamiento de stock</h3>
+                    <h3 class="capitalize-words">Reposicionamiento de stock</h3>
                     Esta opción debe ser utilizada <b><u>únicamente</u></b> para mover unidades de una ubicación previamente asignada a otra.<br>
                     <b><u>No debe ser utilizada para posicionar unidades</u></b>, es decir, para asignarle ubicación a unidades que se encontraban sin ubicación asignada.<br>
                     Si desea <b><u>asignarle posición a unidades que no tenían ubicación previa</u></b> <v-btn color="green" @click="clickEnPosicionamiento" >ir a <b>👉 Posicionamiento 👈</b></v-btn>
@@ -131,7 +131,7 @@
         </v-row>
         <v-row v-if="listaBarcodesError.length>0" >
             <v-col class="py-0 my-0">
-                <v-alert color="red" class="py-0 my-1" dark><h3>Barcodes inexistentes</h3></v-alert>
+                <v-alert color="red" class="py-0 my-1" dark><h3 class='capitalize-words'>Barcodes inexistentes</h3></v-alert>
             </v-col>
         </v-row>
         <v-row v-for="(item, index) in listaBarcodesError" :key="index">
