@@ -472,7 +472,7 @@ export default {
 /* Barra horizontal súper compacta: nunca hace overflow, los botones se achican */
 .menu-horizontal-compacta {
   display: flex !important;
-  flex-wrap: wrap !important; /* permite que los elementos bajen a otra línea */
+  flex-wrap: nowrap !important; /* mantiene todos los elementos en una sola línea */
   overflow-x: hidden !important; /* se elimina la barra de desplazamiento */
   gap: 1px !important;
   align-items: center;
