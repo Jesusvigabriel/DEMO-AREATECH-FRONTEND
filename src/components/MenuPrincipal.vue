@@ -485,6 +485,7 @@ export default {
 /* Botones compactos */
 .menu-horizontal-compacta .v-btn {
   font-size: clamp(8px, 1vw, 12px) !important; /* reduce el texto en pantallas pequeñas */
+  text-transform: none !important;
   padding: 0 7px !important;
   margin: 0 !important;
   min-width: 0 !important;
