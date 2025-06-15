@@ -22,9 +22,6 @@
             </v-select>
         </v-col>
         <v-col cols="1" class="my-0 py-0">
-            <v-btn @click="botonPrevisualizarOrdenClick" v-show="botonPrevisualizarOrden.mostrar"><v-icon>mdi-magnify</v-icon></v-btn>
-        </v-col>
-        <v-col cols="1" class="my-0 py-0">
             <v-btn @click="botonImprimirStickersClick" v-show="botonImprimirStickers.mostrar"><v-icon>mdi-label</v-icon></v-btn>
         </v-col>
         <v-col cols="4" v-if="listaOrdenes!=null && ordenEnCurso==null">
@@ -142,7 +139,6 @@ export default {
             idEmpresa: null,
             selectorEmpresa: {mostrar: true, dato: null},
             selectorOrden: {mostrar: false, dato: null},
-            botonPrevisualizarOrden: {mostrar: false},
             botonImprimirStickers: {mostrar: false},
             botonConfirmarIngreso: {mostrar: false},
             listaOrdenes: [],
@@ -211,7 +207,6 @@ export default {
         async selectorEmpresaChange(IdEmpresaElegida) {
             this.listaOrdenes = []
             this.idEmpresa = IdEmpresaElegida
-            this.botonPrevisualizarOrden.mostrar=false
             this.botonImprimirStickers.mostrar=false
             this.selectorEmpresa.dato=IdEmpresaElegida;
             this.ordenEnCurso=null
@@ -257,68 +252,12 @@ export default {
 
         },
         selectorOrdenChange(idOrdenSeleccionada) {
-            this.botonSalidaExpress = false
-            this.pedirCantidadBultos = false
-            this.cantidadBultos = 0
-
-            const ordenEnCurso=this.listaOrdenes.find(element => element.Id == idOrdenSeleccionada)
-            if (typeof(ordenEnCurso)=='undefined') {
+            const ordenEnCurso = this.listaOrdenes.find(element => element.Id == idOrdenSeleccionada)
+            if (typeof (ordenEnCurso) === 'undefined') {
                 store.dispatch("snackbar/mostrar", "Orden inexistente")
-            } else {
-                this.detalleOrdenEnCurso = []
-                this.botonPrevisualizarOrden.mostrar=true
-                this.botonImprimirStickers.mostrar=true
-
-                if(this.tieneLOTE){
-                // if(this.idEmpresa == 242){
-                // if(this.idEmpresa == 239){
-                    //Obtenemos detalle de la Orden
-                    ordenesV3.getDetalleOrdenAndProductoById(ordenEnCurso.Id)
-                        .then(response => {
-                            response.forEach(e => {
-                                e.Numero = ordenEnCurso.Numero
-                                e.Id = ordenEnCurso.Id
-                                e.CantidadSalida = 0
-                                e.PartNumber = e.CodeEmpresa
-                                // Guardamos el detalle para poder mostrarlo con la lupa
-                                this.detalleOrdenEnCurso.push(e)
-                            })
-                            this.ordenEnCurso = this.detalleOrdenEnCurso
-                        })
-                        .catch( error => {
-                            this.mostrarMensaje({titulo: "Error", mensaje: error})
-                        })
-                        
-                        this.barcodeArticulo.mostrar=false
-                        this.botonSalidaExpress = true
-                } else {
-                    //Obtenemos detalle de la Orden
-                    ordenesV3.getDetalleOrdenAndProductoById(ordenEnCurso.Id)
-                        .then(response => {
-                            response.forEach(e => {
-                                e.Numero = ordenEnCurso.Numero
-                                e.Id = ordenEnCurso.Id
-                                e.CantidadSalida = 0
-                                e.PartNumber = e.CodeEmpresa
-                                // Guardamos el detalle para poder mostrarlo con la lupa
-                                this.detalleOrdenEnCurso.push(e)
-                            })
-                            this.ordenEnCurso = this.detalleOrdenEnCurso
-                        })
-                        .catch( error => {
-                            this.mostrarMensaje({titulo: "Error", mensaje: error})
-                        })
-
-                    if(this.empresa.SalidaExpress){
-                        this.barcodeArticulo.mostrar=false
-                        this.botonSalidaExpress = true
-                    } else {
-                        this.barcodeArticulo.mostrar=true
-                        this.enfocarBarcodeArticulo()    
-                    }
-                }
+                return
             }
-
+            router.push(`/Ordenes/PrepararOrden/${idOrdenSeleccionada}`)
         },
 
        /**
@@ -387,11 +326,6 @@ async salidaExpress() {
     }
 },
 
-        botonPrevisualizarOrdenClick() {
-            if (this.selectorOrden.dato) {
-                router.push(`/Ordenes/PrepararOrden/${this.selectorOrden.dato}`)
-            }
-        },
 
         async clickFinalizarIngresarBultos() {
             this.pedirCantidadBultos=true

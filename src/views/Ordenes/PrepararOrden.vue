@@ -2,7 +2,7 @@
   <v-container class="remito-container">
 
     <!-- TÍTULO -->
-    <h2 class="remito-titulo">REMITO DE SALIDA</h2>
+    <h2 class="remito-titulo">ORDEN DE SALIDA</h2>
 
     <!-- CABECERA -->
     <div class="remito-box">
@@ -38,7 +38,7 @@
           <th>Posición</th>
           <th>Unidades</th>
           <th>Cant. Salida</th>
-          <th>Validado</th>
+          <th>Estado</th>
         </tr>
       </thead>
       <tbody>
@@ -65,23 +65,12 @@
             </v-edit-dialog>
           </td>
           <td>
-            <v-checkbox v-model="item.validado" color="primary" dense hide-details @change="actualizarValidacion(item)" />
+            <v-chip :color="chipColor(item)" dark small>{{ item.CantidadSalida }}</v-chip>
           </td>
         </tr>
       </tbody>
     </v-simple-table>
 
-    <!-- FIRMA -->
-    <div class="remito-firma mt-6">
-      <div>
-        <strong>Recibido por:</strong>
-        <div class="firma-linea"></div>
-      </div>
-      <div>
-        <strong>Firma:</strong>
-        <div class="firma-linea"></div>
-      </div>
-    </div>
 
     <!-- BOTONES -->
     <div class="remito-actions no-print" v-if="todoValidado">
@@ -90,6 +79,9 @@
       </v-btn>
       <v-btn class="ml-2" outlined @click="window.print()">
         Imprimir
+      </v-btn>
+      <v-btn class="ml-2" outlined color="success" @click="descargarExcel">
+        Descargar Excel
       </v-btn>
     </div>
 
@@ -100,6 +92,8 @@
 import ordenesV3 from '@/store/ordenesV3'
 import store from '@/store'
 import fechas from 'vue-lsi-util/fechas'
+import excel from 'exceljs'
+import { saveAs } from 'file-saver'
 
 export default {
   name: 'PrepararOrden',
@@ -169,8 +163,28 @@ export default {
       } catch (e) {
         store.dispatch('snackbar/mostrar', 'Error al procesar la orden')
       }
-    }
-    ,
+    },
+    async descargarExcel () {
+      const workbook = new excel.Workbook()
+      const sheet = workbook.addWorksheet('Orden')
+      sheet.columns = [
+        { header: 'Producto', key: 'producto', width: 30 },
+        { header: 'Posicion', key: 'posicion', width: 15 },
+        { header: 'Unidades', key: 'unidades', width: 10 },
+        { header: 'Cant. Salida', key: 'salida', width: 12 }
+      ]
+      this.detalle.forEach(d => {
+        sheet.addRow({
+          producto: d.NombreProducto,
+          posicion: d.Posicion || '',
+          unidades: d.Unidades,
+          salida: d.CantidadSalida
+        })
+      })
+      const buf = await workbook.xlsx.writeBuffer()
+      saveAs(new Blob([buf]), `orden_${this.numeroOrden}.xlsx`)
+    },
+
     barcodeEnter () {
       const codigo = this.barcodeArticulo.trim()
       if (!codigo) return
@@ -191,6 +205,9 @@ export default {
     },
     actualizarValidacion (item) {
       item.validado = item.CantidadSalida === item.Unidades
+    },
+    chipColor (item) {
+      return item.CantidadSalida === item.Unidades ? 'green' : 'red'
     },
     rowClass (item) {
       return item.CantidadSalida === item.Unidades ? 'correct-row' : 'incorrect-row'
@@ -264,18 +281,6 @@ export default {
   gap: 12px;
 }
 
-.remito-firma {
-  margin-top: 48px;
-  font-size: 13px;
-  line-height: 2.2;
-}
-
-.firma-linea {
-  width: 100%;
-  border-bottom: 1px dotted #888;
-  margin-top: 6px;
-  height: 20px;
-}
 
 @media print {
   .no-print {
@@ -299,8 +304,5 @@ export default {
     page-break-inside: auto;
   }
 
-  .firma-linea {
-    border-bottom: 1px solid #000;
-  }
 }
 </style>
