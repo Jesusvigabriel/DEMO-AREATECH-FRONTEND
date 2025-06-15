@@ -77,17 +77,12 @@
       <v-btn color="primary" @click="procesarOrden">
         Procesar Orden
       </v-btn>
-      <v-btn class="ml-2" outlined @click="window.print()">
-        Imprimir
-      </v-btn>
       <v-btn class="ml-2" outlined @click="$router.back()">
+        <v-icon left>mdi-arrow-left</v-icon>
         Volver
       </v-btn>
       <v-btn class="ml-2" outlined color="success" @click="descargarExcel">
         Descargar Excel
-      </v-btn>
-      <v-btn class="ml-2" outlined color="primary" @click="descargarPDF">
-        Descargar PDF
       </v-btn>
     </div>
 
@@ -121,18 +116,20 @@ export default {
       return this.detalle.every(d => d.CantidadSalida === d.Unidades)
     }
   },
-  created () {
-    this.cargarDatos()
-  },
-  methods: {
-    async cargarDatos () {
-      const respuestaDetalle = await ordenesV3.getDetalleOrdenAndProductoById(this.idOrden)
-      this.detalle = respuestaDetalle.map(d => ({
-        ...d,
-        validado: false,
-        CantidadSalida: 0,
-        NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
-          d.Descripcion || d.Productos || 'Sin nombre',
+    created () {
+      this.cargarDatos()
+    },
+    methods: {
+      async cargarDatos () {
+        console.log('Cargando datos para la orden', this.idOrden)
+        const respuestaDetalle = await ordenesV3.getDetalleOrdenAndProductoById(this.idOrden)
+        console.log('Detalle recibido', respuestaDetalle)
+        this.detalle = respuestaDetalle.map(d => ({
+          ...d,
+          validado: false,
+          CantidadSalida: 0,
+          NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
+            d.Descripcion || d.Productos || 'Sin nombre',
         Posicion:
           (Array.isArray(d.Posiciones) && d.Posiciones.length
             ? d.Posiciones.map(p => p.Posicion).join(', ')
@@ -149,32 +146,37 @@ export default {
       this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
     },
 
-    async procesarOrden () {
-      const detallePayload = this.detalle.map(i => ({
-        IdProducto: i.IdProducto,
-        Cantidad: i.CantidadSalida
-      }))
+      async procesarOrden () {
+        const detallePayload = this.detalle.map(i => ({
+          IdProducto: i.IdProducto,
+          Cantidad: i.CantidadSalida
+        }))
 
-      const Cabeceras = {
-        IdOrden: this.idOrden,
-        IdEmpresa: this.empresaId,
-        Comprobante: this.numeroOrden,
-        Usuario: this.usuario,
-        Detalle: detallePayload,
-        Textil: false,
-        StockPosicionado: false,
-        TieneLote: false,
-        Fecha: this.fecha
-      }
+        const Cabeceras = {
+          IdOrden: this.idOrden,
+          IdEmpresa: this.empresaId,
+          Comprobante: this.numeroOrden,
+          Usuario: this.usuario,
+          Detalle: detallePayload,
+          Textil: false,
+          StockPosicionado: false,
+          TieneLote: false,
+          Fecha: this.fecha
+        }
 
-      try {
-        await ordenesV3.saleOrder(this.empresaId, { Cabeceras })
-        store.dispatch('snackbar/mostrar', 'Orden procesada correctamente')
-        this.$router.push('/Ordenes/OrdenesPendientes')
-      } catch (e) {
-        store.dispatch('snackbar/mostrar', 'Error al procesar la orden')
-      }
-    },
+        console.log('Procesar Orden payload:', JSON.stringify(Cabeceras, null, 2))
+
+        try {
+          console.log('Enviando saleOrder')
+          await ordenesV3.saleOrder(this.empresaId, { Cabeceras })
+          console.log('saleOrder exitosa')
+          store.dispatch('snackbar/mostrar', 'Orden procesada correctamente')
+          this.$router.push('/Ordenes/OrdenesPendientes')
+        } catch (e) {
+          console.error('Error en saleOrder', e)
+          store.dispatch('snackbar/mostrar', 'Error al procesar la orden')
+        }
+      },
     async descargarExcel () {
       const workbook = new excel.Workbook()
       const sheet = workbook.addWorksheet('Orden')
@@ -196,21 +198,14 @@ export default {
       saveAs(new Blob([buf]), `orden_${this.numeroOrden}.xlsx`)
     },
 
-    async descargarPDF () {
-      try {
-        const orden = await ordenes.actions.getById(this.idOrden)
-        const pdf = await ordenes.generarOrdenEnPDF(orden)
-        pdf.save(`orden_${this.numeroOrden}.pdf`)
-      } catch (e) {
-        store.dispatch('snackbar/mostrar', 'Error al generar el PDF')
-      }
-    },
 
     barcodeEnter () {
       const codigo = this.barcodeArticulo.trim()
       if (!codigo) return
+      console.log('Barcode ingresado:', codigo)
       const item = this.detalle.find(d => d.Barcode === codigo || d.CodeEmpresa === codigo)
       if (item) {
+        console.log('Item encontrado', item)
         if (!item.CantidadSalida) item.CantidadSalida = 0
         if (item.CantidadSalida < item.Unidades) {
           item.CantidadSalida++
@@ -219,6 +214,7 @@ export default {
           store.dispatch('snackbar/mostrar', 'Cantidad excedida')
         }
       } else {
+        console.log('Barcode inexistente', codigo)
         store.dispatch('snackbar/mostrar', codigo + ': Barcode inexistente')
       }
       this.barcodeArticulo = ''
