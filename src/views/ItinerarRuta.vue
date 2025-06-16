@@ -79,7 +79,7 @@
                         Entregas sin itinerar
                     </v-card-title>
                     <v-card-title class="py-1 my-0">
-                        <v-text-field
+                        <v-text-field class="search-field"
                             v-model="textoBusqueda"
                             append-icon="mdi-magnify"
                             label="Búsqueda"

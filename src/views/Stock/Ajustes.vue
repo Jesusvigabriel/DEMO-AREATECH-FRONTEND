@@ -16,7 +16,7 @@
         <v-row v-show="listaArticulosMostrar.length>0" class="pb-0 mb-0">
             <v-col class="py-0 my-0"  >
                 <v-card-title class="py-1 my-0">
-                    <v-text-field
+                    <v-text-field class="search-field"
                         v-model="textoBusqueda"
                         append-icon="mdi-magnify"
                         label="Búsqueda"
@@ -257,7 +257,7 @@
                        </v-col>
                 </v-row>
                     <v-card-title class="py-1 my-0">
-                    <v-text-field
+                    <v-text-field class="search-field"
                         v-model="textoBusqueda"
                         append-icon="mdi-magnify"
                         label="Búsqueda"

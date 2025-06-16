@@ -29,7 +29,7 @@
         <v-row v-if="empresaElegida" class="pb-0 mb-0">
             <v-col class="py-0 my-0"  >
                 <v-card-title >
-                    <v-text-field
+                    <v-text-field class="search-field"
                         v-model="textoBusqueda"
                         append-icon="mdi-magnify"
                         @keypress.enter = "buscarLote"

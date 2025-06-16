@@ -22,7 +22,7 @@
     <v-row v-show="listaPosiciones.length>0" class="pb-0 mb-0" justify="center">
         <v-col cols="6" class="py-0 my-0"  >
           <v-card-title class="py-1 my-0">
-              <v-text-field
+              <v-text-field class="search-field"
                   v-model="textoBusqueda"
                   append-icon="mdi-magnify"
                   label="Búsqueda"
