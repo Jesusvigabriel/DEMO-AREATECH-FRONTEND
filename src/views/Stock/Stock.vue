@@ -1719,7 +1719,10 @@ export default {
                         }
                     }
 
-                    // Obtiene solo el resumen para mostrar en las tarjetas
+                    // Cargamos toda la lista de productos y armamos las tarjetas
+                    this.popularListaProductos()
+                    /*
+                    // Anteriormente se obtenía un resumen desde el backend
                     productosV3.getResumenStock(idEmpresaElegida)
                         .then(resumen => {
                             this.actualizarCardsDesdeResumen(resumen)
@@ -1729,6 +1732,7 @@ export default {
                         .catch(() => {
                             this.cards = []
                         })
+                    */
                 })
         },
         mostrarMensaje(titulo, mensaje){
