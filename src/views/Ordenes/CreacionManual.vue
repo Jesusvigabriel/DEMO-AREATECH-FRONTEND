@@ -211,7 +211,7 @@
             <v-col v-if="this.textil"><v-alert color="green" dark>Total Metros: {{totalM3}}</v-alert></v-col>
         </v-row>
         <v-row v-if="items.length>0">
-            <v-col><v-btn @click="crearOrden" block color="green" dark>Crear orden</v-btn></v-col>
+            <v-col><v-btn class="action-button" block @click="crearOrden">Crear orden</v-btn></v-col>
         </v-row>
 
         <v-dialog

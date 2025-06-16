@@ -31,7 +31,7 @@
       </v-row>
       <v-row>
         <v-col v-if="ordenesSeleccionadas.length>0">
-          <v-btn @click="imprimirMasivo" color="blue" block dark>Imprimir ordenes seleccionadas en excel</v-btn>
+          <v-btn class="action-button" block @click="imprimirMasivo">Imprimir ordenes seleccionadas en excel</v-btn>
         </v-col>
       </v-row>
       <v-row>

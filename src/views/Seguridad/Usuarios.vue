@@ -2,7 +2,7 @@
     <v-container>
        <v-spacer></v-spacer>
         <v-row v-show="listaUsuariosCompleta.length>0" class="col-md">
-            <v-btn @click="createUser()" color="success">Crear nuevo usuario</v-btn>
+            <v-btn class="action-button" @click="createUser()">Crear nuevo usuario</v-btn>
         </v-row>
         <v-row class="pb-0 mb-0">
             <v-col class="py-0 my-0" v-if="listaUsuariosCompleta.length>0" >

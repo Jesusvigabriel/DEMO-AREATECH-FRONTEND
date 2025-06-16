@@ -2,7 +2,7 @@
     <v-container>
        <v-spacer></v-spacer>
         <v-row v-show="listaChoferesCompleta.length>0" class="col-md">
-            <v-btn @click="createChofer()" color="success">Crear nuevo chofer</v-btn>
+            <v-btn class="action-button" @click="createChofer()">Crear nuevo chofer</v-btn>
         </v-row>
         <v-row class="pb-0 mb-0">
             <v-col class="py-0 my-0" v-if="listaChoferesCompleta.length>0" >

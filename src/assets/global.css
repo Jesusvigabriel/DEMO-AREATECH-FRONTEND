@@ -97,3 +97,7 @@ h6 {
 }
 .search-field .v-input__slot { background-color: #f4fafe; color: #000; }
 .theme--dark .search-field .v-input__slot { background-color: #d9d9d9; color: #000; }
+
+/* Standardized button style for actions */
+.action-button { background-color: #b9c8ea; color: #191043; }
+.theme--dark .action-button { background-color: #d8ecfa; color: #212124; }
