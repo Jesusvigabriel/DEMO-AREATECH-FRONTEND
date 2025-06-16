@@ -94,6 +94,9 @@
               <v-tab href="#tab-guias">
                 Guías
               </v-tab>
+              <v-tab href="#tab-guias-empresa">
+                Guías Empresa
+              </v-tab>
             </v-tabs>
   
             <v-tabs-items v-model="tab">
@@ -134,6 +137,24 @@
                   @open-modal="openModal"
                 />
               </v-tab-item>
+
+              <v-tab-item value="tab-guias-empresa">
+                <GuiasEmpresaTab
+                  :cabecerasGuiasEmpresa="cabecerasGuiasEmpresa"
+                  :guiasEmpresaFiltradasParaTabla="guiasEmpresaFiltradasParaTabla"
+                  :pageGuiasEmpresa.sync="pageGuiasEmpresa"
+                  :pageCountGuiasEmpresa="pageCountGuiasEmpresa"
+                  :paginationInfoGuiasEmpresa="paginationInfoGuiasEmpresa"
+                  :itemsPerPageGuiasEmpresa.sync="itemsPerPageGuiasEmpresa"
+                  :itemsPerPageOptions="itemsPerPageOptions"
+                  :textoBusquedaGuiasEmpresa.sync="textoBusquedaGuiasEmpresa"
+                  :idEmpresa="idEmpresa"
+                  :loading="loading"
+                  :errorAlCargar="errorAlCargar"
+                  :getStatusChipClassTextual="getStatusChipClassTextual"
+                  @open-modal="openGuiaEmpresaModal"
+                />
+              </v-tab-item>
             </v-tabs-items>
           </v-card>
         </v-col>
@@ -150,6 +171,14 @@
         @close="closeModal"
         @descargar-orden-excel-individual="descargarOrdenExcelIndividual"
         @descargar-guia-excel-individual="descargarGuiaExcelIndividual"
+      />
+
+      <GuiaEmpresaModal
+        :show="showGuiaEmpresaModal"
+        :guia="guiaEmpresaModalData"
+        :getStatusChipClassTextual="getStatusChipClassTextual"
+        @close="closeGuiaEmpresaModal"
+        @descargar="descargarGuiaEmpresaPDF"
       />
     </v-container>
   </template>
@@ -224,6 +253,8 @@
 import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
 import OrdenesTab from './components/OrdenesTab.vue'
 import GuiasTab from './components/GuiasTab.vue'
+import GuiasEmpresaTab from './components/GuiasEmpresaTab.vue'
+import GuiaEmpresaModal from './components/GuiaEmpresaModal.vue'
 import SeguimientoModal from './components/SeguimientoModal.vue'
 import store from '@/store'
 import ordenes from '@/store/ordenesV3' // Módulo Vuex para órdenes
@@ -232,10 +263,11 @@ import roles from '@/store/roles' // Módulo Vuex para roles de usuario
 import guias from '@/store/guias' // Importamos el módulo de guías
 import excel from 'exceljs'
 import { saveAs } from 'file-saver'
+import jsPDF from 'jspdf'
   
   export default {
     name: 'SeguimientosOrdenesGuias', // Nuevo nombre para el componente
-    components: { SelectorEmpresa, OrdenesTab, GuiasTab, SeguimientoModal },
+    components: { SelectorEmpresa, OrdenesTab, GuiasTab, GuiasEmpresaTab, SeguimientoModal, GuiaEmpresaModal },
     data() {
       return {
         tab: null, // Controla la pestaña activa ('tab-ordenes' o 'tab-guias'). Por defecto, null para que no se seleccione ninguna al inicio o la primera se activa si Vuetify lo hace.
@@ -288,6 +320,17 @@ import { saveAs } from 'file-saver'
             width: '80px',
           },
         ],
+
+        cabecerasGuiasEmpresa: [
+          { text: 'Comprobante', value: 'Comprobante', sortable: true },
+          { text: 'Destino', value: 'NombreDestino', sortable: true },
+          { text: 'Bultos', value: 'Bultos', sortable: true },
+          { text: 'Remitos', value: 'Remitos', sortable: true },
+          { text: 'Fecha Entrega', value: 'FechaEntrega', sortable: true },
+          { text: 'Fecha Creación', value: 'FechaOriginal', sortable: true },
+          { text: 'Estado', value: 'Estado', sortable: true },
+          { text: 'Acciones', value: 'acciones', sortable: false, align: 'center', width: '80px' },
+        ],
   
         textoBusqueda: '', // Texto para el campo de búsqueda de órdenes.
         textoBusquedaGuias: '', // Texto para el campo de búsqueda de guías.
@@ -297,6 +340,9 @@ import { saveAs } from 'file-saver'
         showModal: false, // Controla la visibilidad del modal de detalle.
         modalType: '', // 'orden' o 'guia', indica qué tipo de elemento se está mostrando en el modal.
         modalData: null, // Objeto con los datos del elemento (orden o guía) que se muestra en el modal.
+
+        showGuiaEmpresaModal: false,
+        guiaEmpresaModalData: null,
   
         rolPermitido: false, // Controla permisos basados en el rol del usuario.
         unidadesTotalesEnBase: 0, // Dato específico para clientes textiles (no relacionado con seguimiento general).
@@ -313,6 +359,15 @@ import { saveAs } from 'file-saver'
         // ---------------------------------------
         pageGuias: 1, // Página actual de la tabla de guías.
         itemsPerPageGuias: 30, // Número de ítems por página para guías.
+
+        // ---------------------------------------
+        // Paginación de la tabla de Guías por Empresa
+        // ---------------------------------------
+        pageGuiasEmpresa: 1,
+        itemsPerPageGuiasEmpresa: 30,
+
+        textoBusquedaGuiasEmpresa: '',
+        todasLasGuiasEmpresa: [],
       }
     },
     computed: {
@@ -478,6 +533,64 @@ import { saveAs } from 'file-saver'
           return `1-${total} de ${total}`
         }
       },
+
+      guiasEmpresaFiltradasParaTabla() {
+        if (this.idEmpresa <= 0) return []
+
+        let filtrado = this.todasLasGuiasEmpresa
+
+        const fechaDesdeNormalized = this.normalizeDateToStartOfDay(this.fechaDesde)
+        const fechaHastaNormalized = this.normalizeDateToStartOfDay(this.fechaHasta)
+
+        if (fechaDesdeNormalized) {
+          filtrado = filtrado.filter(g => {
+            const f = this.normalizeDateToStartOfDay(g.FechaOriginalDate)
+            return f && f.getTime() >= fechaDesdeNormalized.getTime()
+          })
+        }
+        if (fechaHastaNormalized) {
+          filtrado = filtrado.filter(g => {
+            const f = this.normalizeDateToStartOfDay(g.FechaOriginalDate)
+            return f && f.getTime() <= fechaHastaNormalized.getTime()
+          })
+        }
+
+        if (this.textoBusquedaGuiasEmpresa) {
+          const searchText = this.textoBusquedaGuiasEmpresa.toLowerCase()
+          filtrado = filtrado.filter(item => {
+            return (
+              item.Comprobante?.toLowerCase().includes(searchText) ||
+              item.NombreDestino?.toLowerCase().includes(searchText) ||
+              item.Remitos?.toLowerCase().includes(searchText) ||
+              item.Estado?.toLowerCase().includes(searchText)
+            )
+          })
+        }
+
+        if (this.itemsPerPageGuiasEmpresa > 0) {
+          const start = (this.pageGuiasEmpresa - 1) * this.itemsPerPageGuiasEmpresa
+          return filtrado.slice(start, start + this.itemsPerPageGuiasEmpresa)
+        }
+        return filtrado
+      },
+
+      pageCountGuiasEmpresa() {
+        if (this.itemsPerPageGuiasEmpresa > 0) {
+          const total = this.guiasEmpresaFiltradasParaTabla.length
+          return Math.ceil(total / this.itemsPerPageGuiasEmpresa)
+        }
+        return 1
+      },
+
+      paginationInfoGuiasEmpresa() {
+        const total = this.todasLasGuiasEmpresa.length
+        if (this.itemsPerPageGuiasEmpresa > 0) {
+          const start = (this.pageGuiasEmpresa - 1) * this.itemsPerPageGuiasEmpresa + 1
+          const end = Math.min(start + this.itemsPerPageGuiasEmpresa - 1, total)
+          return `${start}-${end} de ${total}`
+        }
+        return `1-${total} de ${total}`
+      },
   
       /**
        * `timelineStepsComputed`:
@@ -618,6 +731,10 @@ import { saveAs } from 'file-saver'
               this.popularListaDeGuias().catch(error => {
                 console.error("Error en popularListaDeGuias:", error);
                 throw error; // Relanza el error para manejarlo en el catch externo
+              }),
+              this.popularListaGuiasEmpresa().catch(error => {
+                console.error('Error en popularListaGuiasEmpresa:', error)
+                throw error
               })
             ]);
             
@@ -906,6 +1023,38 @@ import { saveAs } from 'file-saver'
           throw new Error('No se pudieron cargar las guías. Intente nuevamente.');
         }
       },
+
+      async popularListaGuiasEmpresa() {
+        console.log('popularListaGuiasEmpresa: Iniciando carga')
+        this.todasLasGuiasEmpresa = []
+        try {
+          const response = await guias.getByPeriodoIdEmpresa(this.fechaDesde, this.fechaHasta, this.idEmpresa)
+          let todas = []
+          if (response && response.status === 'OK' && Array.isArray(response.data)) {
+            todas = response.data
+          } else if (Array.isArray(response)) {
+            todas = response
+          } else {
+            throw new Error('Formato de guías inesperado')
+          }
+
+          todas.forEach(g => {
+            g.FechaOriginalDate = new Date(g.FechaOriginal)
+            g.FechaOriginal = g.FechaOriginal ? new Date(g.FechaOriginal).toLocaleDateString('es-AR') : 'N/A'
+            g.FechaEntrega = g.FechaEntrega ? new Date(g.FechaEntrega).toLocaleDateString('es-AR') : 'N/A'
+            g.Bultos = g.Bultos || 0
+            g.Remitos = g.Remitos || 'N/A'
+            g.Estado = g.Estado || 'Desconocido'
+          })
+
+          todas.sort((a, b) => b.FechaOriginalDate.getTime() - a.FechaOriginalDate.getTime())
+          this.todasLasGuiasEmpresa = todas
+          console.log('popularListaGuiasEmpresa: Total', this.todasLasGuiasEmpresa.length)
+        } catch (error) {
+          console.error('popularListaGuiasEmpresa: Error', error)
+          throw new Error('No se pudieron cargar las guías por empresa')
+        }
+      },
   
       /**
        * `verGuiaAsociada`:
@@ -1042,6 +1191,16 @@ import { saveAs } from 'file-saver'
           this.loading = false; // Desactiva el spinner del modal.
           console.log("openModal: Loading finalizado.");
         }
+      },
+
+      openGuiaEmpresaModal(item) {
+        this.guiaEmpresaModalData = item
+        this.showGuiaEmpresaModal = true
+      },
+
+      closeGuiaEmpresaModal() {
+        this.guiaEmpresaModalData = null
+        this.showGuiaEmpresaModal = false
       },
   
       /**
@@ -1698,6 +1857,48 @@ import { saveAs } from 'file-saver'
 
         const buffer = await workbook.xlsx.writeBuffer()
         saveAs(new Blob([buffer]), `guia_${numero}.xlsx`)
+      },
+
+      async descargarGuiaEmpresaPDF(payload) {
+        if (!payload || !payload.guia) return
+        const { guia, foto } = payload
+        const pdf = new jsPDF('p', 'mm', 'A4')
+        pdf.setFont('DM Sans')
+        let y = 20
+        pdf.text(`Guía: ${guia.Comprobante}`, 20, y)
+        y += 10
+        pdf.text(`Destino: ${guia.NombreDestino || ''}`, 20, y)
+        y += 10
+        pdf.text(`Bultos: ${guia.Bultos}`, 20, y)
+        y += 10
+        pdf.text(`Remitos: ${guia.Remitos || ''}`, 20, y)
+        y += 10
+        pdf.text(`Fecha Entrega: ${guia.FechaEntrega || ''}`, 20, y)
+        y += 10
+        pdf.text(`Fecha Creación: ${guia.FechaOriginal || ''}`, 20, y)
+        y += 10
+        pdf.text(`Estado: ${guia.Estado || ''}`, 20, y)
+
+        if (foto) {
+          try {
+            const imgData = await this.getImageBase64(foto)
+            pdf.addImage(imgData, 'JPEG', 20, y + 10, 170, 90)
+          } catch (e) {
+            console.error('Error agregando imagen', e)
+          }
+        }
+
+        pdf.save(`guia_${guia.Comprobante}.pdf`)
+      },
+
+      async getImageBase64(url) {
+        const res = await fetch(url)
+        const blob = await res.blob()
+        return await new Promise(resolve => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result)
+          reader.readAsDataURL(blob)
+        })
       },
   
       /**
