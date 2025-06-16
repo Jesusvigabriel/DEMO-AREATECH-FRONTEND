@@ -27,7 +27,7 @@
                     <v-dialog v-model="mostrarEdicion" max-width="600px">
                         <template v-slot:activator="{on, attrs}">
                             <v-btn color="warning" dark class="mb-2 ml-1" @click="eliminarPosiciones()" >Eliminar posiciones</v-btn>
-                            <v-btn color="success" dark class="mb-2" v-bind="attrs" v-on="on">Crear posiciones</v-btn>
+                            <v-btn class="action-button mb-2" v-bind="attrs" v-on="on">Crear posiciones</v-btn>
                         </template>
                         <v-card>
                             <v-card-title ><span class="headline">Crear nuevas posiciones</span></v-card-title>

@@ -43,7 +43,7 @@
         </v-row>
         <v-row v-if="empresaLoggeada()<=0 && idEmpresa>0"  > 
             <v-col class="col-sm-12 col-md-6">
-                <v-btn color="blue v-btn--block" v-if="!tieneLOTE" dark @click="crearArticulo()">Crear nuevo artículo</v-btn>
+                <v-btn class="action-button" v-if="!tieneLOTE" @click="crearArticulo()">Crear nuevo artículo</v-btn>
                 <v-btn color="blue v-btn--block" v-if="tieneLOTE" dark @click="popularListaProductos()">Cargar Lista</v-btn>
             </v-col>
             <v-col class="col-sm-12 col-md-6">

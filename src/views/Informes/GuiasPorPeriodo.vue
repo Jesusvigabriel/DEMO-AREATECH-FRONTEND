@@ -26,7 +26,7 @@
       </v-col>
     </v-row>
     <v-row justify="center" v-if="guiasSeleccionadas.length>0 && empresaLoggeada()<=0">
-      <v-col class="py-1" cols="12" sm="6" md="4"><v-btn @click="imprimirStickers()" color="success" block>Imprimir stickers<v-icon>mdi-sticker-text-outline</v-icon></v-btn></v-col>
+      <v-col class="py-1" cols="12" sm="6" md="4"><v-btn class="action-button" block @click="imprimirStickers()">Imprimir stickers<v-icon>mdi-sticker-text-outline</v-icon></v-btn></v-col>
       <v-col v-show="elegirEmpresa" class="py-1" cols="12" sm="6" md="4"><v-btn color="success" block @click="emitirFactura()">Emitir factura<v-icon>mdi-currency-usd</v-icon></v-btn></v-col>
     </v-row>
 

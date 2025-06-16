@@ -2,7 +2,7 @@
     <v-container>
        <v-spacer></v-spacer>
         <v-row class="col-md">
-            <v-btn @click="createRoles()" color="success">Crear nuevo rol</v-btn>
+            <v-btn class="action-button" @click="createRoles()">Crear nuevo rol</v-btn>
         </v-row>
         <v-row class="pb-0 mb-0">
             <v-col class="py-0 my-0" v-if="listaRolesCompleta.length>0" >

@@ -2,10 +2,10 @@
   <v-container>
     <v-row >
         <v-col align="end">
-            <v-btn color="blue" dark @click="crearPosicion()">Crear nueva posición</v-btn>
+            <v-btn class="action-button" @click="crearPosicion()">Crear nueva posición</v-btn>
           </v-col>
             <v-col >
-            <v-btn color="blue" dark @click="imprimirListaEtiquetas()">Imprimir lista etiquetas</v-btn>
+            <v-btn class="action-button" @click="imprimirListaEtiquetas()">Imprimir lista etiquetas</v-btn>
         </v-col>
     </v-row>
     <v-row justify="center" >
