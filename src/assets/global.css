@@ -89,3 +89,8 @@ h6 {
 .capitalize-words {
   text-transform: capitalize;
 }
+
+/* Keep submenu titles normal even when active */
+.v-list-item--active .v-list-item-title {
+  font-weight: normal !important;
+}
