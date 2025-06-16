@@ -411,7 +411,10 @@ const productosV3= {
             .then(productos => productos.filter(p => p.Stock > 0));
     },
 
-    // Devuelve un resumen de stock para las tarjetas de la vista de Stock
+    // La carga de tarjetas se realiza localmente con los productos obtenidos
+    // por `popularListaProductos`. Se deja comentada esta función que antes
+    // consultaba un resumen al backend por si vuelve a ser necesaria.
+    /*
     async getResumenStock(idEmpresa) {
         return new Promise(
             function(resolve, reject) {
@@ -424,6 +427,7 @@ const productosV3= {
             }
         )
     },
+    */
 
     async getMovimientosByPeriodoAndEmpresaAndArticulo(idEmpresa, fechaDesde, fechaHasta, idArticulo) {
         return new Promise (
