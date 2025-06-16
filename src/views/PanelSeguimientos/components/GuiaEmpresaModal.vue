@@ -72,6 +72,9 @@
           </v-list-item>
         </v-list>
         <v-img v-if="fotoUrl" :src="fotoUrl" max-width="100%" class="mt-4" />
+        <v-alert v-else type="info" dense text>
+          Aún no se cargó la foto de entrega
+        </v-alert>
       </v-card-text>
       <v-divider />
       <v-card-actions class="justify-end">

@@ -539,6 +539,11 @@ import jsPDF from 'jspdf'
 
         let filtrado = this.todasLasGuiasEmpresa
 
+        // Mostrar solo las guías entregadas
+        filtrado = filtrado.filter(
+          g => String(g.Estado).toUpperCase() === 'ENTREGADO'
+        )
+
         const fechaDesdeNormalized = this.normalizeDateToStartOfDay(this.fechaDesde)
         const fechaHastaNormalized = this.normalizeDateToStartOfDay(this.fechaHasta)
 
