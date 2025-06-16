@@ -95,7 +95,7 @@
                 Guías
               </v-tab>
               <v-tab href="#tab-guias-empresa">
-                Guías Empresa
+                Conforme de entrega
               </v-tab>
             </v-tabs>
   
@@ -1865,7 +1865,7 @@ import jsPDF from 'jspdf'
         const pdf = new jsPDF('p', 'mm', 'A4')
         pdf.setFont('DM Sans')
         let y = 20
-        pdf.text(`Guía: ${guia.Comprobante}`, 20, y)
+        pdf.text(`Conforme de entrega: ${guia.Comprobante}`, 20, y)
         y += 10
         pdf.text(`Destino: ${guia.NombreDestino || ''}`, 20, y)
         y += 10
@@ -1888,7 +1888,7 @@ import jsPDF from 'jspdf'
           }
         }
 
-        pdf.save(`guia_${guia.Comprobante}.pdf`)
+        pdf.save(`conforme_${guia.Comprobante}.pdf`)
       },
 
       async getImageBase64(url) {

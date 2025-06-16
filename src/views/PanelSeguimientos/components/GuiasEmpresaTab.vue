@@ -2,7 +2,7 @@
   <v-card-text>
     <v-toolbar flat dense class="header-menubar">
       <v-toolbar-title class="subtitle-1 font-weight-medium">
-        Guías por Empresa
+        Conforme de entrega
       </v-toolbar-title>
     </v-toolbar>
 

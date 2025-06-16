@@ -2,7 +2,7 @@
   <v-dialog v-model="show" scrollable max-width="650px">
     <v-card>
       <v-card-title class="justify-space-between">
-        <span class="text-h6">Detalle Guía: {{ guia?.Comprobante }}</span>
+        <span class="text-h6">Detalle Conforme de entrega: {{ guia?.Comprobante }}</span>
         <v-btn icon @click="$emit('close')" aria-label="Cerrar detalle">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -10,6 +10,14 @@
       <v-divider />
       <v-card-text>
         <v-list dense>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title class="subtitle-2 font-weight-medium">
+                N° Guía:
+              </v-list-item-title>
+              <v-list-item-subtitle>{{ guia?.Comprobante }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title class="subtitle-2 font-weight-medium">
