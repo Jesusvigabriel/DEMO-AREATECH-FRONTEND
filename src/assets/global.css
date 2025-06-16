@@ -101,3 +101,6 @@ h6 {
 /* Standardized button style for actions */
 .action-button { background-color: #b9c8ea; color: #191043; }
 .theme--dark .action-button { background-color: #d8ecfa; color: #212124; }
+
+/* Custom slider track background */
+.v-slider .v-slider__track-container { background-color: #dbe1e5; }
