@@ -41,12 +41,28 @@ html, body {
   background-color: #d8ecfa;
 }
 
+/* Dark theme row striping */
+.theme--dark .v-data-table tbody tr:nth-child(odd) {
+  background-color: #e1e1e2;
+}
+.theme--dark .v-data-table tbody tr:nth-child(even) {
+  background-color: #f7f5f5;
+}
+
 /* Row striping for plain tables */
 table tbody tr:nth-child(odd) {
   background-color: #f8f5f5;
 }
 table tbody tr:nth-child(even) {
   background-color: #d8ecfa;
+}
+
+/* Dark theme row striping */
+.theme--dark table tbody tr:nth-child(odd) {
+  background-color: #e1e1e2;
+}
+.theme--dark table tbody tr:nth-child(even) {
+  background-color: #f7f5f5;
 }
 /* Form headers color matches menu bar */
 .v-dialog .v-card-title,

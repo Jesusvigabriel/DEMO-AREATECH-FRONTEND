@@ -347,7 +347,7 @@ export default {
           datasets: [
             {
               data: [this.resumen.enUso, this.resumen.vacias],
-              backgroundColor: ["#43a047", "#ff5252"],
+              backgroundColor: ["#c9bae5", "#6d3b94"],
               borderColor: ["#fff", "#fff"],
               borderWidth: 3,
               hoverOffset: 16
@@ -584,15 +584,15 @@ export default {
   box-shadow: 0 14px 32px rgba(20, 30, 85, 0.16);
 }
 .tarjeta-resumen.azul {
-  background: linear-gradient(115deg,#417fff 65%,#6db2ff 98%);
+  background-color: #ef8194;
   color: #fff;
 }
 .tarjeta-resumen.verde {
-  background: linear-gradient(115deg,#5beb51 65%,#239a41 98%);
+  background-color: #c9bae5;
   color: #fff;
 }
 .tarjeta-resumen.rojo {
-  background: linear-gradient(115deg,#ff5252 65%,#b30021 98%);
+  background-color: #6d3b94;
   color: #fff;
 }
 .tarjeta-resumen .titulo {
