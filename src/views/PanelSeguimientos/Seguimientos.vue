@@ -658,14 +658,20 @@ import jsPDF from 'jspdf'
        */
       async eligioEmpresa(idEmpresa) {
         console.log("eligioEmpresa: Empresa seleccionada con ID:", idEmpresa);
+
+        const id = Number(idEmpresa)
+        if (isNaN(id) || id <= 0) {
+          this.mostrarError('Seleccione una empresa válida')
+          return
+        }
         // Limpia los datos del modal y lo oculta.
         this.modalData = null;
         this.showModal = false;
         this.errorAlCargar = null; // Limpia mensajes de error previos.
-  
+
         try {
           // Obtiene la configuración detallada de la empresa seleccionada.
-          const resp = await empresasV3.getOneById(idEmpresa);
+          const resp = await empresasV3.getOneById(id);
           console.log("eligioEmpresa: Configuración de empresa recibida:", resp);
           // Asigna propiedades de la empresa (configuración, lote, stock).
           this.estaEmpresa = resp;
@@ -693,7 +699,7 @@ import jsPDF from 'jspdf'
         }
   
         // Actualiza el ID de la empresa seleccionada y reinicia las paginaciones.
-        this.idEmpresa = idEmpresa;
+        this.idEmpresa = id;
         this.pageOrdenes = 1;
         this.pageGuias = 1;
         // Llama a la función para cargar ambas listas (órdenes y guías).
@@ -1913,6 +1919,10 @@ import jsPDF from 'jspdf'
         const m = String(hoy.getMonth() + 1).padStart(2, '0'); // Mes con dos dígitos.
         const d = String(hoy.getDate()).padStart(2, '0'); // Día con dos dígitos.
         return `${y}-${m}-${d}`;
+      },
+
+      mostrarError(mensaje) {
+        store.dispatch('snackbar/mostrar', mensaje)
       },
     },
   
