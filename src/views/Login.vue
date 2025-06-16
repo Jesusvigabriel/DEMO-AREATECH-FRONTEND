@@ -204,12 +204,13 @@ export default {
 <style scoped>
 /* ======== ESTILOS PARA MODO CLARO ======== */
 .login-bg {
-  background-color: #f5f5f5;
+  background-color: var(--login-bg);
 }
 .login-card {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+  background-color: var(--login-card-bg);
 }
 .input-field {
   border-radius: 8px !important;
@@ -239,12 +240,12 @@ export default {
 
 /* ======== ESTILOS PARA MODO OSCURO ======== */
 .modo-dark {
-  background-color: #2f2f2f !important;
+  background-color: var(--login-bg) !important;
   color: #fafafa !important;
 }
 .modo-dark .v-card,
 .modo-dark .login-card {
-  background-color: #232323 !important;
+  background-color: var(--login-card-bg) !important;
   color: #fafafa !important;
 }
 .input-dark input,
@@ -269,8 +270,8 @@ export default {
   letter-spacing: 0.1em;
 }
 .modo-dark .forgot-password:hover {
-  color: #b3d7ff !important;
-  text-shadow: 0 0 6px #ffffff33;
+  color: var(--forgot-link-hover) !important;
+  text-shadow: 0 0 6px var(--forgot-link-shadow);
 }
 </style>
 

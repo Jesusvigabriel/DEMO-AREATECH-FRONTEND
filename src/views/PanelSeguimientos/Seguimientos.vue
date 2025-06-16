@@ -1985,8 +1985,8 @@ import jsPDF from 'jspdf'
     border-radius: 50%;
     margin-right: 16px;
     flex-shrink: 0;
-    background-color: #e0e0e0; /* Color por defecto para estados pendientes */
-    color: #616161;
+    background-color: var(--estado-neutral-bg); /* Color por defecto para estados pendientes */
+    color: var(--estado-neutral-tx);
   }
   
   .timeline-icon {
@@ -2004,12 +2004,12 @@ import jsPDF from 'jspdf'
     top: 32px;
     bottom: 0;
     width: 2px;
-    background-color: #e0e0e0;
+    background-color: var(--estado-neutral-bg);
   }
   
   /* Estados */
   .completed .timeline-icon-container {
-    background-color: #4caf50; /* Verde para completado */
+    background-color: var(--estado-entregado); /* Verde para completado */
     color: white;
   }
   
@@ -2026,7 +2026,7 @@ import jsPDF from 'jspdf'
   }
   
   .completed + .timeline-step:not(.completed) .timeline-line {
-    background: linear-gradient(to bottom, #4caf50, #e0e0e0);
+    background: linear-gradient(to bottom, var(--estado-entregado), var(--estado-neutral-bg));
   }
   
   @keyframes pulse {
@@ -2043,23 +2043,23 @@ import jsPDF from 'jspdf'
   
   /* Estilos para la tabla de productos */
   .product-table {
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--estado-neutral-bg);
     border-radius: 4px;
     overflow: hidden;
   }
   
   .product-table th {
-    background-color: #f5f5f5;
+    background-color: var(--login-bg);
     font-weight: 600;
     font-size: 0.875rem;
   }
   
   .product-table tr:not(:last-child) {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--estado-neutral-bg);
   }
   
   .product-table tr:hover {
-    background-color: #f9f9f9;
+    background-color: var(--surface);
   }
   
   /* ============================ */
@@ -2154,65 +2154,65 @@ import jsPDF from 'jspdf'
   
   /* Estado `pending`: indica un paso que aún no ha sido alcanzado. */
   .timeline-step.pending .timeline-icon-container {
-    background-color: #f5f5f5; /* Vuetify grey lighten-4 */
+    background-color: var(--login-bg); /* Vuetify grey lighten-4 */
     color: #757575;            /* Vuetify grey darken-1 */
   }
 
   /* Colores por tipo de estado */
   .timeline-step.pendiente .timeline-icon-container,
   .timeline-line.pendiente {
-    background-color: #c81e2b;
+    background-color: var(--estado-pendiente);
     color: #fff;
   }
   .timeline-step.pendiente::before {
-    background-color: #c81e2b;
+    background-color: var(--estado-pendiente);
   }
 
   .timeline-step.preparada .timeline-icon-container,
   .timeline-line.preparada {
-    background-color: #f8b421;
+    background-color: var(--estado-preparada);
     color: #fff;
   }
   .timeline-step.preparada::before {
-    background-color: #f8b421;
+    background-color: var(--estado-preparada);
   }
 
   .timeline-step.despachada .timeline-icon-container,
   .timeline-line.despachada {
-    background-color: #2d8bba;
+    background-color: var(--estado-despachada);
     color: #fff;
   }
   .timeline-step.despachada::before {
-    background-color: #2d8bba;
+    background-color: var(--estado-despachada);
   }
 
   .timeline-step.entregado .timeline-icon-container,
   .timeline-line.entregado {
-    background-color: #4caf50;
+    background-color: var(--estado-entregado);
     color: #fff;
   }
   .timeline-step.entregado::before {
-    background-color: #4caf50;
+    background-color: var(--estado-entregado);
   }
 
   /* === Chip color classes (comparten valores con el timeline) === */
   .chip-pendiente {
-    background-color: #c81e2b;
+    background-color: var(--estado-pendiente);
     color: #fff;
   }
 
   .chip-preparada {
-    background-color: #f8b421;
+    background-color: var(--estado-preparada);
     color: #fff;
   }
 
   .chip-despachada {
-    background-color: #2d8bba;
+    background-color: var(--estado-despachada);
     color: #fff;
   }
 
   .chip-entregado {
-    background-color: #4caf50;
+    background-color: var(--estado-entregado);
     color: #fff;
   }
   </style>

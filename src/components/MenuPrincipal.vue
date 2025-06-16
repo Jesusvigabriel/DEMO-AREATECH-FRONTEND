@@ -543,7 +543,7 @@ export default {
   height: 38px;
   margin: 0 6px;
   border-radius: 99px;
-  background: #f3f3f3;
+  background: var(--switch-track);
   box-shadow: 0 2px 8px rgba(0,0,0,0.06) inset;
   cursor: pointer;
   position: relative;
@@ -555,7 +555,7 @@ export default {
   vertical-align: middle;
 }
 .theme-switch-wide:focus {
-  box-shadow: 0 0 0 3px #ffe06650;
+  box-shadow: 0 0 0 3px var(--switch-focus-shadow);
 }
 .theme-switch__circle {
   width: 34px;
@@ -575,7 +575,7 @@ export default {
 }
 .theme-switch--dark .theme-switch__circle {
   left: 32px;  /* Empuja la "luna" a la derecha */
-  background: #23232a;
+  background: var(--switch-track);
   box-shadow: 2px 2px 10px rgba(0,0,0,0.13), -2px -2px 18px rgba(0,0,0,0.16) inset;
 }
 .theme-switch__icon {
@@ -588,12 +588,12 @@ export default {
   opacity: 1;
 }
 .theme-switch__icon.sun {
-  color: #FFD600;
+  color: var(--switch-sun);
   margin-top: 0%;
   opacity: 1;
 }
 .theme-switch__icon.moon {
-  color: #B0CBF9;
+  color: var(--switch-moon);
   margin-top: -150%;
   opacity: 0;
 }

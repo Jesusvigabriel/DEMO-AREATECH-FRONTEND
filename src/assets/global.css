@@ -16,46 +16,46 @@ html, body {
 
 /* Row striping for data tables */
 .v-data-table tbody tr:nth-child(3n+1) {
-  background-color: #ffffff;
+  background-color: var(--table-row-1-bg);
 }
 .v-data-table tbody tr:nth-child(3n+2) {
-  background-color: #f4fafe;
+  background-color: var(--table-row-2-bg);
 }
 .v-data-table tbody tr:nth-child(3n) {
-  background-color: #f7f5f5;
+  background-color: var(--table-row-3-bg);
 }
 
 /* Dark theme row striping */
 .theme--dark .v-data-table tbody tr:nth-child(3n+1) {
-  background-color: #ffffff;
+  background-color: var(--table-row-1-bg);
 }
 .theme--dark .v-data-table tbody tr:nth-child(3n+2) {
-  background-color: #f7f5f5;
+  background-color: var(--table-row-2-bg);
 }
 .theme--dark .v-data-table tbody tr:nth-child(3n) {
-  background-color: #f4fafe;
+  background-color: var(--table-row-3-bg);
 }
 
 /* Row striping for plain tables */
 table tbody tr:nth-child(3n+1) {
-  background-color: #ffffff;
+  background-color: var(--table-row-1-bg);
 }
 table tbody tr:nth-child(3n+2) {
-  background-color: #f4fafe;
+  background-color: var(--table-row-2-bg);
 }
 table tbody tr:nth-child(3n) {
-  background-color: #f7f5f5;
+  background-color: var(--table-row-3-bg);
 }
 
 /* Dark theme row striping */
 .theme--dark table tbody tr:nth-child(3n+1) {
-  background-color: #ffffff;
+  background-color: var(--table-row-1-bg);
 }
 .theme--dark table tbody tr:nth-child(3n+2) {
-  background-color: #f7f5f5;
+  background-color: var(--table-row-2-bg);
 }
 .theme--dark table tbody tr:nth-child(3n) {
-  background-color: #f4fafe;
+  background-color: var(--table-row-3-bg);
 }
 /* Form headers color matches menu bar */
 .v-dialog .v-card-title,
@@ -95,12 +95,12 @@ h6 {
   background-color: var(--v-menubar-base);
   color: #fff;
 }
-.search-field .v-input__slot { background-color: #f4fafe; color: #000; }
-.theme--dark .search-field .v-input__slot { background-color: #d9d9d9; color: #000; }
+.search-field .v-input__slot { background-color: var(--search-field-bg); color: #000; }
+.theme--dark .search-field .v-input__slot { background-color: var(--search-field-bg); color: #000; }
 
 /* Standardized button style for actions */
-.action-button { background-color: #b9c8ea; color: #191043; }
-.theme--dark .action-button { background-color: #d8ecfa; color: #212124; }
+.action-button { background-color: var(--action-button-bg); color: var(--action-button-text); }
+.theme--dark .action-button { background-color: var(--action-button-bg); color: var(--action-button-text); }
 
 /* Custom slider track background */
-.v-slider .v-slider__track-container { background-color: #dbe1e5; }
+.v-slider .v-slider__track-container { background-color: var(--slider-track-bg); }

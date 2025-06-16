@@ -601,7 +601,7 @@ export default {
         datasets: [
           {
             label: 'Cantidad de guias por mes en un año',
-            backgroundColor: ['#4caf50'],
+            backgroundColor: ['var(--estado-entregado)'],
             data: [0,0,0,0,0,0,0,0,0,0,0,0]
           }
         ]
