@@ -208,7 +208,7 @@ export default {
 
 /* Órdenes Pendientes: ámbar */
 .pending-card {
-  border: 2px solid #ffb300;
+  border: 2px solid var(--home-border-pend);
   background-color: rgba(255, 179, 0, 0.05);
   box-shadow: 0 2px 8px rgba(255, 179, 0, 0.1);
 }
@@ -218,7 +218,7 @@ export default {
 
 /* Stock Crítico */
 .critical-card {
-  border: 2px solid #e53935;
+  border: 2px solid var(--home-border-crit);
   background-color: rgba(229, 57, 53, 0.05);
   box-shadow: 0 2px 8px rgba(229, 57, 53, 0.1);
 }
@@ -238,7 +238,7 @@ export default {
 
 /* Rotación 7 días */
 .rotation-card {
-  border: 2px solid #1e88e5;
+  border: 2px solid var(--home-border-rot);
   background-color: rgba(30, 136, 229, 0.05);
   box-shadow: 0 2px 8px rgba(30, 136, 229, 0.1);
 }
@@ -248,7 +248,7 @@ export default {
 
 /* Días de Inventario */
 .dio-card {
-  border: 2px solid #8e24aa;
+  border: 2px solid var(--home-border-dio);
   background-color: rgba(142, 36, 170, 0.05);
   box-shadow: 0 2px 8px rgba(142, 36, 170, 0.1);
 }

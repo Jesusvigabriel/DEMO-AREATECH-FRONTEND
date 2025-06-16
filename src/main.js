@@ -5,6 +5,7 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import axios from 'axios'
 import './assets/global.css'
+import './assets/theme.css'
 // import VueConfirmDialog from 'vue-confirm-dialog'
 
 // Vue.use(VueConfirmDialog)

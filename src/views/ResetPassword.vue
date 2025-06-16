@@ -234,7 +234,7 @@ export default {
 
 <style scoped>
 .login-bg {
-  background-color: #f5f5f5;
+  background-color: var(--login-bg);
 }
 .login-card {
   border-radius: 12px;

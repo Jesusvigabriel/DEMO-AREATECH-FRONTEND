@@ -96,7 +96,7 @@ export default {
 
 <style scoped>
 .google-btn {
-  background-color: #ffffff !important;
+  background-color: var(--card-bg) !important;
   border: 1px solid #dadce0 !important;
   border-radius: 4px !important;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
