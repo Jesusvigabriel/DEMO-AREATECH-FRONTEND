@@ -503,9 +503,28 @@ export default {
   line-height: 1.1;
   padding-left: 0 !important;
 }
+/* Estilos para los títulos de menú */
 .v-list-item-title {
   font-size: 13px !important;
+  font-weight: 500 !important; /* Medium weight */
   padding: 0 2px !important;
+}
+
+/* Asegurar que los títulos de los submenús tengan el mismo peso */
+.v-list-group .v-list-item .v-list-item__title,
+.v-list-group--active .v-list-item .v-list-item__title,
+.v-list-group--active .v-list-item--active .v-list-item__title,
+.v-list-group__items .v-list-item .v-list-item__title,
+.v-list-group__items .v-list-item--active .v-list-item__title,
+.v-list-group--sub-group .v-list-item .v-list-item__title {
+  font-weight: 500 !important; /* Medium weight */
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+/* Estilos para la barra de menú superior */
+.v-toolbar__content .v-btn {
+  font-weight: 500 !important; /* Medium weight */
+  letter-spacing: 0.5px;
 }
 
 /* Menú horizontal solo visible en desktop >= 960px */

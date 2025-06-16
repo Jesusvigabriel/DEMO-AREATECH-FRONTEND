@@ -5,6 +5,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'DM Sans';
   src: url('fonts/DMSans-Medium.woff2') format('woff2');
@@ -12,6 +13,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'DM Sans';
   src: url('fonts/DMSans-Bold.woff2') format('woff2');
