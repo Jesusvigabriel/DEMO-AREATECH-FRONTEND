@@ -51,6 +51,11 @@ html, body {
   letter-spacing: 0.5px !important;
 }
 
+/* Color de texto de tabs en Panel Seguimientos modo oscuro */
+.theme--dark .seguimiento-tabs .v-tab {
+  color: #DBE1E5 !important;
+}
+
 /* Asegurar que los títulos de las tarjetas y diálogos tengan el mismo peso */
 .v-card__title,
 .v-dialog .v-card__title,
@@ -130,15 +135,17 @@ html, body {
 
 /* Asegurar que los encabezados de pestañas tengan el mismo estilo */
 .v-tab {
-  color: #191043 !important;
   font-weight: 500 !important;
   letter-spacing: 0.5px !important;
 }
 
-/* Estilo para pestaña activa */
-.v-tab--active {
-  color: #191043 !important;
-  font-weight: 600 !important;
+/* Panel Seguimientos: color tabs modo oscuro */
+.theme--dark .seguimiento-tabs .v-tab {
+  color: #DBE1E5 !important;
+}
+.theme--dark .seguimiento-tabs .v-tab--active {
+  color: #DBE1E5 !important;
+  font-weight: 700 !important;
 }
 
 .v-application {

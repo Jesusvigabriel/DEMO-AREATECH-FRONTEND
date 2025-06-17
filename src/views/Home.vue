@@ -11,21 +11,34 @@
     <v-row v-else justify="start">
       <!-- Órdenes Pendientes -->
       <v-col cols="12" sm="6" md="4" lg="3" xl="2">
-        <v-card outlined class="card-card pending-card" @click="irAPendientes">
-          <v-card-title class="amber--text text--darken-2 align-center pa-4">
-            <v-icon left color="amber darken-2">mdi-alert-circle-outline</v-icon>
-            <span class="subtitle-1 font-weight-bold">Órdenes Pendientes</span>
+        <!-- DEBUG: INICIO ÓRDENES PENDIENTES -->
+<div class="ordenes-pendientes-wrapper">
+  <v-card outlined class="card-card pending-card white-background" @click="irAPendientes" style="display:inline-block;width:auto;background-color:#ececec !important; border:2px solid var(--home-border-pend); border-radius:18px;">
+
+          <v-card-title class="pending-title align-center pa-4" :class="{'dark-mode': $vuetify.theme.dark}">
+            <v-icon left class="pending-icon" :color="$vuetify.theme.dark ? 'var(--menubar)' : 'amber darken-2'">mdi-alert-circle-outline</v-icon>
+            <span class="subtitle-1 font-weight-bold" :class="{'dark-mode': $vuetify.theme.dark}">Órdenes Pendientes</span>
           </v-card-title>
-          <v-card-text class="pa-4">
-            <div class="display-1 font-weight-bold amber--text text--darken-2">{{ pendientesCount }}</div>
-            <div class="body-2">Órdenes que aún no han sido liberadas para preparación.</div>
-            <div class="caption grey--text mt-2">Actualizado: {{ lastUpdated }}</div>
-          </v-card-text>
+          <v-card-text class="pending-text">
+            <div class="display-1 font-weight-bold pending-count" :class="{'dark-mode': $vuetify.theme.dark}">{{ pendientesCount }}</div>
+  <div class="body-2" :class="{'dark-mode': $vuetify.theme.dark}">Órdenes que aún no han sido liberadas para preparación.</div>
+  <div class="caption grey--text mt-2" :class="{'dark-mode': $vuetify.theme.dark}">Actualizado: {{ lastUpdated }}</div>
+  <div v-if="primerasPendientes.length > 0" class="mt-3">
+    <div class="subtitle-2 font-weight-bold mb-1" :class="{'dark-mode': $vuetify.theme.dark}">Próximas órdenes:</div>
+    <div v-for="(orden, idx) in primerasPendientes" :key="orden.Id || idx" class="caption grey--text mb-1 orden-pendiente-linea">
+      <v-icon small left class="pending-icon">mdi-file-document-outline</v-icon>
+      <span v-if="orden.Numero">#{{ orden.Numero }}</span>
+      <span v-if="orden.Fecha"> - {{ orden.Fecha }}</span>
+    </div>
+  </div>
+</v-card-text>
           <v-card-actions class="pa-4 pt-0">
             <v-spacer />
             <v-btn text color="amber darken-2" @click.stop="irAPendientes">Ver detalle →</v-btn>
           </v-card-actions>
-        </v-card>
+    </v-card>
+</div>
+<!-- DEBUG: FIN ÓRDENES PENDIENTES -->
       </v-col>
 
       <!-- Stock Crítico -->
@@ -100,6 +113,8 @@ export default {
   data() {
     return {
       pendientesCount: 0,
+      pendientes: [],
+    
       stockCritico: 0,
       rotacion7d: 0,
       dio: 0,
@@ -107,6 +122,10 @@ export default {
     }
   },
   computed: {
+    primerasPendientes() {
+      // Devuelve las primeras 2 órdenes pendientes
+      return this.pendientes.slice(0, 2);
+    },
     usuarioActual() {
       return store.state.usuarios.usuarioActual
     }
@@ -120,7 +139,8 @@ export default {
     },
     async cargarPendientes() {
       const lista = await ordenesModule.getPendientes()
-      this.pendientesCount = lista.length
+      this.pendientes = lista || [];
+      this.pendientesCount = this.pendientes.length;
     },
     async cargarStockCritico() {
       const empresa = this.usuarioActual.IdEmpresa
@@ -201,6 +221,107 @@ export default {
 </script>
 
 <style scoped>
+::v-deep .ordenes-pendientes-wrapper .v-card,
+.ordenes-pendientes-wrapper .white-background,
+.ordenes-pendientes-wrapper .pending-card {
+  background-color: #ececec !important;
+  background: #ececec !important;
+  box-shadow: 0 2px 8px 0 rgba(60,60,60,0.04) !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: unset !important;
+  max-width: unset !important;
+  border: 2px solid var(--home-border-pend) !important;
+  border-radius: 18px !important;
+}
+
+.ordenes-pendientes-wrapper .pending-card {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Título y contador usan color de la barra de menú */
+.ordenes-pendientes-wrapper .pending-title,
+.ordenes-pendientes-wrapper .pending-count,
+.ordenes-pendientes-wrapper .pending-icon,
+.ordenes-pendientes-wrapper .v-card-text,
+.ordenes-pendientes-wrapper .caption,
+.ordenes-pendientes-wrapper .grey--text,
+.ordenes-pendientes-wrapper .subtitle-2,
+.ordenes-pendientes-wrapper .body-2,
+.ordenes-pendientes-wrapper .display-1,
+.ordenes-pendientes-wrapper .mb-1,
+.ordenes-pendientes-wrapper .mt-3,
+.ordenes-pendientes-wrapper .orden-pendiente-linea,
+.ordenes-pendientes-wrapper .v-icon,
+.ordenes-pendientes-wrapper .subtitle-1,
+.ordenes-pendientes-wrapper .font-weight-bold {
+  color: var(--menubar) !important;
+}
+.ordenes-pendientes-wrapper .pending-title {
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+}
+.ordenes-pendientes-wrapper .pending-count {
+  font-size: 1.3rem !important;
+  line-height: 1.5rem !important;
+}
+.ordenes-pendientes-wrapper .pending-icon,
+.ordenes-pendientes-wrapper .v-icon {
+  margin-right: 4px !important;
+  font-size: 1.1rem !important;
+  vertical-align: middle !important;
+}
+.ordenes-pendientes-wrapper .subtitle-2 {
+  font-weight: 600 !important;
+}
+
+
+
+::v-deep .ordenes-pendientes-wrapper .v-card__title,
+.ordenes-pendientes-wrapper .v-card-title {
+  font-size: 0.89rem !important;
+  padding: 4px 8px !important;
+  min-height: unset !important;
+}
+::v-deep .ordenes-pendientes-wrapper .v-card__text,
+.ordenes-pendientes-wrapper .v-card-text {
+  font-size: 0.80rem !important;
+  padding: 6px 8px 6px 8px !important;
+}
+.ordenes-pendientes-wrapper .display-1 {
+  font-size: 1.3rem !important;
+  line-height: 1.5rem !important;
+}
+.ordenes-pendientes-wrapper .body-2,
+.ordenes-pendientes-wrapper .subtitle-2,
+.ordenes-pendientes-wrapper .caption {
+  font-size: 0.80rem !important;
+  line-height: 1.05rem !important;
+}
+.ordenes-pendientes-wrapper .subtitle-2 {
+  font-weight: 600 !important;
+}
+.ordenes-pendientes-wrapper .mb-1 {
+  margin-bottom: 2px !important;
+}
+.ordenes-pendientes-wrapper .mt-3 {
+  margin-top: 6px !important;
+}
+.ordenes-pendientes-wrapper .v-icon {
+  font-size: 0.9rem !important;
+  margin-right: 2px !important;
+  vertical-align: middle !important;
+}
+.ordenes-pendientes-wrapper .orden-pendiente-linea {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  width: 100%;
+  display: block;
+}
+
+
 .card-card {
   cursor: default;
   transition: box-shadow 0.2s ease;
