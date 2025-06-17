@@ -199,8 +199,11 @@ h6 {
 /* Asegurar que los iconos de Material Design se muestren correctamente */
 @font-face {
   font-family: 'Material Design Icons';
-  src: url('../fonts/materialdesignicons-webfont.woff2') format('woff2'),
-       url('../fonts/materialdesignicons-webfont.woff') format('woff');
+  /* Fonts are copied to the public directory via CopyPlugin. Use
+     an absolute path so webpack does not try to resolve a relative
+     import that does not exist under src/. */
+  src: url('/fonts/materialdesignicons-webfont.woff2') format('woff2'),
+       url('/fonts/materialdesignicons-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: block;
