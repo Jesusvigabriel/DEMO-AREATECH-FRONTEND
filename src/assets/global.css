@@ -151,6 +151,15 @@ table tbody tr:nth-child(3n) {
   background-color: var(--v-menubar-base);
   color: #fff;
 }
+
+/* Ensure form text contrasts with card backgrounds */
+.v-card .v-card-text {
+  color: #fff; /* same as menu bar text */
+}
+
+.theme--light .v-card .v-card-text {
+  color: #191043; /* dark text for light cards */
+}
 body,
 h1,
 h2,
