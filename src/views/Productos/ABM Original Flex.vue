@@ -29,7 +29,7 @@
                             <v-btn color="warning" dark class="mb-2 ml-1" @click="eliminarPosiciones()" >Eliminar posiciones</v-btn>
                             <v-btn class="action-button mb-2" v-bind="attrs" v-on="on">Crear posiciones</v-btn>
                         </template>
-                        <v-card>
+                        <v-card class="rounded-card">
                             <v-card-title ><span class="headline">Crear nuevas posiciones</span></v-card-title>
                             <v-card-text  class="my-0 py-0">
                                 <v-container>

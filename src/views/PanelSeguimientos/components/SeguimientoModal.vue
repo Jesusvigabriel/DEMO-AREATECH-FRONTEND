@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="show" scrollable max-width="650px">
-    <v-card>
+    <v-card class="rounded-card">
       <v-card-title class="justify-space-between">
         <span class="text-h6">
           Detalle de {{ modalType === 'orden' ? 'Orden' : 'Guía' }}: {{ modalData?.Numero || modalData?.Comprobante || '' }}

@@ -276,7 +276,7 @@
             persistent
             max-width="800px"
         >
-        <v-card>
+        <v-card class="rounded-card">
             <v-card-title>
                 <span class="text-h5">Producto: {{itemEnEdicion.Id}} - Barcode: {{itemEnEdicion.Barcode}}</span>
             </v-card-title>

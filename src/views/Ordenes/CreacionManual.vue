@@ -218,7 +218,7 @@
             v-model="mostrarListaArticulos"
             persistent
         >
-            <v-card v-show="!tieneLOTE">
+            <v-card v-show="!tieneLOTE" class="rounded-card">
                 <v-card-title>
                     <span class="text-h5">Productos</span>
                     <v-col> </v-col> <v-col> </v-col> <v-col> </v-col>
@@ -277,7 +277,7 @@
                     <v-btn color="blue darken-1" text @click="mostrarListaArticulos=false; textoBusqueda=''">Cerrar</v-btn>
                 </v-card-actions>
             </v-card>
-            <v-card v-show="tieneLOTE">
+            <v-card v-show="tieneLOTE" class="rounded-card">
                 <v-card-title>
                     <span class="text-h5">{{productosLote ? "Productos" : "Lote"}}</span>
                 </v-card-title>

@@ -47,7 +47,7 @@
          <!-- Dialog de Ajuste de Ingreso -->
          <v-row justify="center">
             <v-dialog v-model="empresaDialog" persistent max-width="600px">
-                <v-card>
+                <v-card class="rounded-card">
                     <v-card-title>
                         <span class="text-h5">Administración de empresa</span>
                     </v-card-title>

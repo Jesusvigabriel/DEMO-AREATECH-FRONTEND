@@ -71,7 +71,7 @@
     </v-row>
     <v-row justify="center">
             <v-dialog v-model="seguimientoDialog" persistent max-width="1000px" >
-                <v-card>
+                <v-card class="rounded-card">
                     <v-card-title>
                       <v-row>
                         <v-col align="center">

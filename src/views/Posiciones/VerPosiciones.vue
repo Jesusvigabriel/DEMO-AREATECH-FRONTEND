@@ -53,7 +53,7 @@
     </v-row>
 
     <v-dialog v-model="mostrarVentanaEdicion" persistent max-width="800px">
-      <v-card>
+      <v-card class="rounded-card">
           <v-card-title>
               <span class="text-h5">Creación de nueva posición</span>
           </v-card-title>
@@ -77,7 +77,7 @@
     </v-dialog>
 
     <v-dialog v-model="mostrarDetallePosiciones" persistent max-width="1000px">
-      <v-card>
+      <v-card class="rounded-card">
           <v-card-title>
               <span class="text-h5">Contenido de la posición {{detallePosicionesPosicion}}</span>
           </v-card-title>
@@ -104,7 +104,7 @@
       </v-card>
     </v-dialog>
     <v-dialog v-model="mostrarResultadoCreacionMasiva" persistent max-width="1000px">
-      <v-card>
+      <v-card class="rounded-card">
           <v-card-title>
               <span class="text-h5">Proceso finalizado</span>
           </v-card-title>

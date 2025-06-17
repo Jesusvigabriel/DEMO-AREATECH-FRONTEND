@@ -239,3 +239,15 @@ h6 {
 .v-btn .v-icon {
   font-family: 'Material Design Icons' !important;
 }
+
+/* Reusable rounded card style */
+.rounded-card {
+  border-radius: 12px;
+  background-color: var(--card-bg);
+}
+
+/* Optional rounded style for inputs */
+.rounded-input .v-input__slot,
+.rounded-input input {
+  border-radius: 8px;
+}

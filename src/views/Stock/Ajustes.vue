@@ -78,7 +78,7 @@
         <!-- Dialog de Ajuste de Ingreso -->
         <v-row justify="center">
             <v-dialog v-model="AjusteIngresoDialog" persistent max-width="600px">
-                <v-card>
+                <v-card class="rounded-card">
                     <v-card-title>
                         <span class="text-h5">Registración de ingreso de stock</span>
                     </v-card-title>
@@ -152,7 +152,7 @@
         <!-- Dialog de Ajuste de Egreso -->
         <v-row justify="center">
             <v-dialog v-model="AjusteEgresoDialog" persistent max-width="600px">
-                <v-card>
+                <v-card class="rounded-card">
                     <v-card-title>
                         <span class="text-h5">Registración de egreso de stock</span>
                     </v-card-title>
@@ -226,7 +226,7 @@
         <!-- Dialog de Ajuste Masivo -->
         <v-row justify="center">
             <v-dialog v-model="AjusteMasivoDialog" persistent max-width="650px">
-               <v-card>
+               <v-card class="rounded-card">
                     <v-card-title >
                         <span class="text-h5">Ajuste Masivo</span>
                     </v-card-title>
