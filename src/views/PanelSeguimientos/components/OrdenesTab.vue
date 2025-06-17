@@ -43,7 +43,7 @@
             dense
             outlined
             clearable
-            class="flex-grow-1"
+            class="flex-grow-1 search-field"
           />
           <v-btn icon @click="$emit('descargar-ordenes-excel')">
             <v-icon>mdi-download</v-icon>
