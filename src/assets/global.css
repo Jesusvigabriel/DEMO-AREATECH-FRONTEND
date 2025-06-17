@@ -163,6 +163,24 @@ table tbody tr:nth-child(3n) {
 .theme--dark table tbody tr:nth-child(3n) {
   background-color: var(--table-row-3-bg);
 }
+
+/* Texto oscuro y bordes para tablas en tema oscuro */
+.theme--dark .v-data-table td,
+.theme--dark table td {
+  color: #000000;
+  border-bottom: 1px solid #dbe1e5;
+}
+
+.theme--dark .v-data-table td:not(:last-child),
+.theme--dark table td:not(:last-child) {
+  border-right: 1px solid #dbe1e5;
+}
+
+.theme--dark .v-data-table,
+.theme--dark table {
+  border-radius: 8px;
+  overflow: hidden;
+}
 /* Form headers color matches menu bar */
 .v-dialog .v-card-title,
 .v-dialog .v-toolbar {

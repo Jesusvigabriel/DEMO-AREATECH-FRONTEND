@@ -81,7 +81,8 @@
   --stock-text: #f1fafd;  /* Color de texto para las tarjetas - Azul claro */            /* Color de texto para las tarjetas */
 
   /* Ajustes de tablas y formularios en oscuro */
-  --table-row-1-bg: #ffffff;
+  /* Colores intercalados para filas de tablas */
+  --table-row-1-bg: #f4fafe;
   --table-row-2-bg: #f7f5f5;
   --table-row-3-bg: #f4fafe;
   --search-field-bg: #d9d9d9;
