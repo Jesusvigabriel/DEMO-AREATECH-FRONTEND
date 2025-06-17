@@ -2,7 +2,7 @@
     <v-container>
         <v-row v-show="empresaLoggeada()<=0">
             <v-col class="pt-1 pb-0">
-                <SelectorEmpresa @eligioEmpresa="eligioEmpresa($event)"  :idEmpresaInicialmenteSeleccionada="idEmpresa"  ></SelectorEmpresa>
+                <SelectorEmpresa @eligioEmpresa="eligioEmpresa($event)" :idEmpresaInicialmenteSeleccionada="idEmpresa"></SelectorEmpresa>
             </v-col>
         </v-row>
         <v-row v-if="idEmpresa>0" class="py-0">
@@ -47,8 +47,7 @@
   >
     <v-card 
       outlined 
-      tile 
-      class="d-flex flex-column cursor-pointer" 
+      class="d-flex flex-column cursor-pointer rounded-lg" 
       @click="seleccionarCategoria(card.categoria)"
       :style="{ '--card-color': card.color, '--card-text-color': card.textColor }"
     >
@@ -120,18 +119,22 @@
 </v-row>
 
         <v-row v-show="listaArticulosMostrar.length>0" class="pb-0 mb-0">
-            <v-col class="py-0 my-0"  >
-                <v-card-title class="py-1 my-0">
-                    <v-text-field class="search-field"
+            <v-col class="py-0 my-0">
+                <v-card-title class="py-1 my-0 px-0">
+                    <v-text-field
                         v-model="textoBusqueda"
                         append-icon="mdi-magnify"
                         label="Búsqueda"
                         single-line
                         dense
                         hide-details
+                        class="search-field"
+                        :class="{ 'dark-search': $vuetify.theme.dark }"
+                        :background-color="$vuetify.theme.dark ? 'surface' : 'white'"
+                        outlined
                     ></v-text-field>
-                    </v-card-title>
-                </v-col>
+                </v-card-title>
+            </v-col>
         </v-row>
         <v-row v-show="!tieneLOTE">
             <v-col class="py-0" v-if="listaArticulosMostrar.length>0">
@@ -141,7 +144,10 @@
                     :footer-props="{itemsPerPageOptions:[10,30,100,-1]}"   
                     :items-per-page="30" 
                     :search="textoBusqueda"
-                    class="elevation-3" 
+                    class="elevation-3 rounded-lg"
+                    loading-text="Cargando..."
+                    no-data-text="No hay datos disponibles"
+                    no-results-text="No se encontraron resultados"
                 >
                 <template v-slot:item.Stock="{item}">
                     <v-chip :color="getColorStock(item)" dark>{{ item.Stock}}</v-chip>
@@ -198,7 +204,7 @@
                     :footer-props="{itemsPerPageOptions:[10,30,100,-1]}"   
                     :items-per-page="30" 
                     :search="textoBusqueda"
-                    class="elevation-3" 
+                    class="elevation-3 rounded-lg"
                 >
                 <template v-slot:item.StockComprometido="{item}">
                     <v-chip @click="verOrdenesPendientesLote(item)" :color="getColorStockComprometidoLote(item)" dark>{{ item.StockComprometido}}</v-chip>
@@ -275,27 +281,62 @@
             v-model="mostrarVentanaEdicion"
             persistent
             max-width="800px"
+            class="editar-producto-dialog"
         >
-        <v-card class="rounded-card">
-            <v-card-title>
+        <v-card class="rounded-lg">
+            <v-card-title class="px-6 pt-6 pb-3">
                 <span class="text-h5">Producto: {{itemEnEdicion.Id}} - Barcode: {{itemEnEdicion.Barcode}}</span>
             </v-card-title>
             <v-card-text>
                 <v-container>
-                    <v-row>
+                    <v-row class="form-row-odd">
                         <v-col>
-                            <v-text-field :disabled="empresaLoggeada()>=0" label="Nombre" required v-model="itemEnEdicion.Nombre"></v-text-field>
+                            <v-text-field 
+                                :disabled="empresaLoggeada()>=0" 
+                                label="Nombre" 
+                                required 
+                                v-model="itemEnEdicion.Nombre"
+                                outlined
+                                dense
+                                class="rounded-lg"
+                            ></v-text-field>
                         </v-col>
                         <v-col>
-                            <v-text-field :disabled="empresaLoggeada()>=0" label="CodeEmpresa" required v-model="itemEnEdicion.CodeEmpresa"></v-text-field>
+                            <v-text-field 
+                                :disabled="empresaLoggeada()>=0" 
+                                label="CodeEmpresa" 
+                                required 
+                                v-model="itemEnEdicion.CodeEmpresa"
+                                outlined
+                                dense
+                                class="rounded-lg"
+                            ></v-text-field>
                         </v-col>
                     </v-row>
                     <v-row v-if="!this.textil">
                         <v-col v-show="!tieneLOTE">
-                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Ancho" required v-model="itemEnEdicion.Ancho"></v-text-field>
+                            <v-text-field 
+                                type="number" 
+                                :disabled="empresaLoggeada()>=0" 
+                                label="Ancho" 
+                                required 
+                                v-model="itemEnEdicion.Ancho"
+                                outlined
+                                dense
+                                class="rounded-lg"
+                            ></v-text-field>
                         </v-col >
                         <v-col v-show="tieneLOTE">
-                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Largo" required v-model="itemEnEdicion.Ancho"></v-text-field>
+                            <v-text-field 
+                                type="number" 
+                                :disabled="empresaLoggeada()>=0" 
+                                label="Largo" 
+                                required 
+                                v-model="itemEnEdicion.Ancho"
+                                outlined
+                                dense
+                                class="rounded-lg"
+                            ></v-text-field>
                         </v-col>
                         <v-col>
                             <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
@@ -303,7 +344,16 @@
                     </v-row>
                     <v-row v-if="!this.textil">
                         <v-col v-show="!tieneLOTE">
-                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Largo" required v-model="itemEnEdicion.Largo"></v-text-field>
+                            <v-text-field 
+                                type="number" 
+                                :disabled="empresaLoggeada()>=0" 
+                                label="Largo" 
+                                required 
+                                v-model="itemEnEdicion.Largo"
+                                outlined
+                                dense
+                                class="rounded-lg"
+                            ></v-text-field>
                         </v-col>
                         <v-col v-show="tieneLOTE">
                             <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Ancho" required v-model="itemEnEdicion.Largo"></v-text-field>
@@ -314,7 +364,16 @@
                     </v-row>
                     <v-row v-if="this.textil">
                         <v-col>
-                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Metros" required v-model="itemEnEdicion.Ancho"></v-text-field>
+                            <v-text-field 
+                                type="number" 
+                                :disabled="empresaLoggeada()>=0" 
+                                label="Metros" 
+                                required 
+                                v-model="itemEnEdicion.Ancho"
+                                outlined
+                                dense
+                                class="rounded-lg"
+                            ></v-text-field>
                         </v-col>
                         <v-col>
                             <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
@@ -328,15 +387,35 @@
                             <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Peso" required v-model="itemEnEdicion.Peso"></v-text-field>
                         </v-col>
                         <v-col>
-                            <v-text-field type="number" :disabled="empresaLoggeada()>=0" label="Calidad" required v-model="itemEnEdicion.Precio"></v-text-field>
+                            <v-text-field 
+                                type="number" 
+                                :disabled="empresaLoggeada()>=0" 
+                                label="Calidad" 
+                                required 
+                                v-model="itemEnEdicion.Precio"
+                                outlined
+                                dense
+                                class="rounded-lg"
+                            ></v-text-field>
                         </v-col>
                     </v-row>
                 </v-container>
             </v-card-text>
-            <v-card-actions>
+            <v-card-actions class="px-6 pb-4">
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="cancelarEdicionItem()">{{empresaLoggeada()<0 ? 'Cancelar' : 'Cerrar'}}</v-btn>
-                <v-btn color="blue darken-1" text @click="confirmarEdicionItem()" v-if="empresaLoggeada()<0">Guardar</v-btn>
+                <v-btn 
+                    color="blue darken-1" 
+                    text 
+                    @click="cancelarEdicionItem()"
+                    class="rounded-lg px-4"
+                >{{empresaLoggeada()<0 ? 'Cancelar' : 'Cerrar'}}</v-btn>
+                <v-btn 
+                    color="blue darken-1" 
+                    text 
+                    @click="confirmarEdicionItem()" 
+                    v-if="empresaLoggeada()<0"
+                    class="rounded-lg px-4"
+                >Guardar</v-btn>
             </v-card-actions>
         </v-card>
         </v-dialog>
@@ -1822,7 +1901,596 @@ export default {
 }
 </script>
 
+<style>
+/* Cabecera de tablas Vuetify en blanco */
+.v-data-table-header th {
+  color: #FFFFFF !important;
+}
+.v-data-table-header .v-icon {
+  color: #FFFFFF !important;
+}
+
+/* Etiquetas de formularios Vuetify */
+.v-label {
+  color: #191043 !important;
+}
+.theme--dark .v-label {
+  color: #f4fafe !important;
+}
+</style>
 <style scoped>
+/* Estilos específicos para el diálogo de edición */
+.editar-producto-dialog {
+  /* Variables CSS para los colores */
+  --dialog-bg: #f7f5f5;
+  --row-even-bg: #f4fafe;
+  --text-color: #000000;
+  --border-color: #dbe1e5;
+}
+
+/* Estilos para el tema oscuro */
+.theme--dark .editar-producto-dialog {
+  --dialog-bg: #f7f5f5;
+  --row-even-bg: #f4fafe;
+  --text-color: #000000;
+  --border-color: #dbe1e5;
+}
+
+/* Estilos del diálogo */
+.editar-producto-dialog .v-card {
+  background-color: var(--dialog-bg) !important;
+}
+
+.editar-producto-dialog .v-card .v-card__text {
+  background-color: var(--dialog-bg) !important;
+  padding: 16px 24px !important;
+}
+
+/* Filas intercaladas */
+.editar-producto-dialog .v-card .v-card__text .v-row {
+  margin: 0 -12px !important;
+  padding: 8px 0 !important;
+  background-color: var(--dialog-bg) !important;
+}
+
+.editar-producto-dialog .v-card .v-card__text .v-row:nth-child(even) {
+  background-color: var(--row-even-bg) !important;
+}
+
+/* Columnas */
+.editar-producto-dialog .v-card .v-card__text .v-col {
+  padding: 0 12px !important;
+  background-color: inherit !important;
+}
+
+/* Campos de entrada */
+.editar-producto-dialog .v-text-field {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.editar-producto-dialog .v-text-field input,
+.editar-producto-dialog .v-text-field .v-label,
+.editar-producto-dialog .v-text-field .v-icon,
+.editar-producto-dialog .v-text-field .v-messages {
+  color: var(--text-color) !important;
+  caret-color: var(--text-color) !important;
+}
+
+/* Bordes de los campos */
+.editar-producto-dialog .v-text-field--outlined fieldset {
+  border-color: var(--border-color) !important;
+  border-width: 1px !important;
+}
+
+.editar-producto-dialog .v-text-field--outlined.v-input--is-focused fieldset {
+  border-color: var(--v-primary-base) !important;
+  border-width: 2px !important;
+}
+
+/* Fondo de los inputs */
+.editar-producto-dialog .v-input__slot {
+  background-color: #FFFFFF !important;
+  margin: 0 !important;
+}
+
+/* Sobrescribir estilos del tema oscuro */
+.theme--dark .editar-producto-dialog .v-card,
+.theme--dark .editar-producto-dialog .v-card .v-card__text {
+  background-color: var(--dialog-bg) !important;
+}
+
+.theme--dark .editar-producto-dialog .v-text-field input,
+.theme--dark .editar-producto-dialog .v-text-field .v-label {
+  color: var(--text-color) !important;
+}
+
+/* Estilos para las etiquetas según las preferencias del usuario */
+.v-label {
+  color: #191043 !important;
+}
+
+.theme--dark .v-label {
+  color: #f4fafe !important;
+}
+
+/* Estilos para las cabeceras de tabla según las preferencias del usuario */
+.v-data-table-header th {
+  color: #FFFFFF !important;
+}
+
+.v-data-table-header .v-icon {
+  color: #FFFFFF !important;
+}
+
+/* Asegurar que el fondo de los inputs sea blanco */
+.v-dialog .v-card .v-card__text .v-input__slot {
+  background-color: #FFFFFF !important;
+  margin-bottom: 0 !important;
+}
+
+/* Asegurar que el texto sea visible */
+.v-dialog .v-card .v-card__text,
+.v-dialog .v-card .v-card__text .v-label,
+.v-dialog .v-card .v-card__text .v-messages {
+  color: #000000 !important;
+}
+
+/* Sobrescribir estilos del tema oscuro */
+.theme--dark .v-dialog .v-card,
+.theme--dark .v-dialog .v-card .v-card__text {
+  background-color: #f7f5f5 !important;
+}
+
+.theme--dark .v-dialog .v-card .v-card__text .v-input input,
+.theme--dark .v-dialog .v-card .v-card__text .v-input .v-label,
+.theme--dark .v-dialog .v-card .v-card__text .v-input .v-messages {
+  color: #000000 !important;
+}
+
+/* Estilos para el diálogo específico de edición */
+.v-dialog[role="dialog"] .v-card {
+  background-color: #f7f5f5 !important;
+}
+
+.v-dialog[role="dialog"] .v-card .v-card__text .v-row:nth-child(odd) {
+  background-color: #f7f5f5 !important;
+}
+
+.v-dialog[role="dialog"] .v-card .v-card__text .v-row:nth-child(even) {
+  background-color: #f4fafe !important;
+}
+
+.v-dialog[role="dialog"] .v-card .v-card__text .v-text-field--outlined fieldset {
+  border-color: #dbe1e5 !important;
+}
+
+.v-dialog[role="dialog"] .v-card .v-card__text .v-input input,
+.v-dialog[role="dialog"] .v-card .v-card__text .v-label {
+  color: #000000 !important;
+}
+
+/* Estilos específicos para el tema oscuro */
+.theme--dark .v-dialog .v-card {
+  background-color: #f7f5f5 !important;
+}
+
+.theme--dark .v-dialog .v-card .v-card__text,
+.theme--dark .v-dialog .v-card .v-card__text .v-input,
+.theme--dark .v-dialog .v-card .v-card__text .v-input input,
+.theme--dark .v-dialog .v-card .v-card__text .v-input .v-label,
+.theme--dark .v-dialog .v-card .v-card__text .v-input .v-messages,
+.theme--dark .v-dialog .v-card .v-card__text .v-input .v-icon {
+  color: #000000 !important;
+  caret-color: #000000 !important;
+}
+
+.theme--dark .v-dialog .v-card .v-card__text .v-input__slot {
+  background-color: transparent !important;
+}
+
+.theme--dark .v-dialog .v-card .v-card__text .v-text-field--outlined fieldset {
+  border-color: #dbe1e5 !important;
+}
+
+.theme--dark .v-dialog .v-card .v-card__text .v-text-field--outlined.v-input--is-focused fieldset {
+  border-color: var(--v-primary-base) !important;
+  border-width: 2px !important;
+}
+
+/* Reset de estilos de la tabla */
+.v-data-table {
+  border-collapse: collapse !important;
+  border-spacing: 0;
+  width: 100%;
+}
+
+/* Estilo para el contenedor de la tabla */
+.v-data-table__wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12);
+}
+
+/* Estilo para las celdas de la cabecera */
+.v-data-table-header th {
+  background-color: var(--v-menubar-base) !important;
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 48px !important;
+  padding: 0 16px !important;
+  border: none !important;
+  position: relative;
+}
+
+/* Estilo para las celdas del cuerpo */
+.v-data-table tbody tr {
+  background-color: #FFFFFF;
+  transition: background-color 0.2s;
+  height: 48px !important;
+}
+
+/* Filas alternadas en tema oscuro */
+.theme--dark .v-data-table tbody tr:nth-child(odd) {
+  background-color: #1E1E1E;
+}
+
+.theme--dark .v-data-table tbody tr:nth-child(even) {
+  background-color: #2D2D2D;
+}
+
+.v-data-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.theme--dark .v-data-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Estilo para las celdas */
+.v-data-table td {
+  padding: 0 16px !important;
+  height: 48px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.theme--dark .v-data-table td {
+  color: rgba(255, 255, 255, 0.87) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Eliminar borde de la última fila */
+.v-data-table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* Estilos para el campo de búsqueda */
+.search-field.v-text-field--outlined {
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #FFFFFF;
+}
+
+.theme--dark .search-field.v-text-field--outlined {
+  background-color: #2D2D2D;
+}
+
+.search-field .v-input__slot {
+  margin-bottom: 0 !important;
+  min-height: 40px !important;
+  background: transparent !important;
+}
+
+.search-field .v-input__slot input {
+  color: rgba(0, 0, 0, 0.87) !important;
+  padding: 8px 0;
+  font-size: 14px !important;
+}
+
+.theme--dark .search-field .v-input__slot input {
+  color: rgba(255, 255, 255, 0.87) !important;
+}
+
+/* Ajustar el color del label */
+.search-field .v-label {
+  color: rgba(0, 0, 0, 0.6) !important;
+  font-size: 14px !important;
+}
+
+.theme--dark .search-field .v-label {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Ajustar el color del borde */
+.search-field.v-text-field--outlined fieldset {
+  border-color: rgba(0, 0, 0, 0.23) !important;
+  transition: border-color 0.3s;
+}
+
+.theme--dark .search-field.v-text-field--outlined fieldset {
+  border-color: rgba(255, 255, 255, 0.23) !important;
+}
+
+.search-field.v-text-field--outlined.v-input--is-focused fieldset {
+  border-color: var(--v-primary-base) !important;
+  border-width: 2px !important;
+}
+
+/* Estilos para la tabla */
+.v-data-table {
+  border-collapse: separate !important;
+  border-spacing: 0;
+}
+
+.v-data-table > .v-data-table__wrapper > table > thead > tr > th,
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > td {
+  padding: 0 16px !important;
+}
+
+/* Asegurar que las celdas de la cabecera estén alineadas */
+.v-data-table-header th {
+  background-color: var(--v-menubar-base) !important;
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 48px !important;
+  vertical-align: middle !important;
+  white-space: nowrap;
+  padding: 0 16px !important;
+  border-bottom: none !important;
+}
+
+/* Estilos para el campo de búsqueda */
+.search-field.v-text-field--outlined {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.search-field.v-text-field--outlined .v-input__control,
+.search-field.v-text-field--outlined .v-input__slot {
+  min-height: 40px;
+  margin: 0;
+  background: inherit !important;
+}
+
+.search-field.v-text-field--outlined .v-input__append-inner,
+.search-field.v-text-field--outlined .v-input__prepend-inner {
+  margin-top: 8px !important;
+}
+
+/* Asegurar que el texto en los campos de búsqueda sea visible */
+.search-field .v-input__slot input {
+  color: #333333 !important;
+  padding: 8px 0;
+}
+
+/* Ajustes para el tema oscuro */
+.theme--dark .search-field .v-input__slot input {
+  color: #FFFFFF !important;
+}
+
+/* Asegurar que las celdas de la tabla tengan alineación vertical */
+.v-data-table td {
+  vertical-align: middle !important;
+  padding: 0 16px !important;
+  height: 48px !important;
+  border-bottom: thin solid rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Eliminar bordes internos de la tabla */
+.v-data-table > .v-data-table__wrapper > table > tbody > tr:not(:last-child) > td {
+  border-bottom: thin solid rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Asegurar que la tabla ocupe todo el ancho */
+.v-data-table__wrapper {
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+
+/* Ajustar el color del fondo de la tabla */
+.v-data-table {
+  background-color: transparent !important;
+}
+
+/* Estilos para la cabecera de la tabla */
+.v-data-table-header th {
+  background-color: var(--v-menubar-base) !important;
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 48px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.v-data-table-header th .v-icon {
+  color: #FFFFFF !important;
+  margin-left: 4px;
+}
+
+/* Estilos para el campo de búsqueda */
+.search-field.v-text-field--outlined {
+  background-color: white;
+  border-radius: 8px;
+}
+
+.search-field.v-text-field--outlined .v-input__control,
+.search-field.v-text-field--outlined .v-input__slot {
+  min-height: 40px;
+  margin: 0;
+}
+
+.search-field.v-text-field--outlined .v-input__append-inner,
+.search-field.v-text-field--outlined .v-input__prepend-inner {
+  margin-top: 8px !important;
+}
+
+/* Asegurar que el texto en los campos de búsqueda sea visible */
+.search-field .v-input__slot input {
+  color: #333333 !important;
+  padding: 8px 0;
+}
+
+/* Ajustes para el tema oscuro */
+.theme--dark .search-field.v-text-field--outlined {
+  background-color: var(--v-menubar-base);
+}
+
+.theme--dark .search-field .v-input__slot input {
+  color: #FFFFFF !important;
+}
+
+/* Asegurar que las celdas de la tabla tengan alineación vertical */
+.v-data-table td {
+  vertical-align: middle !important;
+}
+
+/* Estilos para la cabecera de la tabla */
+.v-data-table-header {
+  background-color: var(--v-menubar-base) !important;
+}
+
+.v-data-table-header th {
+  color: #FFFFFF !important;
+}
+
+.v-data-table-header th .v-icon {
+  color: #FFFFFF !important;
+}
+
+/* Estilos para los campos de entrada en el formulario principal */
+.v-input {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.v-input--dense > .v-input__control > .v-input__slot {
+  margin-bottom: 0 !important;
+}
+
+.v-text-field--outlined {
+  border-radius: 8px !important;
+}
+
+.v-text-field--outlined fieldset {
+  border-radius: 8px !important;
+}
+
+/* Asegurar que las etiquetas tengan el color correcto según el tema */
+.v-label {
+  color: #191043 !important;
+}
+
+.theme--dark .v-label {
+  color: #f4fafe !important;
+}
+
+/* Estilos para los checkboxes */
+.v-input--selection-controls {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.v-messages {
+  min-height: 0 !important;
+}
+
+/* Asegurar que el selector de empresa tenga bordes redondeados */
+.selector-empresa .v-select__selections {
+  border-radius: 8px !important;
+}
+
+/* Estilos para los campos de entrada en el formulario de edición */
+.v-dialog .v-text-field {
+  overflow: hidden;
+}
+
+.v-dialog .v-text-field.v-input--dense > .v-input__control > .v-input__slot {
+  min-height: 40px;
+  border-radius: 8px !important;
+}
+
+.v-dialog .v-text-field--outlined fieldset {
+  border-radius: 8px !important;
+}
+
+/* Asegurar que las etiquetas tengan el color correcto según el tema */
+.v-dialog .v-label {
+  color: #191043 !important;
+}
+
+.theme--dark .v-dialog .v-label {
+  color: #f4fafe !important;
+}
+
+/* Estilos para el diálogo */
+.v-dialog .v-card {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.v-dialog .v-card__title {
+  background-color: var(--v-primary-base);
+  color: white !important;
+}
+
+/* Asegurar que los botones tengan bordes redondeados */
+.v-dialog .v-btn {
+  border-radius: 8px !important;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Estilos para el campo de búsqueda */
+.search-field.v-text-field {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.search-field.v-text-field .v-input__slot {
+  background-color: white !important;
+  min-height: 40px !important;
+  border-radius: 8px !important;
+}
+
+/* Estilos para el campo de búsqueda en modo oscuro */
+.theme--dark .search-field.v-text-field .v-input__slot {
+  background-color: var(--v-menubar-base) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.theme--dark .search-field.v-text-field .v-label {
+  color: #f4fafe !important;
+}
+
+.theme--dark .search-field.v-text-field input {
+  color: #ffffff !important;
+}
+
+.theme--dark .search-field.v-text-field .v-icon {
+  color: #f4fafe !important;
+}
+
+/* Asegurar que el borde del campo sea consistente */
+.search-field.v-text-field--outlined fieldset {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.theme--dark .search-field.v-text-field--outlined fieldset {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
 /* Contenedor para iconos personalizados */
 .custom-icon-container {
   width: 45%;
