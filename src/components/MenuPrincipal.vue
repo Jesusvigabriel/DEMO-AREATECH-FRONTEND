@@ -2,7 +2,7 @@
   <!-- El template va envuelto en un único div raíz -->
   <div>
     <!-- ================= BARRA PRINCIPAL (DESKTOP/MOBILE) ================= -->
-    <v-app-bar v-if="estaLoggeado" app color="primary" dark dense>
+    <v-app-bar v-if="estaLoggeado" app color="primary" dark height="50" class="app-bar-custom">
       <!-- Ícono hamburguesa SOLO en mobile (<960px) -->
       <v-app-bar-nav-icon
         class="d-md-none"
@@ -15,9 +15,10 @@
           <v-img
             :src="nombreLogo"
             contain
-            width="30"
-            height="30"
+            width="40"
+            height="40"
             alt="AreaTech"
+            class="ml-2"
           />
         </v-toolbar-title>
       </router-link>
@@ -25,13 +26,14 @@
       <!-- Menús horizontales SOLO en desktop (>=960px), compactos -->
       <v-toolbar-items class="ml-4 d-none d-md-flex menu-horizontal-compacta">
         <!-- STOCK SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusStock.length > 0">
+        <v-menu offset-y v-if="ListaDeMenusStock.length > 0" v-model="menuStock">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-warehouse</v-icon>
-              STOCK
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <stock-icon class="mr-1" />
+                STOCK
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -45,13 +47,14 @@
           </v-list>
         </v-menu>
         <!-- ÓRDENES SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusOrdenes.length > 0">
+        <v-menu offset-y v-if="ListaDeMenusOrdenes.length > 0" v-model="menuOrdenes">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-checkbox-marked-outline</v-icon>
-              ÓRDENES
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <ordenes-icon class="mr-1" />
+                ÓRDENES
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -65,13 +68,14 @@
           </v-list>
         </v-menu>
         <!-- SEGUIMIENTOS SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusSeguimientos.length > 0">
+        <v-menu offset-y v-if="ListaDeMenusSeguimientos.length > 0" v-model="menuSeguimientos">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-radar</v-icon> <!-- Puedes cambiar el ícono si lo deseas -->
-              SEGUIMIENTOS
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <seguimientos-icon class="mr-1" />
+                SEGUIMIENTOS
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -84,14 +88,15 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <!-- GUÍAS SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusGuias.length > 0">
+        <!-- GUIAS SOLO SI HAY ITEMS -->
+        <v-menu offset-y v-if="ListaDeMenusGuias.length > 0" v-model="menuGuias">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-folder-outline</v-icon>
-              GUÍAS
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <guias-icon class="mr-1" />
+                GUIAS
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -105,13 +110,14 @@
           </v-list>
         </v-menu>
         <!-- INFORMES SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusInformes.length > 0">
+        <v-menu offset-y v-if="ListaDeMenusInformes.length > 0" v-model="menuInformes">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-chart-bar</v-icon>
-              INFORMES
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <informes-icon class="mr-1" />
+                INFORMES
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -125,13 +131,14 @@
           </v-list>
         </v-menu>
         <!-- EMPRESAS SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusEmpresas.length > 0">
+        <v-menu offset-y v-if="ListaDeMenusEmpresas.length > 0" v-model="menuEmpresas">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-office-building</v-icon>
-              EMPRESAS
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <empresas-icon class="mr-1" />
+                EMPRESAS
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -145,13 +152,14 @@
           </v-list>
         </v-menu>
         <!-- SEGURIDAD SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusSeguridad.length > 0">
+        <v-menu offset-y v-if="ListaDeMenusSeguridad.length > 0" v-model="menuSeguridad">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-shield-outline</v-icon>
-              SEGURIDAD
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <security-icon class="mr-1" />
+                SEGURIDAD
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -165,13 +173,14 @@
           </v-list>
         </v-menu>
         <!-- TRANSPORTES SOLO SI HAY ITEMS -->
-        <v-menu offset-y v-if="ListaDeMenusTransportes.length > 0">
+        <v-menu offset-y v-if="ListaDeMenusTransportes.length > 0" v-model="menuTransportes">
           <template #activator="{ on, attrs }">
-            <v-btn text v-bind="attrs" v-on="on">
-              <v-icon left small>mdi-truck</v-icon>
-              TRANSPORTES
-              <v-icon right small>mdi-menu-down</v-icon>
-            </v-btn>
+            <div class="menu-button-wrapper">
+              <v-btn text v-bind="attrs" v-on="on" class="menu-button">
+                <transporte-icon class="mr-1" />
+                TRANSPORTES
+              </v-btn>
+            </div>
           </template>
           <v-list>
             <v-list-item
@@ -209,24 +218,23 @@
       </div>
       <!-- =============================================================== -->
 
-      <!-- Menú usuario con logout -->
-      <v-menu offset-y>
-        <template #activator="{ on, attrs }">
-          <v-btn text v-bind="attrs" v-on="on" class="user-btn">
-            <v-icon left small>mdi-account</v-icon>
-            {{ nombreUsuario }}
-            <v-icon right small>mdi-menu-down</v-icon>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item to="/Logout" link>
-            <v-list-item-icon>
-              <v-icon>mdi-logout</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>Cerrar sesión</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+          <!-- Menú de perfil con cierre de sesión -->
+          <v-menu offset-y v-model="menuUsuario" :close-on-content-click="false">
+            <template #activator="{ on, attrs }">
+              <div class="d-flex align-center" style="cursor: pointer; height: 100%;" v-bind="attrs" v-on="on">
+                <perfil-icon class="mr-1" />
+                <span class="mr-1">{{ nombreUsuario }}</span>
+              </div>
+            </template>
+            <v-list dense>
+              <v-list-item @click="cerrarSesion" class="px-2">
+                <v-list-item-title class="d-flex align-center">
+                  <logout-icon />
+                  <span>Cerrar Sesión</span>
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
     </v-app-bar>
 
     <!-- =============== DRAWER RESPONSIVE: MOBILE ONLY =============== -->
@@ -245,36 +253,45 @@
         </v-list-item>
         <v-divider></v-divider>
         <!-- Menú lateral: acordéon, solo expande un grupo -->
-        <v-list-group
-          v-for="(grupo, i) in gruposMobile"
-          :key="grupo.titulo"
-          v-model="grupo.expanded"
-          no-action
-          @click="expandirSoloGrupo(i)" 
-        >
-          <template #activator>
-            <v-list-item-content> <!-- Envuelve el título para el click -->
-              <v-list-item-title>{{ grupo.titulo }}</v-list-item-title>
-            </v-list-item-content>
-          </template>
-          <v-list-item
-            v-for="menu in grupo.items"
-            :key="menu.ruta"
-            :to="menu.ruta"
-            link
-            @click="drawer = false"
-          >
-            <v-list-item-title class="pl-4">{{ menu.nombre }}</v-list-item-title> <!-- Añadido padding para indentar subitems -->
-          </v-list-item>
-        </v-list-group>
+        <div v-for="(grupo, i) in gruposMobile" :key="grupo.titulo" class="mobile-menu-group">
+          <div @click="expandirSoloGrupo(i)" class="menu-item">
+            <div class="menu-content">
+              <div class="menu-icon-wrapper">
+                <component 
+                  :is="getIconComponent(grupo.titulo)" 
+                  class="menu-icon"
+                  style="width: 20px; height: 20px;"
+                />
+              </div>
+              <div class="menu-text">{{ grupo.titulo }}</div>
+            </div>
+          </div>
+          
+          <v-expand-transition>
+            <div v-if="grupo.expanded" class="submenu-container">
+              <v-list-item
+                v-for="menu in grupo.items"
+                :key="menu.ruta"
+                :to="menu.ruta"
+                link
+                @click="drawer = false"
+                class="pl-8"
+              >
+                <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
+              </v-list-item>
+            </div>
+          </v-expand-transition>
+        </div>
         <v-divider></v-divider>
         <!-- Logout en el drawer -->
-        <v-list-item to="/Logout" link @click="drawer=false">
-          <v-list-item-icon>
-            <v-icon>mdi-logout</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>Cerrar sesión</v-list-item-title>
-        </v-list-item>
+        <div class="menu-item" @click="cerrarSesion">
+          <div class="menu-content">
+            <div class="menu-icon-wrapper">
+              <logout-icon style="width: 20px; height: 20px;" />
+            </div>
+            <div class="menu-text">Cerrar sesión</div>
+          </div>
+        </div>
       </v-list>
     </v-navigation-drawer>
   </div>
@@ -283,23 +300,49 @@
 <script>
 // Importa el store global de Vuex y el helper de roles
 import store from '@/store'
+import StockIcon from '@/components/icons/StockIcon.vue'
+import OrdenesIcon from '@/components/icons/OrdenesIcon.vue'
+import GuiasIcon from '@/components/icons/GuiasIcon.vue'
+import InformesIcon from '@/components/icons/InformesIcon.vue'
+import EmpresasIcon from '@/components/icons/EmpresasIcon.vue'
+import SecurityIcon from '@/components/icons/SecurityIcon.vue'
+import TransporteIcon from '@/components/icons/TransporteIcon.vue'
+import SeguimientosIcon from '@/components/icons/SeguimientosIcon.vue'
+import PerfilIcon from '@/components/icons/PerfilIcon.vue'
+import LogoutIcon from '@/components/icons/LogoutIcon.vue'
 import roles from '@/store/roles' // Asegúrate que la ruta a tu store de roles sea correcta
 
 export default {
   name: 'MenuPrincipal',
   data() {
     return {
-      drawer: false, // Controla el Drawer (mobile)
-      nombreLogo: require(`@/assets/IsoLogo_${process.env.VUE_APP_Quien_Soy}.png`),
-      // Arrays de menús por tipo
+      drawer: false,
+      group: null,
+      expanded: [],
+      menuStock: false,
+      menuOrdenes: false,
+      menuGuias: false,
+      menuInformes: false,
+      menuEmpresas: false,
+      menuSeguridad: false,
+      menuTransportes: false,
+      menuSeguimientos: false,
+      menuConfiguracion: false,
+      menuSistema: false,
+      menuAdmin: false,
+      menuUsuario: false,
       ListaDeMenusStock: [],
       ListaDeMenusOrdenes: [],
-      ListaDeMenusSeguimientos: [], // Para el nuevo menú de Seguimientos
       ListaDeMenusGuias: [],
       ListaDeMenusInformes: [],
       ListaDeMenusEmpresas: [],
       ListaDeMenusSeguridad: [],
-      ListaDeMenusTransportes: [],
+      ListaDeMenusConfiguracion: [],
+      ListaDeMenusSistema: [],
+      ListaDeMenusAdmin: [],
+      ListaDeMenus: [],
+      menu: false,
+      nombreLogo: require(`@/assets/IsoLogo_${process.env.VUE_APP_Quien_Soy}.png`),
       gruposMobile: [] // Para el Drawer mobile
     }
   },
@@ -338,6 +381,18 @@ export default {
       }
     }
   },
+  components: {
+    StockIcon,
+    OrdenesIcon,
+    GuiasIcon,
+    InformesIcon,
+    EmpresasIcon,
+    SecurityIcon,
+    TransporteIcon,
+    SeguimientosIcon,
+    PerfilIcon,
+    LogoutIcon
+  },
   methods: {
     // Cambia tema oscuro/claro y lo guarda en localStorage
     toggleTheme() {
@@ -355,6 +410,20 @@ export default {
       this.ListaDeMenusSeguridad = []
       this.ListaDeMenusTransportes = []
       this.gruposMobile = []
+    },
+    // Obtiene el componente de ícono según el título del menú
+    getIconComponent(titulo) {
+      switch(titulo) {
+        case 'STOCK': return StockIcon;
+        case 'ÓRDENES': return OrdenesIcon;
+        case 'SEGUIMIENTOS': return SeguimientosIcon;
+        case 'GUÍAS': return GuiasIcon;
+        case 'INFORMES': return InformesIcon;
+        case 'EMPRESAS': return EmpresasIcon;
+        case 'SEGURIDAD': return SecurityIcon;
+        case 'TRANSPORTES': return TransporteIcon;
+        default: return null;
+      }
     },
     // Trae menús y los agrupa según el "modulo"
     async cargarYAgruparMenus() { // Convertido a async
@@ -443,6 +512,20 @@ export default {
           grupo.expanded = false;
         }
       });
+    },
+    
+    async cerrarSesion() {
+      try {
+        // Cerrar sesión en el store de Vuex
+        await store.dispatch('usuarios/cerrarSesion');
+        // Redirigir a la página de login
+        this.$router.push('/login');
+      } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+      } finally {
+        // Cerrar el menú de usuario
+        this.menuUsuario = false;
+      }
     }
   },
   mounted() {
@@ -459,6 +542,44 @@ export default {
 </script>
 
 <style scoped>
+.menu-button-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.menu-button {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Estilo para el menú activo */
+.v-menu__content {
+  margin-top: 0;
+  box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2), 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12);
+}
+
+/* Estilo para los ítems del menú */
+.v-list-item {
+  min-height: 40px;
+}
+
+.v-list-item__title {
+  font-size: 14px;
+  font-weight: 500;
+}
 .logo-container {
   cursor: pointer;
   margin-left: 0 !important;
@@ -472,11 +593,20 @@ export default {
 /* Barra horizontal súper compacta: nunca hace overflow, los botones se achican */
 .menu-horizontal-compacta {
   display: flex !important;
-  flex-wrap: nowrap !important; /* mantiene todos los elementos en una sola línea */
-  overflow-x: hidden !important; /* se elimina la barra de desplazamiento */
-  gap: 1px !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  gap: 2px !important;
   align-items: center;
   max-width: 100%;
+  height: 100%;
+  padding: 0 10px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.menu-horizontal-compacta::-webkit-scrollbar {
+  display: none;
 }
 .menu-horizontal-compacta > * {
   flex-shrink: 1 !important; /* permite cierto ajuste del ancho de los botones */
@@ -500,31 +630,172 @@ export default {
   font-size: 13px !important;
   font-family: 'DM Sans', sans-serif;
   letter-spacing: 0;
-  line-height: 1.1;
-  padding-left: 0 !important;
-}
-/* Estilos para los títulos de menú */
-.v-list-item-title {
-  font-size: 13px !important;
-  font-weight: 500 !important; /* Medium weight */
-  padding: 0 2px !important;
+  line-height: 1.2;
+  padding: 0 8px !important;
+  height: 50px !important;
 }
 
-/* Asegurar que los títulos de los submenús tengan el mismo peso */
+.app-bar-custom {
+  box-shadow: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12) !important;
+}
+/* Estilos consistentes para todos los ítems de menú */
+.v-list-item__title,
+.v-list-item .v-list-item__title,
 .v-list-group .v-list-item .v-list-item__title,
 .v-list-group--active .v-list-item .v-list-item__title,
 .v-list-group--active .v-list-item--active .v-list-item__title,
 .v-list-group__items .v-list-item .v-list-item__title,
 .v-list-group__items .v-list-item--active .v-list-item__title,
 .v-list-group--sub-group .v-list-item .v-list-item__title {
-  font-weight: 500 !important; /* Medium weight */
+  font-size: 13px !important;
+  font-weight: 500 !important; /* Mismo peso para todo */
   font-family: 'DM Sans', sans-serif !important;
+  padding: 0 2px !important;
+}
+
+/* Estilos para el tema oscuro */
+.theme--dark .v-app-bar.v-toolbar.v-sheet {
+  background-color: var(--v-menubar-base) !important;
+}
+
+/* Asegurar que las flechas de los menús desplegables sean visibles */
+.v-menu__content .v-list-item__icon {
+  margin-right: 12px !important;
+  margin-left: 0 !important;
+}
+
+.v-list-item {
+  min-height: 40px !important;
+}
+
+.v-list-item__title {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+}
+
+.submenu-container {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.v-list-item {
+  min-height: 40px !important;
+  padding: 0 16px !important;
+}
+
+.v-list-item__content {
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* Estilos para el menú móvil */
+.mobile-menu-group {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.mobile-menu-group:last-child {
+  border-bottom: none;
+}
+
+.menu-item {
+  min-height: 48px;
+  margin: 0;
+  padding: 0 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.menu-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.menu-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  width: 24px;
+  height: 24px;
+}
+
+.menu-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.menu-text {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.v-menu__content .v-list-item__icon .v-icon {
+  color: inherit !important;
+}
+
+/* Asegurar que los iconos en los botones del menú sean visibles */
+.v-toolbar .v-btn .v-icon {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* Asegurar que las flechas de los menús sean visibles */
+.v-menu__activator .v-icon {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* Estilo específico para las flechas de menú */
+.v-menu__activator .v-icon--right {
+  margin-left: 4px !important;
+  font-size: 20px !important;
+}
+
+/* Asegurar que los iconos dentro de los botones del menú tengan el tamaño correcto */
+.v-toolbar .v-btn .v-icon {
+  font-size: 20px !important;
+}
+
+/* Asegurar que los iconos personalizados en los botones tengan el tamaño correcto */
+.v-toolbar .v-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 /* Estilos para la barra de menú superior */
 .v-toolbar__content .v-btn {
-  font-weight: 500 !important; /* Medium weight */
+  font-weight: 500 !important;
   letter-spacing: 0.5px;
+  font-family: 'DM Sans', sans-serif !important;
+  text-transform: none !important;
+}
+
+/* Asegurar consistencia en los botones de menú */
+.v-btn {
+  font-weight: 500 !important;
+  letter-spacing: 0.5px;
+  font-family: 'DM Sans', sans-serif !important;
 }
 
 /* Menú horizontal solo visible en desktop >= 960px */

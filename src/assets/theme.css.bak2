@@ -53,9 +53,9 @@
 
   /* Colores para tarjetas de stock - Tema Claro */
   --stock-total: #4faeed;          /* Azul celeste para stock total */
-  --stock-posicionado: #0db222;     /* Verde para stock posicionado */
+  --stock-posicionado: #0eb222;     /* Verde para stock posicionado */
   --stock-sin-posicionar: #db8017;  /* Naranja para stock sin posicionar */
-  --stock-comprometido: #ad0f00;    /* Rojo para stock comprometido */
+  --stock-comprometido: #ad1602;    /* Rojo para stock comprometido */
   --stock-text: #f1fafd;  /* Color de texto para las tarjetas - Azul claro */            /* Color de texto para las tarjetas */
 }
 
@@ -75,9 +75,9 @@
   
   /* Colores para tarjetas de stock - Tema Oscuro */
   --stock-total: #4faeed;          /* Azul celeste para stock total */
-  --stock-posicionado: #0db222;     /* Verde para stock posicionado */
+  --stock-posicionado: #0eb222;     /* Verde para stock posicionado */
   --stock-sin-posicionar: #db8017;  /* Naranja para stock sin posicionar */
-  --stock-comprometido: #ad0f00;    /* Rojo para stock comprometido */
+  --stock-comprometido: #ad1602;    /* Rojo para stock comprometido */
   --stock-text: #f1fafd;  /* Color de texto para las tarjetas - Azul claro */            /* Color de texto para las tarjetas */
 
   /* Ajustes de tablas y formularios en oscuro */

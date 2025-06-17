@@ -45,27 +45,74 @@
     cols="12" sm="6" md="3"
     class="pa-2"
   >
-    <v-card outlined tile class="d-flex flex-column cursor-pointer" @click="seleccionarCategoria(card.categoria)">
+    <v-card 
+      outlined 
+      tile 
+      class="d-flex flex-column cursor-pointer" 
+      @click="seleccionarCategoria(card.categoria)"
+      :style="{ '--card-color': card.color, '--card-text-color': card.textColor }"
+    >
       <!-- Mitad superior: usa v-sheet para el color de tema-->
       <v-sheet
-        :color="card.color"
+        :style="{ 'background-color': card.color }"
         dark
         height="120"
         class="d-flex align-center justify-center"
       >
-        <v-icon x-large>{{ card.icon }}</v-icon>
+        <template v-if="card.categoria === 'comprometido'">
+          <div class="custom-icon-container">
+            <img 
+              :src="require('@/assets/icons/comprometido.svg')" 
+              :alt="card.label"
+              class="custom-icon"
+            />
+          </div>
+        </template>
+        <template v-else-if="card.categoria === 'posicionado'">
+          <div class="custom-icon-container">
+            <img 
+              :src="require('@/assets/icons/posicionado.svg')" 
+              :alt="card.label"
+              class="custom-icon"
+            />
+          </div>
+        </template>
+        <template v-else-if="card.categoria === 'sinPosicionar'">
+          <div class="custom-icon-container">
+            <img 
+              :src="require('@/assets/icons/sin-posicionar.svg')" 
+              :alt="card.label"
+              class="custom-icon"
+            />
+          </div>
+        </template>
+        <template v-else-if="card.categoria === 'total'">
+          <div class="custom-icon-container">
+            <img 
+              :src="require('@/assets/icons/stock-total.svg')" 
+              :alt="card.label"
+              class="custom-icon"
+            />
+          </div>
+        </template>
+        <v-icon v-else x-large :style="{ color: card.textColor }">{{ card.icon }}</v-icon>
       </v-sheet>
 
       <!-- Mitad inferior: fondo blanco + texto en color -->
       <v-card-text class="text-center py-4" style="flex: 1;">
-        <div class="text-subtitle-2" :style="{ color: $vuetify.theme.themes.light[card.color] || card.color }">
+        <div class="text-subtitle-2" :style="{ color: card.color }">
           {{ card.label }}
         </div>
-        <div class="text-h5 font-weight-bold" :style="{ color: $vuetify.theme.themes.light[card.color] || card.color }">
+        <div class="text-h5 font-weight-bold" :style="{ color: card.color }">
           {{ card.value.toLocaleString('es-AR') }}
         </div>
-        <v-btn icon small @click.stop="card.download">
-          <v-icon>mdi-download</v-icon>
+        <v-btn 
+          icon 
+          small 
+          @click.stop="card.download"
+          :style="{ color: card.color }"
+        >
+          <excel-icon style="width: 20px; height: 20px;" />
         </v-btn>
       </v-card-text>
     </v-card>
@@ -302,7 +349,10 @@
 <script>
 
 import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
+import { mapState } from 'vuex'
 import store from '@/store'
+import ComprometidoIcon from '@/components/icons/ComprometidoIcon.vue'
+import ExcelIcon from '@/components/icons/ExcelIcon.vue'
 import productos from '@/store/productos'
 import posiciones from '@/store/posiciones'
 import posicionesV3 from '@/store/posicionesV3'
@@ -1480,42 +1530,43 @@ export default {
     this.stockComprometido = this.listaArticulosCompleta
       .reduce((sum, p) => sum + Number(p.StockComprometido || 0), 0)
 
-    // 4) Construimos el array de tarjetas
-    const pctPos  = this.stockPosicionado  / (this.stockTotal   || 1)
-    const pctComp = this.stockComprometido / (this.stockTotal   || 1)
-
+    // 4) Actualizamos las tarjetas con los colores personalizados
     this.cards = [
       {
         label: 'Stock total',
         value: this.stockTotal,
-        color: 'primary',              // clave de tu tema
-        icon:  'mdi-package-variant',  // icono MDI
+        color: 'var(--stock-total)',  // Usando variable CSS
+        icon: 'mdi-package-variant',
         categoria: 'total',
-        download: this.descargarStockTotal
+        download: this.descargarStockTotal,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       },
       {
         label: 'Posicionado',
         value: this.stockPosicionado,
-        color: pctPos < 0.5 ? 'orange' : 'green',
-        icon:  'mdi-warehouse',
+        color: 'var(--stock-posicionado)',  // Usando variable CSS
+        icon: 'mdi-warehouse',
         categoria: 'posicionado',
-        download: this.descargarStockPosicionado
+        download: this.descargarStockPosicionado,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       },
       {
         label: 'Sin posicionar',
         value: this.stockSinPosicionar,
-        color: this.stockSinPosicionar > 1000 ? 'orange' : 'green',
-        icon:  'mdi-package-variant-closed',
+        color: 'var(--stock-sin-posicionar)',  // Usando variable CSS
+        icon: 'mdi-package-variant-closed',
         categoria: 'sinPosicionar',
-        download: this.descargarStockSinPosicionar
+        download: this.descargarStockSinPosicionar,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       },
       {
         label: 'Comprometido',
         value: this.stockComprometido,
-        color: this.stockComprometido > 0 ? 'red' : 'primary',
-        icon:  'mdi-handshake-outline',
+        color: 'var(--stock-comprometido)',  // Usando variable CSS
+        icon: 'mdi-handshake-outline',
         categoria: 'comprometido',
-        download: this.descargarStockComprometido
+        download: this.descargarStockComprometido,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       }
     ]
   },
@@ -1527,41 +1578,42 @@ export default {
     this.stockSinPosicionar = Number(res.StockSinPosicionar || 0)
     this.stockComprometido  = Number(res.StockComprometido  || 0)
 
-    const pctPos  = this.stockPosicionado  / (this.stockTotal || 1)
-    const pctComp = this.stockComprometido / (this.stockTotal || 1)
-
     this.cards = [
       {
         label: 'Stock total',
         value: this.stockTotal,
-        color: 'primary',
+        color: 'var(--stock-total)',  // Usando variable CSS
         icon: 'mdi-package-variant',
         categoria: 'total',
-        download: this.descargarStockTotal
+        download: this.descargarStockTotal,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       },
       {
         label: 'Posicionado',
         value: this.stockPosicionado,
-        color: pctPos < 0.5 ? 'orange' : 'green',
+        color: 'var(--stock-posicionado)',  // Usando variable CSS
         icon: 'mdi-warehouse',
         categoria: 'posicionado',
-        download: this.descargarStockPosicionado
+        download: this.descargarStockPosicionado,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       },
       {
         label: 'Sin posicionar',
         value: this.stockSinPosicionar,
-        color: this.stockSinPosicionar > 1000 ? 'orange' : 'green',
+        color: 'var(--stock-sin-posicionar)',  // Usando variable CSS
         icon: 'mdi-package-variant-closed',
         categoria: 'sinPosicionar',
-        download: this.descargarStockSinPosicionar
+        download: this.descargarStockSinPosicionar,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       },
       {
         label: 'Comprometido',
         value: this.stockComprometido,
-        color: pctComp > 0 ? 'red' : 'primary',
+        color: 'var(--stock-comprometido)',  // Usando variable CSS
         icon: 'mdi-handshake-outline',
         categoria: 'comprometido',
-        download: this.descargarStockComprometido
+        download: this.descargarStockComprometido,
+        textColor: 'var(--stock-text)'  // Color de texto para la tarjeta
       }
     ]
   },
@@ -1751,7 +1803,9 @@ export default {
     },
 
     components: {
-        SelectorEmpresa
+        SelectorEmpresa,
+        ComprometidoIcon,
+        ExcelIcon
     },
 
     created() {
@@ -1767,3 +1821,44 @@ export default {
 
 }
 </script>
+
+<style scoped>
+/* Contenedor para iconos personalizados */
+.custom-icon-container {
+  width: 45%;
+  height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.custom-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Se eliminó el filtro para mostrar los colores originales del SVG */
+}
+
+/* Estilos para los títulos de las tarjetas */
+.v-card__title {
+  color: #d8ecfa !important; /* Color azul claro para las cabeceras */
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* Estilo específico para el campo de búsqueda */
+.search-field .v-input__slot {
+  background-color: #fff !important;
+}
+
+/* Asegurar que el texto del placeholder sea visible */
+.search-field .v-label {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Cambiar el color del ícono de búsqueda */
+.search-field .v-icon {
+  color: var(--v-primary-base) !important;
+}
+</style>

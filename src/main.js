@@ -4,6 +4,8 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import axios from 'axios'
+
+// Importar estilos globales
 import './assets/global.css'
 import './assets/theme.css'
 // import VueConfirmDialog from 'vue-confirm-dialog'
@@ -15,7 +17,9 @@ import './assets/theme.css'
 import LSIUtil from 'vue-lsi-util'
 Vue.use(LSIUtil)
 
+// Configuración global de Vuetify
 Vue.config.productionTip = false
+Vue.config.devtools = process.env.NODE_ENV === 'development'
 
 // Configuración global de Axios usando la variable limpia
 const apiUrl = process.env.VUE_APP_API_URL

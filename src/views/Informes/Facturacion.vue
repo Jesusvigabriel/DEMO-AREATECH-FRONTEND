@@ -21,7 +21,7 @@
           <v-btn @click="obtenerInformacion()" color="success" block>Obtener información<v-icon>mdi-refresh</v-icon></v-btn>
       </v-col>
       <v-col class="py-0" cols="3" >
-          <v-btn @click="exportarAExcel()" color="success" block>Exportar a Excel<v-icon>mdi-microsoft-excel</v-icon></v-btn>
+          <v-btn @click="exportarAExcel()" color="success" block>Exportar a Excel<excel-icon style="width: 20px; height: 20px; margin-left: 8px;" /></v-btn>
       </v-col>
     </v-row> 
     <!-- Distribucion -->
@@ -453,7 +453,6 @@ import {
   ArcElement,
 } from 'chart.js'
 
-
 import { Bar } from 'vue-chartjs/legacy'
 import store from "../../store"
 import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
@@ -465,15 +464,16 @@ import excel from "exceljs"
 import {saveAs} from "file-saver"
 import cadenas from 'vue-lsi-util/cadenas'
 
+import { ExcelIcon } from '@/components/icons'
 
 ChartJS.register(Title,Tooltip,Legend,LineElement,LinearScale,CategoryScale,PointElement,ArcElement,BarElement)
-
 
 export default {
   name: "Informes_InformesFacturacion",
 
-  components:{
-      SelectorEmpresa, Bar, LineChartGenerator, Doughnut
+  components: {
+    ExcelIcon,
+    SelectorEmpresa, Bar, LineChartGenerator, Doughnut
   },
 
   props: {

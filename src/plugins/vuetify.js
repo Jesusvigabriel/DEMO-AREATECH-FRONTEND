@@ -7,9 +7,19 @@
 import Vue from 'vue'
 import Vuetify from 'vuetify/lib'
 
-Vue.use(Vuetify)
+// Importar estilos de iconos
+import '@mdi/font/css/materialdesignicons.min.css'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
+
+Vue.use(Vuetify, {
+  iconfont: 'mdi' // Usar iconos de Material Design Icons
+})
 
 export default new Vuetify({
+  icons: {
+    iconfont: 'mdi', // Asegurar que se use MDI
+    values: {}
+  },
   theme: {
     dark: false, // Arranca en modo claro. Se puede cambiar por código o por UI
     themes: {
@@ -52,7 +62,14 @@ export default new Vuetify({
   },
   defaultAssets: {
     font: {
-      family: 'DM Sans'
-    }
-  }
+      family: 'DM Sans',
+      display: 'swap' // Mejora la carga de fuentes
+    },
+    icons: 'mdi' // Asegura que se cargue el paquete de iconos MDI
+  },
+  iconfont: 'mdi',
+  icons: {
+    iconfont: 'mdi',
+    values: {}
+  },
 })
