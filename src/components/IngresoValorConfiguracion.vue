@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card>
+    <v-card class="rounded-card">
       <v-card-title class="py-0 my-2">
         {{titulo}}
       </v-card-title>

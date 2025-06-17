@@ -42,7 +42,7 @@
          <!-- Dialog-->
          <v-row justify="center">
             <v-dialog v-model="rolDialog" persistent max-width="600px">
-                <v-card>
+                <v-card class="rounded-card">
                     <v-card-title>
                         <span class="text-h5">Administracion de Roles</span>
                     </v-card-title>

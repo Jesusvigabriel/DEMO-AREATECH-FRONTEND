@@ -173,7 +173,7 @@
 
       <!-- MODAL DETALLE DE ARTÍCULOS DE LA POSICIÓN -->
       <v-dialog v-model="showModal" max-width="900px">
-        <v-card>
+        <v-card class="rounded-card">
           <v-card-title class="text-h6">
             Productos en posición: <b>{{ posicionDetalle?.Nombre }}</b>
           </v-card-title>

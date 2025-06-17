@@ -93,7 +93,7 @@
             persistent
             max-width="800px"
         >
-        <v-card>
+        <v-card class="rounded-card">
             <v-card-title>
                 <span v-if="modoEdicion==='E'" class="text-h5">Producto: {{itemEnEdicion.Id}} - Barcode: {{itemEnEdicion.Barcode}}</span>
                 <span v-else class="text-h5">Creación de nuevo producto</span>
@@ -103,51 +103,51 @@
                     <v-container>
                         <v-row>
                             <v-col>
-                                <v-text-field :disabled="empresaLoggeada()>0" label="Nombre" :rules="[v => !!v || 'Requerido']" v-model="itemEnEdicion.Nombre"></v-text-field>
+                                <v-text-field class="rounded-input" :disabled="empresaLoggeada()>0" label="Nombre" :rules="[v => !!v || 'Requerido']" v-model="itemEnEdicion.Nombre"></v-text-field>
                             </v-col>
                             <v-col>
-                                <v-text-field :disabled="empresaLoggeada()>0" label="CodeEmpresa" :rules="[v => !!v || 'Requerido']" v-model="itemEnEdicion.CodeEmpresa"></v-text-field>
+                                <v-text-field class="rounded-input" :disabled="empresaLoggeada()>0" label="CodeEmpresa" :rules="[v => !!v || 'Requerido']" v-model="itemEnEdicion.CodeEmpresa"></v-text-field>
                             </v-col>
                             <v-col v-if="modoEdicion==='N'" >
-                                <v-text-field :disabled="empresaLoggeada()>0" label="Barcode" :rules="[v => !!v || 'Requerido']" v-model="itemEnEdicion.Barcode"></v-text-field>
+                                <v-text-field class="rounded-input" :disabled="empresaLoggeada()>0" label="Barcode" :rules="[v => !!v || 'Requerido']" v-model="itemEnEdicion.Barcode"></v-text-field>
                             </v-col>
                         </v-row>
                         <v-row v-if="!this.textil">
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Ancho" required v-model="itemEnEdicion.Ancho"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Ancho" required v-model="itemEnEdicion.Ancho"></v-text-field>
                             </v-col>
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
                             </v-col>
                         </v-row>
                         <v-row v-if="!this.textil">
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Largo" required v-model="itemEnEdicion.Largo"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Largo" required v-model="itemEnEdicion.Largo"></v-text-field>
                             </v-col>
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Peso" required v-model="itemEnEdicion.Peso"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Peso" required v-model="itemEnEdicion.Peso"></v-text-field>
                             </v-col>
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Precio" required v-model="itemEnEdicion.Precio"></v-text-field>
-                            </v-col>
-                        </v-row>
-                        <v-row v-if="this.textil">
-                            <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Metros" required v-model="itemEnEdicion.Ancho"></v-text-field>
-                            </v-col>
-                            <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Precio" required v-model="itemEnEdicion.Precio"></v-text-field>
                             </v-col>
                         </v-row>
                         <v-row v-if="this.textil">
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Ancho" required v-model="itemEnEdicion.Largo"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Metros" required v-model="itemEnEdicion.Ancho"></v-text-field>
                             </v-col>
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Peso" required v-model="itemEnEdicion.Peso"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Alto" required v-model="itemEnEdicion.Alto"></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-row v-if="this.textil">
+                            <v-col>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Ancho" required v-model="itemEnEdicion.Largo"></v-text-field>
                             </v-col>
                             <v-col>
-                                <v-text-field type="number" :disabled="empresaLoggeada()>0" label="Calidad" required v-model="itemEnEdicion.Precio"></v-text-field>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Peso" required v-model="itemEnEdicion.Peso"></v-text-field>
+                            </v-col>
+                            <v-col>
+                                <v-text-field class="rounded-input" type="number" :disabled="empresaLoggeada()>0" label="Calidad" required v-model="itemEnEdicion.Precio"></v-text-field>
                             </v-col>
                         </v-row>
                     </v-container>
