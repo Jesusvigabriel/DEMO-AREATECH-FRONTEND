@@ -130,7 +130,7 @@
                         hide-details
                         class="search-field"
                         :class="{ 'dark-search': $vuetify.theme.dark }"
-                        :background-color="$vuetify.theme.dark ? 'surface' : 'white'"
+                        
                         outlined
                     ></v-text-field>
                 </v-card-title>

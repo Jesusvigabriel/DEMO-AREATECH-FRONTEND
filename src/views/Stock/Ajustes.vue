@@ -264,6 +264,7 @@
                         single-line
                         dense
                         hide-details
+                        outlined
                     ></v-text-field>
                     </v-card-title>
                 

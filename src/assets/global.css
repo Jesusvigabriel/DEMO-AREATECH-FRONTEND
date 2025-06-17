@@ -72,9 +72,34 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* Acomoda el texto y la flecha de orden en columna */
+.v-data-table-header th .v-data-table-header__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Reserva espacio para la flecha y mantenla siempre oculta */
+.v-data-table-header th .v-icon {
+  min-height: 20px;
+  margin-bottom: 2px;
+  opacity: 0 !important;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+/* Nunca mostrar la flecha, ni en hover ni activa */
+.v-data-table-header th.sortable .v-icon,
+.v-data-table-header th .v-icon.v-icon--active {
+  opacity: 0 !important;
+}
+
 /* Asegurar que los íconos en las cabeceras hereden el color */
-.v-data-table-header th i {
+.v-data-table-header th {
   color: #FFFFFF !important;
+  position: relative;
+  vertical-align: top;
+  padding-top: 22px !important; /* Ajusta si necesitas más espacio arriba */
 }
 
 /* Campos de entrada con bordes redondeados */
@@ -176,6 +201,11 @@ table tbody tr:nth-child(3n) {
   border-right: 1px solid #dbe1e5;
 }
 
+.v-data-table,
+table {
+  border-radius: 8px;
+  overflow: hidden;
+}
 .theme--dark .v-data-table,
 .theme--dark table {
   border-radius: 8px;
@@ -228,8 +258,42 @@ h6 {
   background-color: var(--v-menubar-base);
   color: #fff;
 }
-.search-field .v-input__slot { background-color: var(--search-field-bg); color: #000; }
-.theme--dark .search-field .v-input__slot { background-color: var(--search-field-bg); color: #000; }
+.search-field .v-input__slot {
+  background-color: #232326 !important;
+  border-radius: 8px !important;
+  color: #f4fafe !important;
+  box-shadow: none !important;
+  border: none !important;
+  min-height: 44px;
+}
+.theme--dark .search-field .v-input__slot {
+  background-color: #232326 !important;
+  color: #f4fafe !important;
+}
+.theme--light .search-field .v-input__slot {
+  background-color: #fff !important;
+  color: #191043 !important;
+}
+.search-field input {
+  color: #f4fafe !important;
+}
+.theme--light .search-field input {
+  color: #191043 !important;
+}
+.search-field .v-input__prepend-outer,
+.search-field .v-input__append-inner {
+  color: #f4fafe !important;
+}
+.theme--dark .search-field .v-input__slot { 
+  border-radius: 8px !important;
+  background-color: var(--v-background-surface) !important;
+  color: #fff !important;
+}
+.theme--light .search-field .v-input__slot { 
+  border-radius: 8px !important;
+  background-color: #fff !important;
+  color: #191043 !important;
+}
 
 /* Standardized button style for actions */
 .action-button { background-color: var(--action-button-bg); color: var(--action-button-text); }

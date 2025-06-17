@@ -3,7 +3,7 @@
 
     <!-- TÍTULO -->
     <v-btn icon class="mb-2" @click="$router.back()">
-      <v-icon>mdi-arrow-left</v-icon>
+      <v-icon class="icono-atras-negro">mdi-arrow-left</v-icon>
     </v-btn>
     <h2 class="remito-titulo">ORDEN DE SALIDA</h2>
 
@@ -105,6 +105,8 @@
 </template>
 
 <script>
+import atrasIcono from '@/assets/icons/atrasicono.svg'
+
 import ordenesV3 from '@/store/ordenesV3'
 import ordenes from '@/store/ordenes'
 import store from '@/store'
@@ -272,6 +274,10 @@ export default {
 </script>
 
 <style scoped>
+.icono-atras-negro {
+  color: #191919 !important;
+}
+
 .remito-container {
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
