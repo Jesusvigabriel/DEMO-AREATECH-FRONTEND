@@ -87,7 +87,7 @@
       <v-row>
         <v-col cols="12">
           <v-card elevation="2">
-            <v-tabs v-model="tab" background-color="grey lighten-4" color="primary" show-arrows>
+            <v-tabs v-model="tab" :style="{ 'background-color': 'var(--surface)' }" show-arrows>
               <v-tab href="#tab-ordenes">
                 Órdenes
               </v-tab>

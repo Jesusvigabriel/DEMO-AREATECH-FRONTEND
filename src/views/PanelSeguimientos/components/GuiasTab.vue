@@ -43,6 +43,7 @@
             dense
             outlined
             clearable
+            class="search-field"
           />
         </v-col>
 
