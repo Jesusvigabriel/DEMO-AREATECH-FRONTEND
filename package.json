@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.6",
-    "@mdi/font": "^7.4.47",
     "@mdi/js": "^7.4.47",
     "aws-s3": "^2.0.5",
     "aws-sdk": "^2.1105.0",
@@ -45,6 +44,7 @@
     "xlsx": "^0.16.9"
   },
   "devDependencies": {
+    "@mdi/font": "^7.4.47",
     "@vue/cli-plugin-babel": "~4.4.0",
     "@vue/cli-plugin-e2e-cypress": "^4.5.4",
     "@vue/cli-plugin-router": "~4.4.0",

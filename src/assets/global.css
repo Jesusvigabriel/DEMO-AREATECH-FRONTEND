@@ -8,9 +8,6 @@ html, body {
 }
 
 /* Heredar la fuente y peso en todos los elementos */
-*, 
-*:before, 
-*:after,
 .v-application,
 .v-application .display-4,
 .v-application .display-3,
