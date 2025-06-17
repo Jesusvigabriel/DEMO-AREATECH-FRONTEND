@@ -20,6 +20,14 @@ module.exports = {
           {
             from: path.resolve(__dirname, 'node_modules/@fontsource/dm-sans/files/dm-sans-latin-700-normal.woff2'),
             to: path.resolve(__dirname, 'public/fonts/DMSans-Bold.woff2')
+          },
+          {
+            from: path.resolve(__dirname, 'node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2'),
+            to: path.resolve(__dirname, 'public/fonts/materialdesignicons-webfont.woff2')
+          },
+          {
+            from: path.resolve(__dirname, 'node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff'),
+            to: path.resolve(__dirname, 'public/fonts/materialdesignicons-webfont.woff')
           }
         ]
       })
