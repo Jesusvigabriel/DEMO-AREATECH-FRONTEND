@@ -11,7 +11,7 @@
             </v-col>           
         </v-row>
         <v-row v-show="listaArticulosMostrar.length>0" class="pb-0 mb-0">
-            <v-btn @click="ajusteMasivo(listaArticulosMostrar)" color="success">Generar Ingreso/Egreso Masivo</v-btn>
+            <v-btn @click="ajusteMasivo(listaArticulosMostrar)" class="action-button">Generar Ingreso/Egreso Masivo</v-btn>
         </v-row>
         <v-row v-show="listaArticulosMostrar.length>0" class="pb-0 mb-0">
             <v-col class="py-0 my-0"  >
@@ -128,14 +128,14 @@
                                 <v-card-actions>
                                 <v-spacer></v-spacer>
                                         <v-btn
-                                            color="blue darken-1"
+                                            class="action-button"
                                             text
                                             @click="resetValue('Ingreso')"
                                         >
                                             Cerrar
                                         </v-btn>
                                         <v-btn
-                                            color="blue darken-1"
+                                            class="action-button"
                                             text
                                             @click="updateStockProd(comprobante,unidades,'Ingreso')"
                                         >
@@ -202,14 +202,14 @@
                                 <v-card-actions>
                                 <v-spacer></v-spacer>
                                         <v-btn
-                                            color="blue darken-1"
+                                            class="action-button"
                                             text
                                             @click="resetValue('Egreso')"
                                         >
                                             Cerrar
                                         </v-btn>
                                         <v-btn
-                                            color="blue darken-1"
+                                            class="action-button"
                                             text
                                             @click="updateStockProd(comprobante,unidades,'Egreso')"
                                         >
@@ -326,14 +326,14 @@
                 <v-card-actions>
                      <v-spacer></v-spacer>
                                         <v-btn
-                                            color="blue darken-1"
+                                            class="action-button"
                                             text
                                             @click="resetValue('Ingreso')"
                                         >
                                             Cerrar
                                         </v-btn>
                                         <v-btn
-                                            color="blue darken-1"
+                                            class="action-button"
                                             text
                                             @click="validateAjusteMasivo()"
                                         >

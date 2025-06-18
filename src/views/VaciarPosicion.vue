@@ -53,17 +53,16 @@
         </v-col>
         <v-col cols="12" md="8" class="d-flex align-end justify-end flex-wrap">
           <!-- Seleccionar todas las posiciones visibles -->
-          <v-btn class="boton-normalizado" @click="seleccionarTodas" small outlined :disabled="productosSeleccionadosGlobal.length > 0">
+          <v-btn class="boton-normalizado action-button" @click="seleccionarTodas" small outlined :disabled="productosSeleccionadosGlobal.length > 0">
             Seleccionar todas
           </v-btn>
           <!-- Exportar a Excel -->
-          <v-btn class="boton-normalizado mx-2" color="success" @click="exportarExcel" large>
+          <v-btn class="boton-normalizado mx-2 action-button" @click="exportarExcel" large>
             EXPORTAR A EXCEL <v-icon right>mdi-microsoft-excel</v-icon>
           </v-btn>
           <!-- Vaciar todas las posiciones seleccionadas -->
           <v-btn
-            class="boton-normalizado ml-2"
-            color="red"
+            class="boton-normalizado ml-2 action-button"
             :disabled="seleccionadas.length === 0 || productosSeleccionadosGlobal.length > 0"
             @click="vaciarSeleccionadas"
           >
@@ -149,8 +148,7 @@
             </v-list>
             <!-- Botón: Ejecutar desposicionamiento de todos los seleccionados -->
             <v-btn
-              color="red"
-              class="boton-normalizado mt-3"
+              class="boton-normalizado mt-3 action-button"
               :disabled="productosSeleccionadosGlobal.length === 0"
               @click="vaciarProductosSeleccionados"
               block
@@ -159,9 +157,8 @@
             </v-btn>
             <!-- Cancelar selección de productos -->
             <v-btn
-              class="boton-normalizado mt-3"
+              class="boton-normalizado mt-3 action-button"
               @click="limpiarSeleccionProductos"
-              color="grey"
               outlined
               block
             >
@@ -216,8 +213,7 @@
           <v-card-actions>
             <!-- Agregar a la selección global para desposicionar -->
             <v-btn
-              class="boton-normalizado"
-              color="blue"
+              class="boton-normalizado action-button"
               :disabled="productosSeleccionadosModal.length === 0"
               @click="agregarSeleccionadosGlobal"
             >
