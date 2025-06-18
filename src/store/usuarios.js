@@ -42,7 +42,7 @@ const usuarios = {
             sessionStorage.removeItem("usuarioNombre")
             sessionStorage.removeItem("usuarioId")
             sessionStorage.removeItem("idEmpresa")
-            router.push("/")
+            router.push("/Login")
         },
         async loginWithGoogle({ commit }, token) {
             store.dispatch('loading/mostrar', {titulo: 'Verificando con Google'})
