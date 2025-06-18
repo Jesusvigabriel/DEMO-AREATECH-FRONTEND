@@ -2178,7 +2178,7 @@ export default {
 }
 
 .theme--dark .search-field.v-text-field--outlined {
-  background-color: #d9d9d9;
+  background-color: var(--search-field-bg);
 }
 
 .search-field .v-input__slot {
@@ -2344,7 +2344,7 @@ export default {
 
 /* Ajustes para el tema oscuro */
 .theme--dark .search-field.v-text-field--outlined {
-  background-color: #d9d9d9;
+  background-color: var(--search-field-bg);
 }
 
 .theme--dark .search-field .v-input__slot input {
@@ -2466,7 +2466,7 @@ export default {
 
 /* Estilos para el campo de búsqueda en modo oscuro */
 .theme--dark .search-field.v-text-field .v-input__slot {
-  background-color: #d9d9d9 !important;
+  background-color: var(--search-field-bg) !important;
   color: #212124 !important;
   border: 1px solid rgba(33, 33, 36, 0.2) !important;
 }

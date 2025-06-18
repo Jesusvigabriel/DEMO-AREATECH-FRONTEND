@@ -284,7 +284,7 @@ h6 {
   min-height: 44px;
 }
 .theme--dark .search-field .v-input__slot {
-  background-color: #d9d9d9 !important;
+  background-color: var(--search-field-bg) !important;
   color: #212124 !important;
 }
 .theme--light .search-field .v-input__slot {
@@ -314,7 +314,7 @@ h6 {
 }
 .theme--dark .search-field .v-input__slot {
   border-radius: 8px !important;
-  background-color: #d9d9d9 !important;
+  background-color: var(--search-field-bg) !important;
   color: #212124 !important;
 }
 .theme--light .search-field .v-input__slot {
