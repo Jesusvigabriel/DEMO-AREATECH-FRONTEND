@@ -15,7 +15,11 @@
         @secundario="onDialogCancel"
       />
 
-      <MenuPrincipal :tituloPrincipal="TituloMenuPrincipal" class="py-0" />
+      <MenuPrincipal
+        v-if="isAuthenticated"
+        :tituloPrincipal="TituloMenuPrincipal"
+        class="py-0"
+      />
       <router-view />
     </v-main>
   </v-app>
@@ -50,6 +54,9 @@ export default {
     }),
     TituloMenuPrincipal() {
       return this.TituloPrincipal
+    },
+    isAuthenticated() {
+      return this.$store.state.usuarios.usuarioActual.Loggeado
     }
   },
   methods: {
