@@ -9,19 +9,22 @@
         </v-col>
     </v-row>
     <v-row justify="center" >
-            <v-col cols="6">
-                <v-file-input 
-                label="Planilla a procesar" 
-                @change="fileOnChange" 
+            <v-col cols="12" md="8" lg="6">
+                <v-file-input
+                label="Planilla a procesar"
+                @change="fileOnChange"
                 accept=".xlsx"
                 filled
-                prepend-icon="mdi-microsoft-excel"
-                >Importar planilla excel</v-file-input>
+                >
+                  <template v-slot:prepend-inner>
+                    <excel-icon class="mr-2" />
+                  </template>
+                </v-file-input>
             </v-col>
     </v-row>
     <v-row v-show="listaPosiciones.length>0" class="pb-0 mb-0" justify="center">
-        <v-col cols="6" class="py-0 my-0"  >
-          <v-card-title class="py-1 my-0">
+        <v-col cols="12" md="8" lg="6" class="py-0 my-0"  >
+          <v-card-title class="py-1 my-0 justify-center">
               <v-text-field class="search-field"
                   v-model="textoBusqueda"
                   append-icon="mdi-magnify"
@@ -34,9 +37,9 @@
         </v-col>
     </v-row>
     <v-row  justify="center">
-      <v-col cols="6" v-if="listaPosiciones.length>0">
-        <v-data-table 
-            :headers="cabecerasPosiciones" 
+      <v-col cols="12" md="8" lg="6" v-if="listaPosiciones.length>0">
+        <v-data-table
+            :headers="cabecerasPosiciones"
             :items="listaPosiciones"
             :footer-props="{itemsPerPageOptions:[15,30,-1]}"   
             :items-per-page="15" 
@@ -45,8 +48,8 @@
         >
         <template v-slot:item.Estado="{item}">
           <v-chip dark :color="getColorIconoEstado(item)" @click="clickEnVerContenido(item)"><v-icon>{{getIconoEstado(item)}}</v-icon></v-chip>
-          <v-chip dark color="red" @click="clickEnEliminarPosicion(item)" class="mx-1"><v-icon>mdi-delete-outline</v-icon></v-chip>
-          <v-chip dark color="green" @click="imprimirSticker(item)" class="mx-1"><v-icon>mdi-sticker-text-outline</v-icon></v-chip>
+          <v-chip dark color="error" @click="clickEnEliminarPosicion(item)" class="mx-1"><v-icon>mdi-delete-outline</v-icon></v-chip>
+          <v-chip dark color="success" @click="imprimirSticker(item)" class="mx-1"><v-icon>mdi-sticker-text-outline</v-icon></v-chip>
         </template>
         </v-data-table>
       </v-col>
@@ -92,14 +95,14 @@
                 class="elevation-3" 
             >
               <template v-slot:item.Acciones="{item}">
-                <v-chip dark color="red" @click="clickEnVaciarItemDePosicion(item)"><v-icon>mdi-delete-outline</v-icon></v-chip>
+                <v-chip dark color="error" @click="clickEnVaciarItemDePosicion(item)"><v-icon>mdi-delete-outline</v-icon></v-chip>
               </template>
             </v-data-table>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="blue" text @click="exportarContenidoAExcel()">Exportar a Excel</v-btn>
-            <v-btn color="green" text @click="cerrarDetallePosiciones()">Cerrar</v-btn>
+            <v-btn color="success" text @click="cerrarDetallePosiciones()">Cerrar</v-btn>
           </v-card-actions>
       </v-card>
     </v-dialog>
@@ -119,7 +122,7 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="green" text @click="cerrarResultadoPosiciones()">Cerrar</v-btn>
+            <v-btn color="success" text @click="cerrarResultadoPosiciones()">Cerrar</v-btn>
           </v-card-actions>
       </v-card>
     </v-dialog>
@@ -135,6 +138,7 @@ import productos from '@/store/productosV3'
 import {xlsx, read, utils} from 'xlsx'
 import excel from "exceljs"
 import {saveAs} from "file-saver"
+import { ExcelIcon } from '@/components/icons'
 
 export default {
   name: "VerPosiciones",
@@ -532,9 +536,9 @@ export default {
     },
     getColorIconoEstado(item) {
       if (item.FechaInventario!=null && item.FechaInventario!="") {
-        return "green"
+        return "success"
       } else {
-        return 'orange'
+        return 'warning'
       }
     },
     getIconoEstado(item) {
@@ -563,6 +567,10 @@ export default {
     async imprimirSticker(item) {
       posicion.imprimirSticker(item)
     }
+  },
+
+  components: {
+    ExcelIcon
   },
 
   created() {
