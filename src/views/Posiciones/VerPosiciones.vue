@@ -16,9 +16,7 @@
                 accept=".xlsx"
                 filled
                 >
-                  <template v-slot:prepend-inner>
-                    <excel-icon class="mr-2" />
-                  </template>
+                  <span>Planilla a procesar</span>
                 </v-file-input>
             </v-col>
     </v-row>
@@ -47,9 +45,11 @@
             class="elevation-3" 
         >
         <template v-slot:item.Estado="{item}">
-          <v-chip dark :color="getColorIconoEstado(item)" @click="clickEnVerContenido(item)"><v-icon>{{getIconoEstado(item)}}</v-icon></v-chip>
-          <v-chip dark color="error" @click="clickEnEliminarPosicion(item)" class="mx-1"><v-icon>mdi-delete-outline</v-icon></v-chip>
-          <v-chip dark color="success" @click="imprimirSticker(item)" class="mx-1"><v-icon>mdi-sticker-text-outline</v-icon></v-chip>
+          <div class="acciones-flex">
+            <v-chip dark :color="getColorIconoEstado(item)" @click="clickEnVerContenido(item)"><v-icon>{{getIconoEstado(item)}}</v-icon></v-chip>
+            <v-chip dark color="error" @click="clickEnEliminarPosicion(item)" class="mx-1"><v-icon>mdi-delete-outline</v-icon></v-chip>
+            <v-chip dark color="success" @click="imprimirSticker(item)" class="mx-1"><v-icon>mdi-sticker-text-outline</v-icon></v-chip>
+          </div>
         </template>
         </v-data-table>
       </v-col>
@@ -158,7 +158,7 @@ export default {
           {text: 'Posición', value: 'Nombre', sortable: true},
           {text: 'Fecha inventario', value: 'FechaInventario', sortable: true},
           {text: 'Usuario', value: 'UsuarioInventario', sortable: true},
-          {text: '', value: 'Estado', sortable: true},
+          {text: '', value: 'Estado', sortable: true, width: '140px'},
       ],
       cabecerasDetallePosiciones: [
           {text: 'Id', value: 'IdProducto'},
@@ -580,3 +580,12 @@ export default {
 
 }
 </script>
+
+<style scoped>
+.acciones-flex {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+</style>
