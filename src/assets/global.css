@@ -203,9 +203,19 @@ table tbody tr:nth-child(3n) {
   border-bottom: 1px solid #56555a;
 }
 
+.theme--light .v-data-table td,
+.theme--light table td {
+  border-bottom: 1px solid #56555a !important;
+}
+
 .theme--dark .v-data-table td:not(:last-child),
 .theme--dark table td:not(:last-child) {
   border-right: 1px solid #56555a;
+}
+
+.theme--light .v-data-table td:not(:last-child),
+.theme--light table td:not(:last-child) {
+  border-right: 1px solid #56555a !important;
 }
 
 .v-data-table,
@@ -278,14 +288,14 @@ h6 {
   color: #212124 !important;
 }
 .theme--light .search-field .v-input__slot {
-  background-color: #fff !important;
-  color: #191043 !important;
+  background-color: var(--search-field-bg) !important;
+  color: #56555a !important;
 }
 .search-field input {
   color: #f4fafe !important;
 }
 .theme--light .search-field input {
-  color: #191043 !important;
+  color: #56555a !important;
 }
 .theme--dark .search-field input {
   color: #212124 !important;
@@ -298,6 +308,10 @@ h6 {
 .theme--dark .search-field .v-input__append-inner {
   color: #212124 !important;
 }
+.theme--light .search-field .v-input__prepend-outer,
+.theme--light .search-field .v-input__append-inner {
+  color: #56555a !important;
+}
 .theme--dark .search-field .v-input__slot {
   border-radius: 8px !important;
   background-color: #d9d9d9 !important;
@@ -305,8 +319,8 @@ h6 {
 }
 .theme--light .search-field .v-input__slot {
   border-radius: 8px !important;
-  background-color: #fff !important;
-  color: #191043 !important;
+  background-color: var(--search-field-bg) !important;
+  color: #56555a !important;
 }
 
 /* Standardized button style for actions */

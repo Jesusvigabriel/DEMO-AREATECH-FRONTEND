@@ -18,6 +18,7 @@ Este proyecto centraliza los colores en `src/assets/theme.css` para simplificar 
 | `--table-row-1-bg` | Colores alternados de filas en tablas. |
 | `--table-row-2-bg` | Id. |
 | `--table-row-3-bg` | Id. |
+| `--table-border-color` | Bordes internos de tablas. |
 | `--search-field-bg` | Campos de búsqueda. |
 | `--action-button-bg` | Botones de acción. |
 | `--action-button-text` | Texto de esos botones. |
