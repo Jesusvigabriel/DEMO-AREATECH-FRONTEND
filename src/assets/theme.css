@@ -18,8 +18,8 @@
   --table-row-3-bg: #f7f5f5;
   --search-field-bg: #ffffff;
   --table-border-color: #56555a;
-  --action-button-bg: #b9c8ea;
-  --action-button-text: #191043;
+  --action-button-bg: var(--menubar);
+  --action-button-text: #fff;
   --slider-track-bg: #dbe1e5;
 
   /* Pantallas de login y reset */
@@ -87,8 +87,8 @@
   --table-row-2-bg: #f7f5f5;
   --table-row-3-bg: #f4fafe;
   --search-field-bg: #212124;
-  --action-button-bg: #212124;
-  --action-button-text: #ffffff;
+  --action-button-bg: var(--menubar);
+  --action-button-text: #fff;
 
   --login-bg: #2f2f2f;
   --login-card-bg: #232323;
