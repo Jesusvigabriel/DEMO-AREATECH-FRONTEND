@@ -2162,7 +2162,7 @@ export default {
 
 .theme--dark .v-data-table td {
   color: rgba(255, 255, 255, 0.87) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+  border-bottom-color: #56555a !important;
 }
 
 /* Eliminar borde de la última fila */
@@ -2178,7 +2178,7 @@ export default {
 }
 
 .theme--dark .search-field.v-text-field--outlined {
-  background-color: #2D2D2D;
+  background-color: #d9d9d9;
 }
 
 .search-field .v-input__slot {
@@ -2194,7 +2194,7 @@ export default {
 }
 
 .theme--dark .search-field .v-input__slot input {
-  color: rgba(255, 255, 255, 0.87) !important;
+  color: #212124 !important;
 }
 
 /* Ajustar el color del label */
@@ -2204,7 +2204,7 @@ export default {
 }
 
 .theme--dark .search-field .v-label {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: #212124 !important;
 }
 
 /* Ajustar el color del borde */
@@ -2344,11 +2344,11 @@ export default {
 
 /* Ajustes para el tema oscuro */
 .theme--dark .search-field.v-text-field--outlined {
-  background-color: var(--v-menubar-base);
+  background-color: #d9d9d9;
 }
 
 .theme--dark .search-field .v-input__slot input {
-  color: #FFFFFF !important;
+  color: #212124 !important;
 }
 
 /* Asegurar que las celdas de la tabla tengan alineación vertical */
@@ -2466,21 +2466,21 @@ export default {
 
 /* Estilos para el campo de búsqueda en modo oscuro */
 .theme--dark .search-field.v-text-field .v-input__slot {
-  background-color: var(--v-menubar-base) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background-color: #d9d9d9 !important;
+  color: #212124 !important;
+  border: 1px solid rgba(33, 33, 36, 0.2) !important;
 }
 
 .theme--dark .search-field.v-text-field .v-label {
-  color: #f4fafe !important;
+  color: #212124 !important;
 }
 
 .theme--dark .search-field.v-text-field input {
-  color: #ffffff !important;
+  color: #212124 !important;
 }
 
 .theme--dark .search-field.v-text-field .v-icon {
-  color: #f4fafe !important;
+  color: #212124 !important;
 }
 
 /* Asegurar que el borde del campo sea consistente */
