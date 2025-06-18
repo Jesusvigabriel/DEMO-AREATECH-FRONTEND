@@ -77,6 +77,20 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  // Si hay datos guardados en sessionStorage pero el store no esta loggeado,
+  // actualizamos el store para mantener el estado sincronizado.
+  if (sessionStorage.usuarioLoggeado && !store.state.usuarios.usuarioActual.Loggeado) {
+    store.dispatch('usuarios/actualizar', {
+      Loggeado: true,
+      Nombre: sessionStorage.usuarioNombre,
+      IdEmpresa: sessionStorage.idEmpresa,
+      Id: sessionStorage.usuarioId
+    })
+  }
+
+  const autenticado =
+    store.state.usuarios.usuarioActual.Loggeado || sessionStorage.usuarioLoggeado
+
   if (
     to.path === '/Login' ||
     to.path === '/Logout' ||
@@ -87,7 +101,7 @@ router.beforeEach((to, from, next) => {
     to.path.toLowerCase().includes('/guias/verfotosdocumentacionentrega') ||
     to.path.toLowerCase().includes('/guias/vistadetracking') ||
     to.path === '/' ||
-    store.state.usuarios.usuarioActual.Loggeado ||
+    autenticado ||
     process.env.NODE_ENV === 'development'
   ) {
     next()
