@@ -200,12 +200,12 @@ table tbody tr:nth-child(3n) {
 .theme--dark .v-data-table td,
 .theme--dark table td {
   color: #000000;
-  border-bottom: 1px solid #dbe1e5;
+  border-bottom: 1px solid #56555a;
 }
 
 .theme--dark .v-data-table td:not(:last-child),
 .theme--dark table td:not(:last-child) {
-  border-right: 1px solid #dbe1e5;
+  border-right: 1px solid #56555a;
 }
 
 .v-data-table,
@@ -274,8 +274,8 @@ h6 {
   min-height: 44px;
 }
 .theme--dark .search-field .v-input__slot {
-  background-color: #232326 !important;
-  color: #f4fafe !important;
+  background-color: #d9d9d9 !important;
+  color: #212124 !important;
 }
 .theme--light .search-field .v-input__slot {
   background-color: #fff !important;
@@ -287,16 +287,23 @@ h6 {
 .theme--light .search-field input {
   color: #191043 !important;
 }
+.theme--dark .search-field input {
+  color: #212124 !important;
+}
 .search-field .v-input__prepend-outer,
 .search-field .v-input__append-inner {
   color: #f4fafe !important;
 }
-.theme--dark .search-field .v-input__slot { 
-  border-radius: 8px !important;
-  background-color: var(--v-background-surface) !important;
-  color: #fff !important;
+.theme--dark .search-field .v-input__prepend-outer,
+.theme--dark .search-field .v-input__append-inner {
+  color: #212124 !important;
 }
-.theme--light .search-field .v-input__slot { 
+.theme--dark .search-field .v-input__slot {
+  border-radius: 8px !important;
+  background-color: #d9d9d9 !important;
+  color: #212124 !important;
+}
+.theme--light .search-field .v-input__slot {
   border-radius: 8px !important;
   background-color: #fff !important;
   color: #191043 !important;
