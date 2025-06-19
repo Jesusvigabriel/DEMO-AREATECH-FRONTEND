@@ -162,14 +162,10 @@
             </div>
           </template>
           <v-list>
-            <v-list-item
-              v-for="menu in ListaDeMenusSeguridad"
-              :key="menu.ruta"
-              :to="menu.ruta"
-              link
-            >
-              <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
-            </v-list-item>
+          <v-list-item :to="menu.ruta" link v-for="menu in ListaDeMenusSeguridad" :key="menu.ruta">
+            <auditoria-icon class="mr-1" />
+            <v-list-item-title>{{ menu.nombre }}</v-list-item-title>
+          </v-list-item>
           </v-list>
         </v-menu>
         <!-- TRANSPORTES SOLO SI HAY ITEMS -->
@@ -310,6 +306,7 @@ import TransporteIcon from '@/components/icons/TransporteIcon.vue'
 import SeguimientosIcon from '@/components/icons/SeguimientosIcon.vue'
 import PerfilIcon from '@/components/icons/PerfilIcon.vue'
 import LogoutIcon from '@/components/icons/LogoutIcon.vue'
+import { AuditoriaIcon } from './icons'
 import roles from '@/store/roles' // Asegúrate que la ruta a tu store de roles sea correcta
 
 export default {
@@ -388,6 +385,7 @@ export default {
     InformesIcon,
     EmpresasIcon,
     SecurityIcon,
+    AuditoriaIcon,
     TransporteIcon,
     SeguimientosIcon,
     PerfilIcon,
@@ -449,6 +447,16 @@ export default {
           // Comprobación para el módulo de seguimientos (si viene del backend para algunos roles)
           else if (m.modulo.includes('seguimientos')) this.ListaDeMenusSeguimientos.push(m);
         });
+
+        const auditoriaItems = menusDelBackend.filter(
+          m => m.nombre === 'Auditoría' && m.ruta === '/Auditoria' && m.modulo === 'seguridad'
+        )
+
+        auditoriaItems.forEach(item => {
+          if (!this.ListaDeMenusSeguridad.some(menu => menu.ruta === item.ruta)) {
+            this.ListaDeMenusSeguridad.push(item)
+          }
+        })
         
         // Lógica para añadir el menú "Seguimientos" si el usuario es administrador
         let esAdmin = false;
