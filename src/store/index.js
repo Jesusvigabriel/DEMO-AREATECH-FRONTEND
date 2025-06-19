@@ -4,6 +4,7 @@ import axios from "axios";
 
 import usuarios from './usuarios'
 import empresas from './empresas'
+import auditoria from './auditoria'
 
 import snackbar from 'vue-lsi-util/snackbar'
 import loading from 'vue-lsi-util/loading'
@@ -18,7 +19,13 @@ axios.defaults.auth=JSON.parse(process.env.VUE_APP_API).Credenciales
 
 export default new Vuex.Store({
   modules: {
-    usuarios, empresas, snackbar, loading, alertDialog, sonidos
+    usuarios,
+    empresas,
+    auditoria,
+    snackbar,
+    loading,
+    alertDialog,
+    sonidos
 
   },
   state: {
