@@ -104,7 +104,7 @@
           </v-btn>
 
           <v-chip
-            v-if="item.NombreEstado === 'A distribuciòn' && item.IdGuia > 0"
+            v-if="item.NombreEstado === 'A distribución' && item.IdGuia > 0"
             small
             class="ml-2"
             color="green lighten-4"
