@@ -154,7 +154,14 @@ export default {
             o.historialEstados = []
           }
           o.FechaRaw = o.Fecha
-          o.FechaFormateada = o.Fecha ? new Date(o.Fecha).toLocaleDateString('es-AR') : 'N/A'
+          o.FechaFormateada = o.Fecha ? new Date(o.Fecha).toLocaleString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }) : 'N/A'
           o.Fecha = o.FechaFormateada
           switch (o.Estado) {
             case 1: o.NombreEstado = 'Pendiente'; break
@@ -224,7 +231,14 @@ export default {
         todas.forEach(g => {
           g.FechaOriginalDate = new Date(g.FechaOriginal)
           g.FechaOriginal = g.FechaOriginal ? new Date(g.FechaOriginal).toLocaleDateString('es-AR') : 'N/A'
-          g.FechaEntrega = g.FechaEntrega ? new Date(g.FechaEntrega).toLocaleDateString('es-AR') : 'N/A'
+          g.FechaEntrega = g.FechaEntrega ? new Date(g.FechaEntrega).toLocaleString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }) : 'N/A'
           g.Bultos = g.Bultos || 0
           g.Remitos = g.Remitos || 'N/A'
           g.Estado = g.Estado || 'Desconocido'
@@ -302,7 +316,14 @@ export default {
               }
             }
             if (!dataToModal.FechaFormateada && dataToModal.FechaRaw) {
-              dataToModal.FechaFormateada = new Date(dataToModal.FechaRaw).toLocaleDateString('es-AR')
+              dataToModal.FechaFormateada = new Date(dataToModal.FechaRaw).toLocaleString('es-AR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              })
             }
             dataToModal.NombreEmpresa = dataToModal.NombreEmpresa || this.estaEmpresa.RazonSocial || 'N/A'
           } else {
@@ -316,7 +337,14 @@ export default {
           dataToModal.productos = Array.isArray(guiaCompleta.productos) ? guiaCompleta.productos : []
           dataToModal.FechaOriginal = dataToModal.FechaOriginal ? new Date(dataToModal.FechaOriginal).toLocaleDateString('es-AR') : 'N/A'
           if (dataToModal.Estado === 'NO ENTREGADO' && dataToModal.Fecha) {
-            dataToModal.FechaNoEntregado = new Date(dataToModal.Fecha).toLocaleDateString('es-AR')
+            dataToModal.FechaNoEntregado = new Date(dataToModal.Fecha).toLocaleString('es-AR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            })
           } else {
             dataToModal.FechaNoEntregado = 'N/A'
           }

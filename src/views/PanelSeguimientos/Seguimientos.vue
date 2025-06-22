@@ -766,8 +766,14 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
           sheet.getRow(4).values = [
             'Fecha',
             orden.FechaRaw
-              ? new Date(orden.FechaRaw).toLocaleDateString('es-AR')
-              : '',
+              ? new Date(orden.FechaRaw).toLocaleString('es-AR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                }) : ''
           ]
           sheet.getRow(5).values = [
             'Estado',
@@ -847,7 +853,14 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
         sheet.getRow(3).values = ['Cliente', orden.NombreDestino || '']
         sheet.getRow(4).values = [
           'Fecha',
-          orden.FechaRaw ? new Date(orden.FechaRaw).toLocaleDateString('es-AR') : '',
+          orden.FechaRaw ? new Date(orden.FechaRaw).toLocaleString('es-AR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }) : ''
         ]
         sheet.getRow(5).values = ['Estado', orden.NombreEstado || orden.Estado || '']
 
@@ -922,7 +935,14 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
         sheet.getRow(4).values = ['Remito', guia.Remitos || '']
         sheet.getRow(5).values = [
           'Fecha',
-          guia.FechaOriginal ? new Date(guia.FechaOriginal).toLocaleDateString('es-AR') : ''
+          guia.FechaOriginal ? new Date(guia.FechaOriginal).toLocaleString('es-AR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }) : ''
         ]
         sheet.getRow(6).values = ['Estado', guia.Estado || '']
 
@@ -967,9 +987,23 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
             sheetHist.addRow([
               h.estado || h.Estado || h.nombre || h.Nombre || '',
               h.fecha
-                ? new Date(h.fecha).toLocaleDateString('es-AR')
+                ? new Date(h.fecha).toLocaleString('es-AR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  })
                 : h.Fecha
-                ? new Date(h.Fecha).toLocaleDateString('es-AR')
+                ? new Date(h.Fecha).toLocaleString('es-AR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  })
                 : ''
             ])
           })

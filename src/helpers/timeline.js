@@ -13,7 +13,14 @@ export function construirTimelineOrden(orden) {
   const colorMap = { 1: 'pendiente', 2: 'preparada', 3: 'despachada', 4: 'despachada', 5: 'despachada' }
 
   return historial.map((h, idx) => {
-    const fecha = h.Fecha ? new Date(h.Fecha).toLocaleDateString('es-AR') : 'N/A'
+    const fecha = h.Fecha ? new Date(h.Fecha).toLocaleString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }) : 'N/A'
     const nombre = labelMap[h.Estado] || `Estado ${h.Estado}`
     const descripcion = h.Usuario ? `Por ${h.Usuario}` : ''
     const statusClass = idx === historial.length - 1 ? (h.Estado === 4 ? 'current-bad' : 'current') : 'completed'
