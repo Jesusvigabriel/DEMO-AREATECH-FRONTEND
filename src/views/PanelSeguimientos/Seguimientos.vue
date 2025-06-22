@@ -1161,21 +1161,38 @@ import jsPDF from 'jspdf'
             dataToModal = found ? JSON.parse(JSON.stringify(found)) : null;
 
             if (dataToModal) {
-              // Los productos ya vienen agrupados en dataToModal.productos
-              // Formatea fechas específicas de la orden para el modal sin afectar la lista original.
-              dataToModal.Fecha = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString('es-AR') : 'N/A';
-              // No necesitamos FechaCreacion, FechaPreparado, FechaDistribucion si ya se usa 'Fecha' como la principal
-              // Mapeo de estado numérico a textual
-              switch (dataToModal.Estado) {
-                case 1: dataToModal.NombreEstado = 'Pendiente'; break;
-                case 2: dataToModal.NombreEstado = 'Preparado'; break;
-                case 3: dataToModal.NombreEstado = 'A distribuciòn'; break;
-                case 4: dataToModal.NombreEstado = 'Anulado'; break;
-                case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
-                default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
+              // Obtener historial de estados para la orden
+              const historico = await ordenes.getHistoricoEstados(item)
+              const historialOrden = Array.isArray(historico) ? historico : []
+              historialOrden.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha))
+
+              dataToModal.historialEstados = historialOrden
+
+              const ultimo = historialOrden[historialOrden.length - 1]
+              if (ultimo) {
+                dataToModal.Estado = ultimo.Estado
+                switch (ultimo.Estado) {
+                  case 1: dataToModal.NombreEstado = 'Pendiente'; break;
+                  case 2: dataToModal.NombreEstado = 'Preparado'; break;
+                  case 3: dataToModal.NombreEstado = 'A distribuciòn'; break;
+                  case 4: dataToModal.NombreEstado = 'Anulado'; break;
+                  case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
+                  default: dataToModal.NombreEstado = `Desconocido (${ultimo.Estado})`;
+                }
+              } else {
+                switch (dataToModal.Estado) {
+                  case 1: dataToModal.NombreEstado = 'Pendiente'; break;
+                  case 2: dataToModal.NombreEstado = 'Preparado'; break;
+                  case 3: dataToModal.NombreEstado = 'A distribuciòn'; break;
+                  case 4: dataToModal.NombreEstado = 'Anulado'; break;
+                  case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
+                  default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
+                }
               }
-              dataToModal.NombreEmpresa = dataToModal.NombreEmpresa || this.estaEmpresa.RazonSocial || 'N/A';
-              console.log("openModal: Datos de orden para modal procesados:", dataToModal);
+
+              dataToModal.Fecha = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString('es-AR') : 'N/A'
+              dataToModal.NombreEmpresa = dataToModal.NombreEmpresa || this.estaEmpresa.RazonSocial || 'N/A'
+              console.log('openModal: Datos de orden para modal procesados:', dataToModal)
             } else {
               throw new Error('No se encontraron detalles válidos para esta orden.');
             }
@@ -1256,116 +1273,38 @@ import jsPDF from 'jspdf'
        * @returns {Array} Array de objetos que representan los pasos de la línea de tiempo.
        */
       _construirTimelineOrden(orden) {
-        console.log("_construirTimelineOrden: Construyendo timeline para orden:", orden.Numero, "Estado:", orden.NombreEstado);
-        const timelineSteps = [];
-        const currentStatusText = orden.NombreEstado; // El estado ya está en formato textual.
-        const isAnulada = currentStatusText === 'Anulado';
-        const isPreOrden = orden.Tipo === 0 || orden.preOrden === 1; // Usar Tipo 0 para Pre-Orden
-        const isRetiraCliente = currentStatusText === 'Retira Cliente' || orden.retira_cliente === 1; // Usar el campo retira_cliente
-  
-        // Fechas desde la respuesta del nuevo endpoint
-        const fechaOrden = orden.Fecha ? new Date(orden.Fecha).toLocaleDateString('es-AR') : 'N/A'; // Fecha de la orden
-        const fechaAltaRegistro = orden.AltaRegistro ? new Date(orden.AltaRegistro).toLocaleDateString('es-AR') : 'N/A';
-  
-        if (isAnulada) {
-          // Si la orden está anulada, solo se muestra el paso de anulación con estado 'current-bad'.
-          timelineSteps.push({
-            id: 'anulado',
-            nombre: 'Orden Anulada',
-            icon: 'mdi-cancel',
-            fecha: fechaAltaRegistro, // Usamos la fecha de alta como referencia
-            descripcion: `La orden ha sido cancelada.`,
-            statusClass: 'current-bad', // Clase para estados negativos actuales.
-          });
-          return timelineSteps;
+        console.log('_construirTimelineOrden: Construyendo timeline para orden:', orden.Numero)
+        const historial = Array.isArray(orden.historialEstados) ? orden.historialEstados : []
+        if (!historial.length) return []
+
+        const labelMap = { 1: 'Pendiente', 2: 'Preparado', 3: 'A distribuciòn', 4: 'Anulado', 5: 'Retira Cliente' }
+        const iconMap = {
+          1: 'mdi-file-document-edit-outline',
+          2: 'mdi-package-variant-closed-check',
+          3: 'mdi-truck-fast-outline',
+          4: 'mdi-cancel',
+          5: 'mdi-account-check-outline'
         }
+        const colorMap = { 1: 'pendiente', 2: 'preparada', 3: 'despachada', 4: 'despachada', 5: 'despachada' }
 
-        // Paso "Pre-Orden" (solo si la orden es una pre-orden).
-        if (isPreOrden) {
-          timelineSteps.push({
-            id: 'pre_orden',
-            nombre: 'Pre-Orden',
-            icon: 'mdi-file-cabinet-outline',
-            fecha: fechaAltaRegistro,
-            descripcion: 'Orden creada como pre-orden.',
-          });
-        }
-
-        // Paso "Pendiente"
-        timelineSteps.push({
-          id: 'pendiente',
-          nombre: 'Pendiente',
-          icon: 'mdi-file-document-edit-outline',
-          fecha: fechaAltaRegistro,
-          descripcion: `La orden está pendiente.`,
-        });
-
-        // Paso "Preparada"
-        timelineSteps.push({
-          id: 'preparado',
-          nombre: 'Preparada',
-          icon: 'mdi-package-variant-closed-check',
-          fecha: fechaOrden, // Usamos la fecha de la orden como fecha de preparado
-          descripcion: 'Los productos han sido preparados.',
-        });
-
-        if (isRetiraCliente) {
-          // Paso "Retira Cliente"
-          timelineSteps.push({
-            id: 'retira_cliente',
-            nombre: 'Retira Cliente',
-            icon: 'mdi-account-check-outline',
-            fecha: fechaOrden, // Fecha de la orden como fecha de retiro
-            descripcion: 'La orden está lista para retiro por el cliente.',
-          });
-        } else {
-          // Paso "A Distribución"
-          timelineSteps.push({
-            id: 'a_distribucion',
-            nombre: 'A Distribución',
-            icon: 'mdi-truck-fast-outline',
-            fecha: fechaOrden, // Fecha de la orden como fecha de distribución
-            descripcion: 'La orden ha sido despachada.',
-          });
-        }
-
-        // Mapeo de estados textuales al ID de paso correspondiente para evaluar el avance.
-        const stateToId = {
-          'Pre-Orden': 'pre_orden',
-          Pendiente: 'pendiente',
-          Preparado: 'preparado',
-          'A distribuciòn': 'a_distribucion',
-          'Retira Cliente': 'retira_cliente',
-        };
-        const currentStepId = stateToId[currentStatusText] || null;
-        const currentIndex = timelineSteps.findIndex(step => step.id === currentStepId);
-
-        // Asigna la clase de estado basándose en la posición relativa al estado actual.
-        timelineSteps.forEach((step, index) => {
-          if (currentIndex === -1) {
-            step.statusClass = 'pending';
-          } else if (index < currentIndex) {
-            step.statusClass = 'completed';
-          } else if (index === currentIndex) {
-            step.statusClass = 'current';
-          } else {
-            step.statusClass = 'pending';
+        const steps = historial.map((h, idx) => {
+          const fecha = h.Fecha ? new Date(h.Fecha).toLocaleDateString('es-AR') : 'N/A'
+          const nombre = labelMap[h.Estado] || `Estado ${h.Estado}`
+          const descripcion = h.Usuario ? `Por ${h.Usuario}` : ''
+          const statusClass = idx === historial.length - 1 ? (h.Estado === 4 ? 'current-bad' : 'current') : 'completed'
+          return {
+            id: `estado_${idx}`,
+            nombre,
+            icon: iconMap[h.Estado] || 'mdi-alert-circle-outline',
+            fecha,
+            descripcion,
+            statusClass,
+            colorClass: colorMap[h.Estado] || ''
           }
-        });
+        })
 
-        const colorMap = {
-          pendiente: 'pendiente',
-          preparado: 'preparada',
-          a_distribucion: 'despachada',
-          retira_cliente: 'despachada',
-          pre_orden: 'pendiente'
-        };
-        timelineSteps.forEach(step => {
-          step.colorClass = colorMap[step.id] || '';
-        });
-
-        console.log("_construirTimelineOrden: Timeline construido:", timelineSteps);
-        return timelineSteps;
+        console.log('_construirTimelineOrden: Timeline construido:', steps)
+        return steps
       },
   
       /**

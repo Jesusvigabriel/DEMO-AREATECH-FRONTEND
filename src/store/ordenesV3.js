@@ -202,7 +202,27 @@ const ordenesV3= {
         .then(response => {resolve(response)})
         .catch(puteada => {reject(puteada)})
       }
-    )            
+    )
+  },
+
+  async getHistoricoEstados(idOrden) {
+    return new Promise((resolve, reject) => {
+      API.acceder({
+        Metodo: "GET",
+        Ruta: `/ordenes/historico/${idOrden}`,
+        Cartel: "Obteniendo historial...",
+      })
+        .then((resp) => {
+          if (resp && Array.isArray(resp.data)) {
+            resolve(resp.data)
+          } else if (Array.isArray(resp)) {
+            resolve(resp)
+          } else {
+            resolve([])
+          }
+        })
+        .catch((err) => reject(err))
+    })
   },
 
   async getByNumeroAndIdEmpresa(numero, idEmpresa) {
