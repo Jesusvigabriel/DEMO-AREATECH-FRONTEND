@@ -153,7 +153,9 @@ export default {
             console.error('historial orden error:', histErr)
             o.historialEstados = []
           }
-          o.Fecha = o.Fecha ? new Date(o.Fecha).toLocaleDateString('es-AR') : 'N/A'
+          o.FechaRaw = o.Fecha
+          o.FechaFormateada = o.Fecha ? new Date(o.Fecha).toLocaleDateString('es-AR') : 'N/A'
+          o.Fecha = o.FechaFormateada
           switch (o.Estado) {
             case 1: o.NombreEstado = 'Pendiente'; break
             case 2: o.NombreEstado = 'Preparado'; break
@@ -168,8 +170,8 @@ export default {
           o.IdGuia = o.IdGuia || -1
         }
         todasOrdenes.sort((a, b) => {
-          const dateA = new Date(a.Fecha.split('/').reverse().join('-'))
-          const dateB = new Date(b.Fecha.split('/').reverse().join('-'))
+          const dateA = new Date(a.FechaRaw)
+          const dateB = new Date(b.FechaRaw)
           return dateB.getTime() - dateA.getTime()
         })
         this.todasLasOrdenes = todasOrdenes
@@ -299,7 +301,9 @@ export default {
                 default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`
               }
             }
-            dataToModal.Fecha = dataToModal.Fecha ? new Date(dataToModal.Fecha).toLocaleDateString('es-AR') : 'N/A'
+            if (!dataToModal.FechaFormateada && dataToModal.FechaRaw) {
+              dataToModal.FechaFormateada = new Date(dataToModal.FechaRaw).toLocaleDateString('es-AR')
+            }
             dataToModal.NombreEmpresa = dataToModal.NombreEmpresa || this.estaEmpresa.RazonSocial || 'N/A'
           } else {
             throw new Error('No se encontraron detalles válidos para esta orden.')

@@ -84,7 +84,7 @@
         </template>
 
         <template v-slot:item.Fecha="{ item }">
-          <span class="body-2">{{ item.Fecha ? new Date(item.Fecha).toLocaleDateString('es-AR') : 'N/A' }}</span>
+          <span class="body-2">{{ item.FechaFormateada || 'N/A' }}</span>
         </template>
 
         <template v-slot:item.Estado="{ item }">

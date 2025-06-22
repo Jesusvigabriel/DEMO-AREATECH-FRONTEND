@@ -765,8 +765,8 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
           ]
           sheet.getRow(4).values = [
             'Fecha',
-            orden.Fecha
-              ? new Date(orden.Fecha).toLocaleDateString('es-AR')
+            orden.FechaRaw
+              ? new Date(orden.FechaRaw).toLocaleDateString('es-AR')
               : '',
           ]
           sheet.getRow(5).values = [
@@ -847,7 +847,7 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
         sheet.getRow(3).values = ['Cliente', orden.NombreDestino || '']
         sheet.getRow(4).values = [
           'Fecha',
-          orden.Fecha ? new Date(orden.Fecha).toLocaleDateString('es-AR') : '',
+          orden.FechaRaw ? new Date(orden.FechaRaw).toLocaleDateString('es-AR') : '',
         ]
         sheet.getRow(5).values = ['Estado', orden.NombreEstado || orden.Estado || '']
 
