@@ -53,7 +53,6 @@
                         outlined
                         dense
                         hide-details
-                        @change="popularAmbasListas"
                       />
                     </v-col>
                   </v-row>
@@ -73,7 +72,6 @@
                         outlined
                         dense
                         hide-details
-                        @change="popularAmbasListas"
                       />
                     </v-col>
                   </v-row>
@@ -617,6 +615,14 @@ import jsPDF from 'jspdf'
         return []; // Si no es ni orden ni guía, devuelve un array vacío.
       }
     },
+    watch: {
+      fechaDesde() {
+        this.onFechaChange()
+      },
+      fechaHasta() {
+        this.onFechaChange()
+      },
+    },
     methods: {
       /**
        * `normalizeDateToStartOfDay`:
@@ -634,6 +640,21 @@ import jsPDF from 'jspdf'
         // Para evitar el TypeError, simplemente modificamos el objeto y luego lo usamos.
         date.setHours(0, 0, 0, 0);
         return date; // Retorna el objeto Date modificado
+      },
+
+      onFechaChange() {
+        if (!this.fechaDesde || !this.fechaHasta) return
+
+        if (this.fechaHasta < this.fechaDesde) {
+          this.mostrarError(
+            'La fecha hasta debe ser mayor o igual a la fecha desde'
+          )
+          return
+        }
+
+        this.pageOrdenes = 1
+        this.pageGuias = 1
+        this.popularAmbasListas()
       },
   
       /**
