@@ -3,8 +3,9 @@
         v-model="IdEmpresaSeleccionada"
         dense
         prepend-inner-icon="mdi-factory"
-        @change="eligioEmpresa"
         @keypress.enter="eligioEmpresa"
+        @blur="touched = true"
+        :rules="empresaRules"
         :chips="false"
         :items="listaEmpresas"
         item-value="Id"
@@ -26,7 +27,9 @@ export default {
     data() {
         return {
             IdEmpresaSeleccionada: null,
-            searchTerm: ''
+            searchTerm: '',
+            touched: false,
+            empresaRules: [v => !!v || 'Seleccione una empresa']
         }
     },
     props: {
@@ -37,9 +40,11 @@ export default {
             return this.$store.state.empresas.listaEmpresas
         }
     },
-    methods: {        
+    methods: {
         eligioEmpresa() {
-            this.$emit('eligioEmpresa', this.IdEmpresaSeleccionada)
+            if (this.IdEmpresaSeleccionada) {
+                this.$emit('eligioEmpresa', this.IdEmpresaSeleccionada)
+            }
         }
     },
     created() {
