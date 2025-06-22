@@ -118,7 +118,7 @@
                       Fecha Creación:
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      {{ modalType === 'orden' ? (modalData.Fecha ? new Date(modalData.Fecha).toLocaleDateString('es-AR') : 'N/A') : modalData.FechaOriginal || 'N/A' }}
+                      {{ modalType === 'orden' ? (modalData.FechaFormateada || 'N/A') : modalData.FechaOriginal || 'N/A' }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
