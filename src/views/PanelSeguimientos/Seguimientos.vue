@@ -992,7 +992,7 @@ import jsPDF from 'jspdf'
             switch (o.Estado) {
               case 1: o.NombreEstado = 'Pendiente'; break;
               case 2: o.NombreEstado = 'Preparado'; break;
-              case 3: o.NombreEstado = 'A distribuciòn'; break; // Estado textual que indica que tiene guía
+              case 3: o.NombreEstado = 'A distribución'; break; // Estado textual que indica que tiene guía
               case 4: o.NombreEstado = 'Anulado'; break;
               case 5: o.NombreEstado = 'Retira Cliente'; break;
               default: o.NombreEstado = `Desconocido (${o.Estado})`;
@@ -1190,7 +1190,7 @@ import jsPDF from 'jspdf'
                 switch (ultimo.Estado) {
                   case 1: dataToModal.NombreEstado = 'Pendiente'; break;
                   case 2: dataToModal.NombreEstado = 'Preparado'; break;
-                  case 3: dataToModal.NombreEstado = 'A distribuciòn'; break;
+                  case 3: dataToModal.NombreEstado = 'A distribución'; break;
                   case 4: dataToModal.NombreEstado = 'Anulado'; break;
                   case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
                   default: dataToModal.NombreEstado = `Desconocido (${ultimo.Estado})`;
@@ -1199,7 +1199,7 @@ import jsPDF from 'jspdf'
                 switch (dataToModal.Estado) {
                   case 1: dataToModal.NombreEstado = 'Pendiente'; break;
                   case 2: dataToModal.NombreEstado = 'Preparado'; break;
-                  case 3: dataToModal.NombreEstado = 'A distribuciòn'; break;
+                  case 3: dataToModal.NombreEstado = 'A distribución'; break;
                   case 4: dataToModal.NombreEstado = 'Anulado'; break;
                   case 5: dataToModal.NombreEstado = 'Retira Cliente'; break;
                   default: dataToModal.NombreEstado = `Desconocido (${dataToModal.Estado})`;
@@ -1293,7 +1293,7 @@ import jsPDF from 'jspdf'
         const historial = Array.isArray(orden.historialEstados) ? orden.historialEstados : []
         if (!historial.length) return []
 
-        const labelMap = { 1: 'Pendiente', 2: 'Preparado', 3: 'A distribuciòn', 4: 'Anulado', 5: 'Retira Cliente' }
+        const labelMap = { 1: 'Pendiente', 2: 'Preparado', 3: 'A distribución', 4: 'Anulado', 5: 'Retira Cliente' }
         const iconMap = {
           1: 'mdi-file-document-edit-outline',
           2: 'mdi-package-variant-closed-check',
@@ -1536,13 +1536,13 @@ import jsPDF from 'jspdf'
        */
       getStatusChipClassTextual(estado) {
         // Clases para estados de Órdenes.
-        if (['Pendiente', 'Preparado', 'A distribuciòn', 'Anulado', 'Retira Cliente'].includes(estado)) {
+        if (['Pendiente', 'Preparado', 'A distribución', 'Anulado', 'Retira Cliente'].includes(estado)) {
           switch (estado) {
             case 'Pendiente':
               return 'chip-pendiente'
             case 'Preparado':
               return 'chip-preparada'
-            case 'A distribuciòn':
+            case 'A distribución':
             case 'Retira Cliente':
               return 'chip-despachada'
             case 'Anulado':
