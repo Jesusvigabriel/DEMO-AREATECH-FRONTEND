@@ -517,7 +517,7 @@ export default {
     async cerrarSesion() {
       try {
         // Cerrar sesión en el store de Vuex
-        await store.dispatch('usuarios/cerrarSesion');
+        await store.dispatch('usuarios/desloggear');
         // Redirigir a la página de login
         this.$router.push('/login');
       } catch (error) {
