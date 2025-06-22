@@ -963,16 +963,31 @@ import jsPDF from 'jspdf'
   
           let todasOrdenes = Object.values(ordenesAgrupadas);
           console.log("popularListaDeOrdenes: Órdenes agrupadas y productos consolidados:", todasOrdenes.length);
-  
-          // Formatea los datos de cada orden para su visualización en la tabla.
-          todasOrdenes.forEach((o) => {
+
+          // Obtener historial de cada orden y formatear datos para la tabla
+          for (const o of todasOrdenes) {
+            try {
+              const historico = await ordenes.getHistoricoEstados(o.IdOrden)
+              const historialOrden = Array.isArray(historico) ? historico : []
+              historialOrden.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha))
+              o.historialEstados = historialOrden
+
+              const ultimo = historialOrden[historialOrden.length - 1]
+              if (ultimo) {
+                o.Estado = ultimo.Estado
+              }
+            } catch (histErr) {
+              console.error(`popularListaDeOrdenes: Error al obtener historial para orden ${o.IdOrden}:`, histErr)
+              o.historialEstados = []
+            }
+
             // La 'Fecha' que viene es la Fecha de distribución/retiro.
             // Para la "Fecha Creación" en la tabla, usaremos la "Fecha" del JSON que representa la Fecha de la orden
             // (que en este nuevo endpoint es la fecha de distribución/retiro).
             // Si necesitas la fecha de AltaRegistro para la columna "Fecha Creación", cámbialo aquí.
-            o.Fecha = o.Fecha ? new Date(o.Fecha).toLocaleDateString('es-AR') : 'N/A';
+            o.Fecha = o.Fecha ? new Date(o.Fecha).toLocaleDateString('es-AR') : 'N/A'
             // o.AltaRegistro = o.AltaRegistro ? new Date(o.AltaRegistro).toLocaleDateString('es-AR') : 'N/A'; // Si quieres usar AltaRegistro
-  
+
             // Traduce el estado numérico de la orden a un estado textual legible.
             switch (o.Estado) {
               case 1: o.NombreEstado = 'Pendiente'; break;
@@ -982,15 +997,16 @@ import jsPDF from 'jspdf'
               case 5: o.NombreEstado = 'Retira Cliente'; break;
               default: o.NombreEstado = `Desconocido (${o.Estado})`;
             }
+
             // Asigna el estado textual al campo `Estado` que la tabla usa para la columna.
-            o.Estado = o.NombreEstado; // Para la tabla
-  
-            o.tipo = o.preOrden === true || o.preOrden === 1 ? 'Pre-Orden' : 'Orden';
-            o.preOrdenDisplay = o.tipo;
-  
+            o.Estado = o.NombreEstado // Para la tabla
+
+            o.tipo = o.preOrden === true || o.preOrden === 1 ? 'Pre-Orden' : 'Orden'
+            o.preOrdenDisplay = o.tipo
+
             // Aseguramos que IdGuia esté presente, aunque puede ser -1 si no hay guía
-            o.IdGuia = o.IdGuia || -1;
-          });
+            o.IdGuia = o.IdGuia || -1
+          }
   
           // Ordena las órdenes por fecha de la orden de forma descendente (más recientes primero).
           // Usamos la propiedad 'Fecha' que ya ha sido procesada y formateada como fecha de la orden.
