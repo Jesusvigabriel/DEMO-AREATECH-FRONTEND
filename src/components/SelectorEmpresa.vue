@@ -3,7 +3,7 @@
         v-model="IdEmpresaSeleccionada"
         dense
         prepend-inner-icon="mdi-factory"
-        @keypress.enter="eligioEmpresa"
+        @change="onEmpresaChange"
         @blur="touched = true"
         :rules="empresaRules"
         :chips="false"
@@ -14,6 +14,8 @@
         class="my-0 py-0"
         id="SelectorEmpresa"
         :search-input.sync="searchTerm"
+        return-object
+        clearable
     >
     </v-autocomplete>
 </template>
@@ -41,9 +43,13 @@ export default {
         }
     },
     methods: {
-        eligioEmpresa() {
-            if (this.IdEmpresaSeleccionada) {
-                this.$emit('eligioEmpresa', this.IdEmpresaSeleccionada)
+        onEmpresaChange(empresa) {
+            // Solo emitir si se seleccionó una empresa válida
+            if (empresa && empresa.Id) {
+                this.$emit('eligioEmpresa', empresa.Id);
+            } else if (empresa === null || empresa === undefined) {
+                // Si se limpió el selector, marcamos como tocado para mostrar el error
+                this.touched = true;
             }
         }
     },
