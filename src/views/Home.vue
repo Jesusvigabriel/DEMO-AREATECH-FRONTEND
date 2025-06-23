@@ -22,13 +22,16 @@
           <v-card-text class="pending-text">
             <div class="display-1 font-weight-bold pending-count" :class="{'dark-mode': $vuetify.theme.dark}">{{ pendientesCount }}</div>
   <div class="body-2" :class="{'dark-mode': $vuetify.theme.dark}">Órdenes que aún no han sido liberadas para preparación.</div>
-  <div class="caption grey--text mt-2" :class="{'dark-mode': $vuetify.theme.dark}">Actualizado: {{ lastUpdated }}</div>
+  <div class="caption grey--text mt-2 d-flex align-center" :class="{'dark-mode': $vuetify.theme.dark}">
+    <v-icon x-small left>mdi-clock-outline</v-icon>
+    Actualizado: {{ formatearFecha(lastUpdated) }}
+  </div>
   <div v-if="primerasPendientes.length > 0" class="mt-3">
     <div class="subtitle-2 font-weight-bold mb-1" :class="{'dark-mode': $vuetify.theme.dark}">Próximas órdenes:</div>
     <div v-for="(orden, idx) in primerasPendientes" :key="orden.Id || idx" class="caption grey--text mb-1 orden-pendiente-linea">
       <v-icon small left class="pending-icon">mdi-file-document-outline</v-icon>
       <span v-if="orden.Numero">#{{ orden.Numero }}</span>
-      <span v-if="orden.Fecha"> - {{ orden.Fecha }}</span>
+      <span v-if="orden.Fecha"> - {{ formatearFecha(orden.Fecha) }}</span>
     </div>
   </div>
 </v-card-text>
@@ -118,7 +121,7 @@ export default {
       stockCritico: 0,
       rotacion7d: 0,
       dio: 0,
-      lastUpdated: ''
+      lastUpdated: new Date().toISOString()
     }
   },
   computed: {
@@ -131,6 +134,25 @@ export default {
     }
   },
   methods: {
+    formatearFecha(fechaISO) {
+      if (!fechaISO) return 'N/A';
+      try {
+        const fecha = new Date(fechaISO);
+        const fechaStr = fecha.toLocaleString('es-AR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+        return fechaStr + ' hs';
+      } catch (error) {
+        console.error('Error al formatear fecha:', error);
+        return 'Fecha inválida';
+      }
+    },
     irALogin() {
       router.replace('/Login')
     },
@@ -138,9 +160,16 @@ export default {
       router.push({ name: 'OrdenesPendientes' })
     },
     async cargarPendientes() {
-      const lista = await ordenesModule.getPendientes()
-      this.pendientes = lista || [];
-      this.pendientesCount = this.pendientes.length;
+      try {
+        const lista = await ordenesModule.getPendientes()
+        this.pendientes = lista || [];
+        this.pendientesCount = this.pendientes.length;
+        // Actualizar la fecha de última actualización
+        this.lastUpdated = new Date().toISOString();
+      } catch (error) {
+        console.error('Error al cargar pendientes:', error);
+        this.lastUpdated = new Date().toISOString(); // Aún así actualizamos la fecha
+      }
     },
     async cargarStockCritico() {
       const empresa = this.usuarioActual.IdEmpresa
@@ -209,7 +238,7 @@ export default {
       router.replace('/Login')
       return
     }
-    this.lastUpdated = new Date().toLocaleTimeString()
+    this.lastUpdated = new Date().toISOString()
     await Promise.all([
       this.cargarPendientes()
       // , this.cargarStockCritico()
