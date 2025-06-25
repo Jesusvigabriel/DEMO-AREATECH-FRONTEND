@@ -317,7 +317,7 @@ export default {
 
       if(isNaN(item.Remitos != true)){
         if(item.Remitos.includes('9999')){
-          this.remito = await guias.getRemitos(item.IdEmpresa,item.Remitos.slice(-5))
+          this.remito = await store.dispatch('remitos/getById', item.Remitos.slice(-5))
           
           this.remito.forEach(r => {
             if(r.Remitos.includes('9991')){
@@ -326,7 +326,7 @@ export default {
             }
           })
         }else if(item.Remitos.includes('9991')){
-          this.remito = await guias.getRemitos(item.IdEmpresa,item.Remitos)
+          this.remito = await store.dispatch('remitos/getById', item.Remitos)
 
           this.remito.forEach(r => {
             if(r.Remitos.includes('9992')){
@@ -335,7 +335,7 @@ export default {
             }
         })
         } else {
-          this.remito = await guias.getRemitos(item.IdEmpresa,item.Remitos)
+          this.remito = await store.dispatch('remitos/getById', item.Remitos)
 
           this.remito.forEach(r => {
             if(r.Remitos.includes('9999')){
