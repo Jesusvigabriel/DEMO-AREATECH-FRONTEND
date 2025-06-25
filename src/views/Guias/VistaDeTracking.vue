@@ -56,6 +56,7 @@
 import store from "../../store"
 import guias from "@/store/guias"
 
+
 export default {
     
     name: "VistaDeTracking",
@@ -159,7 +160,7 @@ export default {
         this.TokenAccesoTracking = item.TokenAccesoTracking
         this.Remitos= item.Remitos
         if(item.Remitos.includes('9999')){
-          this.remito = await guias.getRemitos(item.IdEmpresa,encodeURIComponent(item.Remitos.slice(-5)))    
+          this.remito = await store.dispatch('remitos/getById', encodeURIComponent(item.Remitos.slice(-5)))
           this.remito.forEach(r => {
             if(r.Remitos.includes('9991')){
               this.Reenvio = r.Remitos
@@ -167,7 +168,7 @@ export default {
             }
           })
         }else if(item.Remitos.includes('9991')){
-          this.remito = await guias.getRemitos(item.IdEmpresa,encodeURIComponent(item.Remitos))
+          this.remito = await store.dispatch('remitos/getById', encodeURIComponent(item.Remitos))
           this.remito.forEach(r => {
             if(r.Remitos.includes('9992')){
               this.Reenvio = r.Remitos
@@ -175,7 +176,7 @@ export default {
             }
           })
         }else{
-          this.remito = await guias.getRemitos(item.IdEmpresa,encodeURIComponent(item.Remitos))
+          this.remito = await store.dispatch('remitos/getById', encodeURIComponent(item.Remitos))
           this.remito.forEach(r => {
             if(r.Remitos.includes('9999')){
               this.Reenvio = r.Remitos
