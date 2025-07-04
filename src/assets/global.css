@@ -351,6 +351,36 @@ h6 {
 .v-slider .v-slider__track-container { background-color: var(--slider-track-bg); }
 
 /* Asegurar que los iconos de Material Design se muestren correctamente */
+/* Estilos para texto en tablas en modo oscuro */
+.theme--dark .v-data-table {
+  color: #E1E1E1 !important;
+}
+
+.theme--dark .v-data-table tbody tr {
+  color: #E1E1E1 !important;
+}
+
+.theme--dark .v-data-table tbody td {
+  color: #E1E1E1 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme--dark .v-data-table tbody tr:hover {
+  background-color: #383C4A !important;
+}
+
+/* Asegurar que el texto en celdas sea visible */
+.theme--dark .v-data-table tbody td {
+  color: #E1E1E1 !important;
+}
+
+/* Sobrescribir cualquier estilo inline que pueda estar forzando el color negro */
+.theme--dark [style*="color: black"],
+.theme--dark [style*="color:#000"],
+.theme--dark [style*="color:#000000"] {
+  color: #E1E1E1 !important;
+}
+
 @font-face {
   font-family: 'Material Design Icons';
   /* Fonts are copied to the public directory via CopyPlugin. Use
