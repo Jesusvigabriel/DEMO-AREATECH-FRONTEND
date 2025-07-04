@@ -109,6 +109,31 @@
     <v-row> <v-col> <div> </div> </v-col> </v-row>
     <v-row> <v-col> <div> </div> </v-col> </v-row>
     <v-footer absolute><v-btn block @click="resetearPantalla">Limpiar pantalla</v-btn></v-footer>
+
+    <!-- Diálogo para ingresar cantidad de bultos -->
+    <v-dialog v-model="mostrarDialogoBultos" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Cantidad de Bultos</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="cantidadBultos"
+            label="Cantidad de bultos"
+            type="number"
+            min="1"
+            required
+            outlined
+            dense
+            class="mt-4"
+            @keyup.enter="confirmarCantidadBultos"
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="mostrarDialogoBultos = false">Cancelar</v-btn>
+          <v-btn color="blue darken-1" text @click="confirmarCantidadBultos">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -143,6 +168,7 @@ export default {
             botonConfirmarIngreso: {mostrar: false},
             listaOrdenes: [],
             listaProductosLeidos: [],
+            mostrarDialogoBultos: false,
             ordenEnCurso: null,
             listaBarcode: [],
             detalleOrdenEnCurso: [],
@@ -331,39 +357,61 @@ async salidaExpress() {
             this.pedirCantidadBultos=true
         },
         async clickProcesarIngreso() {
-            this.botonDesactivado = true
-            if (this.cantidadBultos<=0) {
-                this.mostrarMensaje({titulo: "Error", mensaje: "Debe ingresar cantidad de bultos"})
-                this.botonDesactivado = false
-                return
+            this.botonDesactivado = true;
+            
+            // 1. Primero validamos la orden
+            const validacionOrden = this.validarOrdenCompleta();
+            if (validacionOrden !== "") {
+                this.mostrarMensaje({
+                    titulo: "Error 👎", 
+                    mensaje: "La orden presenta las siguientes irregularidades:;;" + validacionOrden
+                });
+                this.botonDesactivado = false;
+                return;
             }
-            const validacionOrden=this.validarOrdenCompleta()
 
-            if (validacionOrden==="") {
-                const mensajeAMostrar=
-                    {
-                        titulo: "Orden de salida",
-                        mensaje: "Confirma la registración?",
-                        botonPrimario: "Confirmar", 
-                        botonSecundario: "Cancelar",
-                        callback: (respuesta => {
-                            if (respuesta=="Confirmar") {
-                                this.registrarProcesamientoOrden()
+            // 2. Mostrar diálogo para ingresar cantidad de bultos
+            this.mostrarDialogoBultos = true;
+            this.botonDesactivado = false;
+            this.botonSalidaExpress = false;
+        },
 
-                                this.ordenEnCurso.forEach(element => {
-                                    this.listaBarcode.push(element.Barcode)
-                                })
-                                //Chequeo que no se hayan duplicado movimientos en la tabla de movimientos, si es asi, los elimino.
-                                //movimientosStockV3.validaMovimientoStock(this.ordenEnCurso.Numero, this.selectorEmpresa.dato,this.listaBarcode)
-                            }
-                        })
+        // Método para confirmar la cantidad de bultos
+        async confirmarCantidadBultos() {
+            if (!this.cantidadBultos || this.cantidadBultos <= 0) {
+                this.mostrarMensaje({
+                    titulo: "Error", 
+                    mensaje: "Debe ingresar una cantidad de bultos válida"
+                });
+                return;
+            }
+
+            // Mostrar diálogo de confirmación
+            this.mostrarMensaje({
+                titulo: "Orden de salida",
+                mensaje: `¿Confirma la registración con ${this.cantidadBultos} bultos?`,
+                botonPrimario: "Confirmar", 
+                botonSecundario: "Cancelar",
+                callback: async (respuesta) => {
+                    if (respuesta === "Confirmar") {
+                        try {
+                            await this.registrarProcesamientoOrden();
+                            this.ordenEnCurso.forEach(element => {
+                                this.listaBarcode.push(element.Barcode);
+                            });
+                            //Chequeo que no se hayan duplicado movimientos
+                            //movimientosStockV3.validaMovimientoStock(...)
+                        } catch (error) {
+                            console.error("Error al procesar la orden:", error);
+                            this.mostrarMensaje({
+                                titulo: "Error", 
+                                mensaje: "Ocurrió un error al procesar la orden: " + (error.message || error)
+                            });
+                        }
                     }
-                this.mostrarMensaje(mensajeAMostrar)
-            } else {
-                this.mostrarMensaje({titulo: "Error 👎", mensaje: "La orden presenta las siguientes irregularidades:;;"+validacionOrden})
-                this.botonDesactivado = false
-            }
-            this.botonSalidaExpress = false
+                    this.mostrarDialogoBultos = false;
+                }
+            });
         },
         validarOrdenCompleta() {
             let ordenCompleta=''

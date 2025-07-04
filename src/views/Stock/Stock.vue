@@ -102,16 +102,32 @@
         <div class="text-subtitle-2" :style="{ color: card.color }">
           {{ card.label }}
         </div>
-        <div class="text-h5 font-weight-bold" :style="{ color: card.color }">
+        <div class="text-h5 font-weight-bold mb-2" :style="{ color: card.color }">
           {{ card.value.toLocaleString('es-AR') }}
         </div>
         <v-btn 
-          icon 
           small 
+          outlined
           @click.stop="card.download"
-          :style="{ color: card.color }"
+          :style="{
+            color: card.color,
+            borderColor: card.color,
+            textTransform: 'none',
+            fontSize: '0.75rem',
+            height: '28px',
+            minWidth: '90px',
+            borderRadius: '4px',
+            padding: '0 8px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            '--btn-hover-color': `${card.color}15`
+          }"
+          class="export-btn"
         >
-          <excel-icon style="width: 20px; height: 20px;" />
+          <v-icon small class="mr-1" :style="{ color: card.color }">mdi-microsoft-excel</v-icon>
+          <span style="font-size: 0.75rem;">Exportar</span>
         </v-btn>
       </v-card-text>
     </v-card>
@@ -1902,6 +1918,34 @@ export default {
 </script>
 
 <style>
+/* Estilos para el botón de exportación */
+.export-btn {
+  transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+  background-color: var(--btn-hover-color, rgba(0, 0, 0, 0.08)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 
+              0 4px 5px 0 rgba(0, 0, 0, 0.14), 
+              0 1px 10px 0 rgba(0, 0, 0, 0.12);
+}
+
+.export-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.12), 
+              0 1px 10px 0 rgba(0, 0, 0, 0.08), 
+              0 4px 5px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustes para el tema oscuro */
+.theme--dark .export-btn {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.theme--dark .export-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
 /* Cabecera de tablas Vuetify en blanco */
 .v-data-table-header th {
   color: #FFFFFF !important;
