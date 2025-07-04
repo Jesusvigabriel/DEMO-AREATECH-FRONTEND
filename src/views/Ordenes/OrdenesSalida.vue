@@ -638,14 +638,14 @@ async registrarProcesamientoOrden() {
             // comente esta linea porque al usar la lista de ordenes ya filtrada
             // para mostrarlas de nuevo sin tener que volver a cargar las ordenes, perdia el id de la empresa seleccionada
             //this.selectorEmpresa={mostrar: true, dato: null}
-            this.selectorOrden={mostrar: true, datos: null}
+            this.selectorOrden={mostrar: true, dato: null}
             if(this.tieneLOTE){
-                this.barcodeArticulo={mostrar: false, datos: null, lote: null}
+                this.barcodeArticulo={mostrar: false, dato: null, lote: null}
             } else {
-                this.barcodeArticulo={mostrar: false, datos: null}
+                this.barcodeArticulo={mostrar: false, dato: null}
             }
 
-            this.cantidadAIngresar={mostrar: false, datos: null}
+            this.cantidadAIngresar={mostrar: false, dato: null}
             this.listaProductosLeidos=[]
             this.cantidadBultos = 0
             this.pedirCantidadBultos=false
