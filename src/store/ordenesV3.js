@@ -208,20 +208,57 @@ const ordenesV3= {
   async getHistoricoEstados(idOrden) {
     return new Promise((resolve, reject) => {
       API.acceder({
-        Metodo: "GET",
         Ruta: `/ordenes/historico/${idOrden}`,
-        Cartel: "Obteniendo historial...",
+        Cartel: 'Obteniendo historial de estados...',
       })
-        .then((resp) => {
-          if (resp && Array.isArray(resp.data)) {
-            resolve(resp.data)
-          } else if (Array.isArray(resp)) {
-            resolve(resp)
+        .then((response) => {
+          resolve(response)
+        })
+        .catch((error) => {
+          console.error('Error en getHistoricoEstados:', error)
+          reject(error)
+        })
+    })
+  },
+
+  async getHistoricoEstadosMultiple(idsOrdenes) {
+    return new Promise((resolve, reject) => {
+      // Si solo hay un ID, usamos el endpoint individual para mantener compatibilidad
+      if (idsOrdenes.length === 1) {
+        return this.getHistoricoEstados(idsOrdenes[0])
+          .then(historico => resolve([{ ordenId: idsOrdenes[0], historicos: historico }]))
+          .catch(reject)
+      }
+
+      const idsString = idsOrdenes.join(',')
+      API.acceder({
+        Ruta: `/ordenes/historico-multiple?ids=${idsString}`,
+        Cartel: 'Obteniendo historiales de estados...',
+      })
+        .then((response) => {
+          // Asegurarse de que la respuesta tenga el formato esperado
+          if (response && Array.isArray(response)) {
+            resolve(response)
+          } else if (response && response.status === 'OK' && Array.isArray(response.data)) {
+            resolve(response.data)
           } else {
-            resolve([])
+            throw new Error('Formato de respuesta inesperado')
           }
         })
-        .catch((err) => reject(err))
+        .catch((error) => {
+          console.error('Error en getHistoricoEstadosMultiple:', error)
+          // En caso de error, intentar con llamadas individuales como fallback
+          console.log('Intentando con llamadas individuales...')
+          Promise.all(
+            idsOrdenes.map(id => 
+              this.getHistoricoEstados(id)
+                .then(historico => ({ ordenId: id, historicos: historico }))
+                .catch(() => ({ ordenId: id, historicos: [] })) // Continuar con otras órdenes si falla una
+            )
+          )
+          .then(resolve)
+          .catch(reject)
+        })
     })
   },
 

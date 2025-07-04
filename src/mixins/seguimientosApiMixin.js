@@ -141,18 +141,42 @@ export default {
           })
         })
         const todasOrdenes = Object.values(ordenesAgrupadas)
-        for (const o of todasOrdenes) {
-          try {
-            const historico = await ordenes.getHistoricoEstados(o.IdOrden)
-            const historialOrden = Array.isArray(historico) ? historico : []
-            historialOrden.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha))
+        
+        // Obtener todos los IDs de órdenes únicos
+        const ordenesIds = todasOrdenes.map(o => o.IdOrden)
+        
+        try {
+          // Obtener todos los históricos en una sola llamada
+          const historicosResponse = await ordenes.getHistoricoEstadosMultiple(ordenesIds)
+          
+          // Crear un mapa para acceso rápido por ordenId
+          const historicosPorOrden = new Map()
+          if (Array.isArray(historicosResponse)) {
+            historicosResponse.forEach(item => {
+              if (item && item.ordenId && Array.isArray(item.historicos)) {
+                historicosPorOrden.set(
+                  item.ordenId, 
+                  item.historicos.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha))
+                )
+              }
+            })
+          }
+          
+          // Asignar los históricos a cada orden
+          for (const o of todasOrdenes) {
+            const historialOrden = historicosPorOrden.get(o.IdOrden) || []
             o.historialEstados = historialOrden
             const ultimo = historialOrden[historialOrden.length - 1]
             if (ultimo) o.Estado = ultimo.Estado
-          } catch (histErr) {
-            console.error('historial orden error:', histErr)
-            o.historialEstados = []
           }
+        } catch (histErr) {
+          console.error('Error al obtener historiales de órdenes:', histErr)
+          // Si falla, inicializar con array vacío
+          todasOrdenes.forEach(o => { o.historialEstados = [] })
+        }
+
+        // Procesar cada orden para formatear fechas y estados
+        for (const o of todasOrdenes) {
           o.FechaRaw = o.Fecha
           o.FechaFormateada = o.Fecha ? new Date(o.Fecha).toLocaleString('es-AR', {
             day: '2-digit',
