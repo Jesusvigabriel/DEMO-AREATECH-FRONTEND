@@ -88,9 +88,9 @@
 
 
     <!-- BOTONES -->
-    <div class="remito-actions no-print" v-if="todoValidado">
-      <v-btn color="primary" @click="procesarOrden">
-        Procesar Orden
+    <div class="remito-actions no-print" v-if="todoValidado && !pedirCantidadBultos">
+      <v-btn color="primary" @click="pedirCantidadBultos = true">
+        Finalizar e ingresar cantidad de bultos
       </v-btn>
       <v-btn class="ml-2" outlined @click="$router.back()">
         <v-icon left>mdi-arrow-left</v-icon>
@@ -98,6 +98,19 @@
       </v-btn>
       <v-btn class="ml-2" outlined color="success" @click="descargarExcel">
         Descargar Excel
+      </v-btn>
+    </div>
+    <div class="remito-actions no-print" v-if="todoValidado && pedirCantidadBultos">
+      <v-text-field
+        class="mr-2"
+        type="number"
+        prepend-inner-icon="mdi-calculator"
+        label="Cantidad de bultos"
+        v-model.number="cantidadBultos"
+        dense
+      />
+      <v-btn color="primary" @click="procesarOrden">
+        Finalizar y registrar
       </v-btn>
     </div>
 
@@ -128,7 +141,9 @@ export default {
       cantidadArticulo: 1,
       showCantidad: false,
       selectedItem: null,
-      detalle: []
+      detalle: [],
+      pedirCantidadBultos: false,
+      cantidadBultos: 0
     }
   },
   computed: {
@@ -181,16 +196,32 @@ export default {
           Textil: false,
           StockPosicionado: false,
           TieneLote: false,
-          Fecha: this.fecha
+      Fecha: this.fecha
         }
 
         console.log('Procesar Orden payload:', JSON.stringify(Cabeceras, null, 2))
 
         try {
+          if (this.cantidadBultos <= 0) {
+            store.dispatch('snackbar/mostrar', 'Debe ingresar cantidad de bultos')
+            return
+          }
           console.log('Enviando saleOrder')
           await ordenesV3.saleOrder(this.empresaId, { Cabeceras })
           console.log('saleOrder exitosa')
+          await ordenesV3.setCantidadBultos(this.idOrden, this.empresaId, this.cantidadBultos)
+
+          try {
+            const datosOrden = await ordenesV3.getById(this.idOrden)
+            const ordenActualizada = await ordenes.actions.getDatosOrden(datosOrden)
+            const pdfEtiqueta = await ordenes.generarOrdenEtiquetaEnPDFChicaUnaPorHoja(ordenActualizada)
+            pdfEtiqueta.save(`etiqueta_${ordenActualizada[0].Orden.Numero}.pdf`)
+          } catch (e) {
+            store.dispatch('snackbar/mostrar', 'Error al obtener la orden')
+          }
+
           store.dispatch('snackbar/mostrar', 'Orden procesada correctamente')
+          this.resetearEstado()
           this.$router.push('/Ordenes/OrdenesPendientes')
         } catch (e) {
           console.error('Error en saleOrder', e)
@@ -268,6 +299,10 @@ export default {
     },
     rowClass (item) {
       return item.CantidadSalida === item.Unidades ? 'correct-row' : 'incorrect-row'
+    },
+    resetearEstado () {
+      this.pedirCantidadBultos = false
+      this.cantidadBultos = 0
     }
   }
 }
