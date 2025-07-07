@@ -60,7 +60,8 @@
                     @click="iniciarSesion"
                     class="login-btn mt-2"
                     :disabled="!datosValidos"
-                    depressed
+                    :depressed="!$vuetify.theme.dark"
+                    :outlined="$vuetify.theme.dark"
                     :loading="loading"
                   >
                     <span class="btn-text">INGRESAR</span>
@@ -202,6 +203,23 @@ export default {
 </script>
 
 <style scoped>
+/* Estilos para el botón de ingreso */
+.login-btn .btn-text {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Asegurar que el botón de ingreso sea visible en modo oscuro */
+.theme--dark .login-btn.v-btn--outlined {
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  color: #f4fafe !important;
+}
+
+.theme--dark .login-btn.v-btn--outlined:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 /* ======== ESTILOS PARA MODO CLARO ======== */
 .login-bg {
   background-color: var(--login-bg);

@@ -436,6 +436,53 @@ h6 {
   font-family: 'Material Design Icons' !important;
 }
 
+/* Estilos globales para botones */
+.v-btn {
+  text-transform: none !important;
+  letter-spacing: 0.5px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Botones primarios */
+.v-btn.v-btn--has-bg {
+  background-color: var(--v-primary-base) !important;
+  color: #FFFFFF !important;
+}
+
+/* Botones en modo oscuro */
+.theme--dark .v-btn.v-btn--has-bg:not(.v-btn--text) {
+  background-color: var(--v-primary-base) !important;
+  color: #FFFFFF !important;
+}
+
+/* Botones de texto en modo oscuro */
+.theme--dark .v-btn.v-btn--text {
+  color: #FFFFFF !important;
+  opacity: 0.9 !important;
+}
+
+/* Botones con íconos */
+.v-btn .v-icon {
+  color: inherit !important;
+}
+
+/* Hover y estados activos */
+.v-btn:not(.v-btn--text):hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.theme--dark .v-btn:not(.v-btn--text):hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Botones deshabilitados */
+.v-btn--disabled {
+  opacity: 0.5 !important;
+}
+
 /* Reusable rounded card style */
 .rounded-card {
   border-radius: 12px;

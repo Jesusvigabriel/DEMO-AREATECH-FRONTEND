@@ -13,7 +13,12 @@
       <v-col cols="12" sm="6" md="4" lg="3" xl="2">
         <!-- DEBUG: INICIO ÓRDENES PENDIENTES -->
 <div class="ordenes-pendientes-wrapper">
-  <v-card outlined class="card-card pending-card white-background" @click="irAPendientes" style="display:inline-block;width:auto;background-color:#ececec !important; border:2px solid var(--home-border-pend); border-radius:18px;">
+  <v-card 
+    outlined 
+    class="card-card pending-card white-background" 
+    :class="{'dark-widget': $vuetify.theme.dark}"
+    @click="irAPendientes" 
+    style="display:inline-block; width:auto; background-color:#ececec; border:2px solid var(--home-border-pend); border-radius:18px;">
 
           <v-card-title class="pending-title align-center pa-4" :class="{'dark-mode': $vuetify.theme.dark}">
             <v-icon left class="pending-icon" :color="$vuetify.theme.dark ? 'var(--menubar)' : 'amber darken-2'">mdi-alert-circle-outline</v-icon>
@@ -267,6 +272,44 @@ export default {
 .ordenes-pendientes-wrapper .pending-card {
   margin-left: auto !important;
   margin-right: auto !important;
+  transition: all 0.3s ease;
+}
+
+/* Estilos para el widget en modo oscuro */
+.theme--dark .ordenes-pendientes-wrapper .dark-widget {
+  background-color: rgba(255, 179, 0, 0.12) !important;
+  border: 2px solid var(--home-border-pend) !important;
+  box-shadow: 0 2px 8px 0 rgba(255, 179, 0, 0.1) !important;
+}
+
+/* Asegurar que TODO el texto sea blanco en modo oscuro */
+.theme--dark .ordenes-pendientes-wrapper .dark-widget,
+.theme--dark .ordenes-pendientes-wrapper .dark-widget * {
+  color: #ffffff !important;
+}
+
+/* Asegurar que los íconos también sean blancos */
+.theme--dark .ordenes-pendientes-wrapper .dark-widget .v-icon {
+  color: #ffffff !important;
+}
+
+/* Asegurar que los enlaces y botones mantengan contraste */
+.theme--dark .ordenes-pendientes-wrapper .dark-widget .v-btn {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+/* Asegurar que el título tenga buen contraste */
+.theme--dark .ordenes-pendientes-wrapper .dark-widget .v-card__title {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+/* Asegurar que el texto secundario sea ligeramente más claro */
+.theme--dark .ordenes-pendientes-wrapper .dark-widget .body-2,
+.theme--dark .ordenes-pendientes-wrapper .dark-widget .caption,
+.theme--dark .ordenes-pendientes-wrapper .dark-widget .subtitle-2 {
+  opacity: 0.9;
 }
 
 /* Título y contador usan color de la barra de menú */
