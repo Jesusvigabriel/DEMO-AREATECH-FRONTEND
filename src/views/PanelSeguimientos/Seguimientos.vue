@@ -669,7 +669,6 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
         this.errorAlCargar = null; // Limpia cualquier mensaje de error en el modal.
       },
   
-      /**
       openGuiaEmpresaModal(item) {
         this.guiaEmpresaModalData = item
         this.showGuiaEmpresaModal = true
