@@ -49,6 +49,7 @@
         <tr>
           <th>Producto</th>
           <th>Barcode</th>
+          <th v-if="tieneLote">Lote</th>
           <th>Posición</th>
           <th>Unidades</th>
           <th>Cant. Salida</th>
@@ -63,6 +64,7 @@
         >
           <td>{{ item.NombreProducto }}</td>
           <td>{{ item.Barcode || item.CodeEmpresa }}</td>
+          <td v-if="tieneLote">{{ item.Lote }}</td>
           <td>{{ item.Posicion || '-' }}</td>
           <td>{{ item.Unidades }}</td>
           <td class="text-center">
@@ -198,7 +200,9 @@ export default {
               ? d.Posiciones.map(p => p.Posicion).join(', ')
               : d.Posicion || d.PosicionNombre || d.Ubicacion || null),
           Barcode: d.Barcode || d.CodeEmpresa,
-          CodeEmpresa: d.CodeEmpresa
+          CodeEmpresa: d.CodeEmpresa,
+          Lote: d.Lote || d.lote || null,
+          loteCompleto: d.loteCompleto || d.LoteCompleto || false
         }))
 
         this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
@@ -279,7 +283,14 @@ export default {
       const codigo = this.barcodeArticulo.trim()
       if (!codigo) return
       console.log('Barcode ingresado:', codigo)
-      const item = this.detalle.find(d => d.Barcode === codigo || d.CodeEmpresa === codigo)
+      let item
+      if (this.tieneLote) {
+        item = this.detalle.find(d =>
+          d.Barcode === codigo || d.CodeEmpresa === codigo || d.Lote === codigo)
+      } else {
+        item = this.detalle.find(d =>
+          d.Barcode === codigo || d.CodeEmpresa === codigo)
+      }
       if (item) {
         console.log('Item encontrado', item)
         this.selectedItem = item
