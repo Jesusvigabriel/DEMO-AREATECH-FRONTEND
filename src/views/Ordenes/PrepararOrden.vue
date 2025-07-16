@@ -122,6 +122,7 @@ import atrasIcono from '@/assets/icons/atrasicono.svg'
 
 import ordenesV3 from '@/store/ordenesV3'
 import ordenes from '@/store/ordenes'
+import empresasV3 from '@/store/empresasV3'
 import store from '@/store'
 import fechas from 'vue-lsi-util/fechas'
 import excel from 'exceljs'
@@ -143,7 +144,11 @@ export default {
       selectedItem: null,
       detalle: [],
       pedirCantidadBultos: false,
-      cantidadBultos: 0
+      cantidadBultos: 0,
+      empresaConfig: {},
+      textil: false,
+      stockPosicionado: false,
+      tieneLote: false
     }
   },
   computed: {
@@ -157,7 +162,30 @@ export default {
     methods: {
       async cargarDatos () {
         console.log('Cargando datos para la orden', this.idOrden)
-        const respuestaDetalle = await ordenesV3.getDetalleOrdenAndProductoById(this.idOrden)
+
+        const orden = await ordenesV3.getById(this.idOrden)
+        this.numeroOrden = orden.Numero || orden.numero
+        this.empresaId = orden.IdEmpresa || orden.id_empresa
+        const emp = orden.Empresa
+        this.empresaNombre = emp?.RazonSocial || emp?.Nombre || 'Empresa desconocida'
+
+        try {
+          this.empresaConfig = await empresasV3.getOneById(this.empresaId)
+          this.textil = !!this.empresaConfig.ClienteTextil
+          this.stockPosicionado = !!this.empresaConfig.StockPosicionado
+          this.tieneLote = !!this.empresaConfig.LOTE
+        } catch (e) {
+          console.error('Error obteniendo configuración de empresa', e)
+          this.empresaConfig = {}
+        }
+
+        let respuestaDetalle = []
+        if (this.empresaConfig.PART) {
+          respuestaDetalle = await ordenesV3.getDetalleOrdenAndProductoPartidaById(this.idOrden)
+        } else {
+          respuestaDetalle = await ordenesV3.getDetalleOrdenAndProductoById(this.idOrden)
+        }
+
         console.log('Detalle recibido', respuestaDetalle)
         this.detalle = respuestaDetalle.map(d => ({
           ...d,
@@ -165,21 +193,16 @@ export default {
           CantidadSalida: 0,
           NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
             d.Descripcion || d.Productos || 'Sin nombre',
-        Posicion:
-          (Array.isArray(d.Posiciones) && d.Posiciones.length
-            ? d.Posiciones.map(p => p.Posicion).join(', ')
-            : d.Posicion || d.PosicionNombre || d.Ubicacion || null),
-        Barcode: d.Barcode || d.CodeEmpresa,
-        CodeEmpresa: d.CodeEmpresa
-      }))
+          Posicion:
+            (Array.isArray(d.Posiciones) && d.Posiciones.length
+              ? d.Posiciones.map(p => p.Posicion).join(', ')
+              : d.Posicion || d.PosicionNombre || d.Ubicacion || null),
+          Barcode: d.Barcode || d.CodeEmpresa,
+          CodeEmpresa: d.CodeEmpresa
+        }))
 
-      const orden = await ordenesV3.getById(this.idOrden)
-      this.numeroOrden = orden.Numero || orden.numero
-      this.empresaId = orden.IdEmpresa || orden.id_empresa
-      const emp = orden.Empresa
-      this.empresaNombre = emp?.RazonSocial || emp?.Nombre || 'Empresa desconocida'
-      this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
-    },
+        this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
+      },
 
       async procesarOrden () {
         const detallePayload = this.detalle.map(i => ({
@@ -193,10 +216,10 @@ export default {
           Comprobante: this.numeroOrden,
           Usuario: this.usuario,
           Detalle: detallePayload,
-          Textil: false,
-          StockPosicionado: false,
-          TieneLote: false,
-      Fecha: this.fecha
+          Textil: this.textil,
+          StockPosicionado: this.stockPosicionado,
+          TieneLote: this.tieneLote,
+          Fecha: this.fecha
         }
 
         console.log('Procesar Orden payload:', JSON.stringify(Cabeceras, null, 2))
