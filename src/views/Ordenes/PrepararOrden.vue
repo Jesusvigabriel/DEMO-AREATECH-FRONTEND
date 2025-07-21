@@ -283,24 +283,61 @@ export default {
       const codigo = this.barcodeArticulo.trim()
       if (!codigo) return
       console.log('Barcode ingresado:', codigo)
+
       let item
-      if (this.tieneLote) {
+      if (this.empresaConfig.PART) {
+        // Búsqueda de códigos teniendo en cuenta las partidas
+        item = this.detalle.find(d => {
+          const partidaEncontrada = d.Partidas?.some(p =>
+            p.Barcode === codigo ||
+            p.CodeEmpresa === codigo ||
+            p.NumeroParte === codigo)
+          return partidaEncontrada ||
+            d.Barcode === codigo ||
+            d.CodeEmpresa === codigo
+        })
+      } else if (this.tieneLote) {
+        // Búsqueda cuando la empresa maneja lotes
         item = this.detalle.find(d =>
-          d.Barcode === codigo || d.CodeEmpresa === codigo || d.Lote === codigo)
+          d.Barcode === codigo ||
+          d.CodeEmpresa === codigo ||
+          d.Lote === codigo)
       } else {
+        // Búsqueda estándar por barcode o código de empresa
         item = this.detalle.find(d =>
-          d.Barcode === codigo || d.CodeEmpresa === codigo)
+          d.Barcode === codigo ||
+          d.CodeEmpresa === codigo)
       }
+
       if (item) {
         console.log('Item encontrado', item)
+
+        // Si se encontró a través de una partida, combinar la información
+        if (this.empresaConfig.PART && item.Partidas) {
+          const partida = item.Partidas.find(p =>
+            p.Barcode === codigo ||
+            p.CodeEmpresa === codigo ||
+            p.NumeroParte === codigo
+          )
+          if (partida) {
+            item = {
+              ...item,
+              ...partida,
+              NombreProducto: item.NombreProducto,
+              Unidades: partida.Cantidad || item.Unidades,
+              CantidadSalida: 0
+            }
+          }
+        }
+
         this.selectedItem = item
         this.showCantidad = true
         this.cantidadArticulo = 1
         this.barcodeArticulo = ''
-        this.$nextTick(() => this.$refs.cantidadArticulo && this.$refs.cantidadArticulo.focus())
+        this.$nextTick(() => this.$refs.cantidadArticulo?.focus())
       } else {
-        console.log('Barcode inexistente', codigo)
-        store.dispatch('snackbar/mostrar', codigo + ': Barcode inexistente')
+        console.log('Barcode/Partida no encontrado:', codigo)
+        store.dispatch('snackbar/mostrar', `${codigo}: Barcode/Partida no encontrada`, { color: 'error' })
         this.cancelarIngreso()
       }
     },
