@@ -426,9 +426,24 @@ export default {
           idsGuiasGeneradas.push(response.Id)
           unaOrden.registracion=true
           unaOrden.IdNuevaGuia=response.Id
-          
+
+          // Si la empresa usa PART y remitos se crean automáticamente,
+          // generamos el remito y abrimos su PDF
+          if (unaOrden.Empresa && unaOrden.Empresa.PART &&
+             (typeof unaOrden.Empresa.UsaRemitos === 'undefined' || unaOrden.Empresa.UsaRemitos)) {
+            try {
+              const remito = await store.dispatch('remitos/crearFromOrden', unaOrden.Id)
+              if (remito && remito.Id) {
+                window.open(`${process.env.VUE_APP_API_URL}/remitos/${remito.Id}/pdf`, '_blank')
+              }
+            } catch (e) {
+              // aviso opcional si falla la generaci\xC3\xB3n del remito
+              store.dispatch('snackbar/mostrar', 'Error al crear remito')
+            }
+          }
+
         } catch (error) {
-          console.log("OK", error)          
+          console.log("OK", error)
           unaOrden.registracion=false
         }
         this.refrescarListaOrdenesAProcesar()
