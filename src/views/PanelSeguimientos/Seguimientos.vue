@@ -678,6 +678,8 @@ import { construirTimelineOrden, construirTimelineGuia } from '@/helpers/timelin
         this.guiaEmpresaModalData = null
         this.showGuiaEmpresaModal = false
       },
+      
+      /**
        * `getStatusChipClassTextual`:
        * Devuelve las clases CSS de Vuetify para aplicar un color específico
        * a los `v-chip` de estado, tanto para órdenes como para guías.

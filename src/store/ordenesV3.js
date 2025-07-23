@@ -223,43 +223,76 @@ const ordenesV3= {
 
   async getHistoricoEstadosMultiple(idsOrdenes) {
     return new Promise((resolve, reject) => {
-      // Si solo hay un ID, usamos el endpoint individual para mantener compatibilidad
-      if (idsOrdenes.length === 1) {
-        return this.getHistoricoEstados(idsOrdenes[0])
-          .then(historico => resolve([{ ordenId: idsOrdenes[0], historicos: historico }]))
-          .catch(reject)
-      }
+      try {
+        // Si no hay IDs, devolver array vacío
+        if (!idsOrdenes || !Array.isArray(idsOrdenes) || idsOrdenes.length === 0) {
+          return resolve([]);
+        }
 
-      const idsString = idsOrdenes.join(',')
-      API.acceder({
-        Ruta: `/ordenes/historico-multiple?ids=${idsString}`,
-        Cartel: 'Obteniendo historiales de estados...',
-      })
-        .then((response) => {
-          // Asegurarse de que la respuesta tenga el formato esperado
-          if (response && Array.isArray(response)) {
-            resolve(response)
-          } else if (response && response.status === 'OK' && Array.isArray(response.data)) {
-            resolve(response.data)
-          } else {
-            throw new Error('Formato de respuesta inesperado')
-          }
+        // Si solo hay un ID, usamos el endpoint individual para mantener compatibilidad
+        if (idsOrdenes.length === 1) {
+          return this.getHistoricoEstados(idsOrdenes[0])
+            .then(historico => resolve([{ ordenId: idsOrdenes[0], historicos: historico || [] }]))
+            .catch(error => {
+              console.error('Error al obtener historial individual:', error);
+              resolve([{ ordenId: idsOrdenes[0], historicos: [] }]);
+            });
+        }
+
+        const idsString = idsOrdenes.join(',');
+        API.acceder({
+          Ruta: `/ordenes/historico-multiple?ids=${idsString}`,
+          Cartel: 'Obteniendo historiales de estados...',
         })
-        .catch((error) => {
-          console.error('Error en getHistoricoEstadosMultiple:', error)
-          // En caso de error, intentar con llamadas individuales como fallback
-          console.log('Intentando con llamadas individuales...')
-          Promise.all(
-            idsOrdenes.map(id => 
-              this.getHistoricoEstados(id)
-                .then(historico => ({ ordenId: id, historicos: historico }))
-                .catch(() => ({ ordenId: id, historicos: [] })) // Continuar con otras órdenes si falla una
+          .then((response) => {
+            // Validar y formatear la respuesta
+            if (!response) {
+              console.warn('La respuesta de la API está vacía');
+              return resolve(idsOrdenes.map(id => ({ ordenId: id, historicos: [] })));
+            }
+
+            // Asegurarse de que la respuesta sea un array
+            const responseData = Array.isArray(response) ? response : [response];
+            
+            // Mapear la respuesta al formato esperado
+            const result = responseData.map(item => ({
+              ordenId: item.ordenId || item.IdOrden || 0,
+              historicos: Array.isArray(item.historicos) ? 
+                item.historicos : 
+                (Array.isArray(item) ? item : [])
+            }));
+            
+            // Asegurarse de que todas las órdenes solicitadas tengan una respuesta
+            const ordenesConHistorial = new Set(result.map(item => item.ordenId));
+            idsOrdenes.forEach(id => {
+              if (!ordenesConHistorial.has(id)) {
+                result.push({ ordenId: id, historicos: [] });
+              }
+            });
+            
+            resolve(result);
+          })
+          .catch(error => {
+            console.error('Error al obtener historial múltiple, intentando con llamadas individuales...', error);
+            // En caso de error, intentar con llamadas individuales como fallback
+            Promise.all(
+              idsOrdenes.map(id => 
+                this.getHistoricoEstados(id)
+                  .then(historico => ({ ordenId: id, historicos: historico || [] }))
+                  .catch(() => ({ ordenId: id, historicos: [] })) // Continuar con otras órdenes si falla una
+              )
             )
-          )
-          .then(resolve)
-          .catch(reject)
-        })
-    })
+            .then(resolve)
+            .catch(error => {
+              console.error('Error en las llamadas individuales:', error);
+              resolve(idsOrdenes.map(id => ({ ordenId: id, historicos: [] })));
+            });
+          });
+      } catch (error) {
+        console.error('Error inesperado en getHistoricoEstadosMultiple:', error);
+        resolve(idsOrdenes ? idsOrdenes.map(id => ({ ordenId: id, historicos: [] })) : []);
+      }
+    });
   },
 
   async getByNumeroAndIdEmpresa(numero, idEmpresa) {

@@ -1785,8 +1785,20 @@ export default {
             } else if(this.tienePART){
                 productosV3.getAllPartidas(this.idEmpresa)
                 .then(respuesta => {
-                    this.listaArticulosMostrar  = respuesta
-                    this.listaArticulosCompleta = respuesta
+                    const mapeados = respuesta.map(item => {
+  const stock = Number(item.Unidades) || 0;
+  const stockPosicionado = Number(item.StockPosicionado) || 0;
+  const stockComprometido = Number(item.StockComprometido) || 0;
+  return {
+    ...item,
+    Stock: stock,
+    StockPosicionado: stockPosicionado,
+    StockComprometido: stockComprometido,
+    StockSinPosicionar: stock - stockPosicionado
+  }
+});
+this.listaArticulosMostrar  = mapeados;
+this.listaArticulosCompleta = mapeados;
                     this.actualizarTotalesPartida()
                 })
                 .catch(error => {

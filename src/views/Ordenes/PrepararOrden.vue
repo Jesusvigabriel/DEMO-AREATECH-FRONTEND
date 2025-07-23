@@ -49,6 +49,7 @@
         <tr>
           <th>Producto</th>
           <th>Barcode</th>
+          <th v-if="empresaConfig.PART">Partida</th>
           <th v-if="tieneLote">Lote</th>
           <th>Posición</th>
           <th>Unidades</th>
@@ -64,8 +65,30 @@
         >
           <td>{{ item.NombreProducto }}</td>
           <td>{{ item.Barcode || item.CodeEmpresa }}</td>
-          <td v-if="tieneLote">{{ item.Lote }}</td>
-          <td>{{ item.Posicion || '-' }}</td>
+          <td v-if="empresaConfig.PART">
+            <v-chip v-if="item.Partida" small color="info">
+              {{ item.Partida }}
+            </v-chip>
+          </td>
+          <td v-if="tieneLote">{{ item.Lote || '-' }}</td>
+          <td>
+            <v-tooltip bottom v-if="item.posiciones && item.posiciones.length">
+              <template v-slot:activator="{ on, attrs }">
+                <v-chip 
+                  small 
+                  color="primary" 
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  {{ item.posiciones[0].descripcion }}
+                </v-chip>
+              </template>
+              <span v-if="item.posiciones[0].cantidad">
+                Cantidad: {{ item.posiciones[0].cantidad }}
+              </span>
+            </v-tooltip>
+            <span v-else>-</span>
+          </td>
           <td>{{ item.Unidades }}</td>
           <td class="text-center">
             <v-edit-dialog
@@ -189,31 +212,75 @@ export default {
         }
 
         console.log('Detalle recibido', respuestaDetalle)
-        this.detalle = respuestaDetalle.map(d => ({
-          ...d,
-          validado: false,
-          CantidadSalida: 0,
-          NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
-            d.Descripcion || d.Productos || 'Sin nombre',
-          Posicion:
-            (Array.isArray(d.Posiciones) && d.Posiciones.length
-              ? d.Posiciones.map(p => p.Posicion).join(', ')
-              : d.Posicion || d.PosicionNombre || d.Ubicacion || null),
-          Barcode: d.Barcode || d.CodeEmpresa,
-          CodeEmpresa: d.CodeEmpresa,
-          Lote: d.Lote || d.lote || null,
-          loteCompleto: d.loteCompleto || d.LoteCompleto || false
-        }))
+        this.detalle = respuestaDetalle.map(d => {
+          // Conservar las posiciones si vienen en la respuesta
+          const posiciones = d.posiciones || [];
+          
+          return {
+            ...d,
+            validado: false,
+            CantidadSalida: 0,
+            NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
+              d.Descripcion || d.Productos || 'Sin nombre',
+            Barcode: d.Barcode || d.CodeEmpresa,
+            CodeEmpresa: d.CodeEmpresa,
+            Lote: d.Lote || d.lote || null,
+            loteCompleto: d.loteCompleto || d.LoteCompleto || false,
+            // Asegurarse de que las posiciones se conserven
+            posiciones: posiciones,
+            // Si hay posiciones, usar la primera para mostrar por defecto
+            Posicion: posiciones.length > 0 ? posiciones[0].descripcion : null
+          };
+        });
 
         this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
       },
 
       async procesarOrden () {
-        const detallePayload = this.detalle.map(i => ({
-          IdProducto: i.IdProducto,
-          Cantidad: i.CantidadSalida
-        }))
+        // Generar el detalle según lo que espera el backend
+        console.log('INICIO procesarOrden:');
+console.log('Configuración empresa:', this.empresaConfig);
+console.log('Detalle de la orden:', this.detalle);
+let detallePayload = [];
+        if (this.empresaConfig.PART && this.stockPosicionado) {
+  console.log('La orden usa PARTIDA y STOCK POSICIONADO');
+          // Para cada artículo, generar un objeto por cada posición
+          this.detalle.forEach(item => {
+            if (item.posiciones && item.posiciones.length > 0) {
+              item.posiciones.forEach(pos => {
+                detallePayload.push({
+                  IdProducto: item.IdProducto,
+                  Cantidad: item.CantidadSalida,
+                  Barcode: item.Barcode || item.CodeEmpresa,
+                  Lote: item.Lote || item.lote || null,
+                  idPartida: item.IdPartida || item.Partida || item.partida,
+                  IdPosicion: pos.idPosicion
+                });
+              });
+            } else {
+              // Si no tiene posiciones, igual agregar el ítem (por si acaso)
+              detallePayload.push({
+                IdProducto: item.IdProducto,
+                Cantidad: item.CantidadSalida,
+                Barcode: item.Barcode || item.CodeEmpresa,
+                Lote: item.Lote || item.lote || null,
+                idPartida: item.IdPartida || item.Partida || item.partida,
+                IdPosicion: null
+              });
+            }
+          });
+        } else {
+          // Lógica para órdenes sin partida o sin stock posicionado (mantener original)
+          detallePayload = this.detalle.map(i => ({
+            IdProducto: i.IdProducto,
+            Cantidad: i.CantidadSalida,
+            Barcode: i.Barcode || i.CodeEmpresa,
+            Lote: i.Lote || i.lote || null
+          }));
+        }
 
+        console.log('Payload detallePayload generado:', detallePayload);
+// Construir el objeto Cabeceras completo
         const Cabeceras = {
           IdOrden: this.idOrden,
           IdEmpresa: this.empresaId,
@@ -223,26 +290,32 @@ export default {
           Textil: this.textil,
           StockPosicionado: this.stockPosicionado,
           TieneLote: this.tieneLote,
+          TienePART: !!this.empresaConfig.PART,
           Fecha: this.fecha
         }
 
-        console.log('Procesar Orden payload:', JSON.stringify(Cabeceras, null, 2))
+        console.log('Cabeceras a enviar:', Cabeceras);
+console.log('Payload FINAL enviado a saleOrder:', JSON.stringify({ Cabeceras }, null, 2));
 
         try {
           if (this.cantidadBultos <= 0) {
             store.dispatch('snackbar/mostrar', 'Debe ingresar cantidad de bultos')
             return
           }
-          console.log('Enviando saleOrder')
+          console.log('Enviando saleOrder (remito y/o guía según configuración empresa)')
           await ordenesV3.saleOrder(this.empresaId, { Cabeceras })
-          console.log('saleOrder exitosa')
+          console.log('saleOrder exitosa, la orden fue procesada en backend')
           await ordenesV3.setCantidadBultos(this.idOrden, this.empresaId, this.cantidadBultos)
 
           try {
             const datosOrden = await ordenesV3.getById(this.idOrden)
-            const ordenActualizada = await ordenes.actions.getDatosOrden(datosOrden)
-            const pdfEtiqueta = await ordenes.generarOrdenEtiquetaEnPDFChicaUnaPorHoja(ordenActualizada)
-            pdfEtiqueta.save(`etiqueta_${ordenActualizada[0].Orden.Numero}.pdf`)
+console.log('Datos de la orden recibidos para PDF:', datosOrden);
+const ordenActualizada = await ordenes.actions.getDatosOrden(datosOrden)
+console.log('Datos de la orden procesados para PDF:', ordenActualizada);
+const pdfEtiqueta = await ordenes.generarOrdenEtiquetaEnPDFChicaUnaPorHoja(ordenActualizada)
+console.log('PDF de etiqueta generado:', pdfEtiqueta);
+pdfEtiqueta.save(`etiqueta_${ordenActualizada[0].Orden.Numero}.pdf`)
+console.log('Etiqueta PDF descargada');
           } catch (e) {
             store.dispatch('snackbar/mostrar', 'Error al obtener la orden')
           }
@@ -252,6 +325,7 @@ export default {
           this.$router.push('/Ordenes/OrdenesPendientes')
         } catch (e) {
           console.error('Error en saleOrder', e)
+console.log('Payload que causó el error:', { detallePayload, Cabeceras });
           store.dispatch('snackbar/mostrar', 'Error al procesar la orden')
         }
       },

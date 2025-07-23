@@ -420,8 +420,15 @@ export default {
       let guiasGeneradas='<ul>'
       const idsGuiasGeneradas=[]
       for (const unaOrden of this.ordenesAProcesarSeleccionadas) {
+  console.log('[PROCESO] Procesando orden:', unaOrden.Id)
+  console.log('[PROCESO] Payload para crearDesdeOrden:', {
+    Id: unaOrden.Id,
+    DetalleCalculo: unaOrden.DetalleCalculo ? unaOrden.DetalleCalculo.Calculo : null,
+    EsCRR: unaOrden.EsCRR
+  })
         try {
           const response = await guias.crearDesdeOrden(unaOrden.Id, unaOrden.DetalleCalculo.Calculo, unaOrden.EsCRR)
+console.log('[PROCESO] Respuesta de crearDesdeOrden:', response)
           guiasGeneradas += "<li>"+response.Id
           idsGuiasGeneradas.push(response.Id)
           unaOrden.registracion=true
@@ -431,21 +438,29 @@ export default {
           // generamos el remito y abrimos su PDF
           if (unaOrden.Empresa && unaOrden.Empresa.PART &&
              (typeof unaOrden.Empresa.UsaRemitos === 'undefined' || unaOrden.Empresa.UsaRemitos)) {
+  console.log('[PROCESO] Intentando crear remito para orden:', unaOrden.Id)
             try {
               const remito = await store.dispatch('remitos/crearFromOrden', unaOrden.Id)
-              if (remito && remito.Id) {
-                window.open(`${process.env.VUE_APP_API_URL}/remitos/${remito.Id}/pdf`, '_blank')
-              }
+console.log('[PROCESO] Respuesta de crearFromOrden:', remito)
+if (remito && remito.Id) {
+  console.log('[PROCESO] Remito generado, abriendo PDF:', remito.Id)
+  window.open(`${process.env.VUE_APP_API_URL}/apiv3/remitos/${remito.Id}/pdf`, '_blank')
+} else {
+  console.warn('[PROCESO] No se generó remito para la orden:', unaOrden.Id)
+}
             } catch (e) {
               // aviso opcional si falla la generaci\xC3\xB3n del remito
               store.dispatch('snackbar/mostrar', 'Error al crear remito')
             }
           }
+console.log('[PROCESO] Fin de procesamiento de orden:', unaOrden.Id)
 
         } catch (error) {
-          console.log("OK", error)
-          unaOrden.registracion=false
-        }
+  console.error('[PROCESO] Error procesando orden:', unaOrden.Id, error)
+  unaOrden.registracion=false
+} finally {
+  console.log('[PROCESO] Fin de procesamiento de orden:', unaOrden.Id)
+}
         this.refrescarListaOrdenesAProcesar()
       }
       guiasGeneradas += "</ul>"
@@ -665,7 +680,9 @@ export default {
     },
     async popularListaDeOrdenes() {
       try {
-        const response = await ordenes.getPreparadasNoGuias()
+        console.log('[DEBUG] Llamando a: getPreparadasNoGuias')
+const response = await ordenes.getPreparadasNoGuias()
+console.log('[DEBUG] Respuesta getPreparadasNoGuias:', response)
         response.forEach(element => {
           element.Fecha = element.Fecha.substr(0, 10)
         })
@@ -679,7 +696,9 @@ export default {
 
     async popularListaDeOrdenesByIdEmpresa() {
       try {
-        const response = await ordenes.getPreparadasNoGuiasByIdEmpresa(this.idEmpresa)
+        console.log(`[DEBUG] Llamando a: getPreparadasNoGuiasByIdEmpresa con idEmpresa = ${this.idEmpresa}`)
+const response = await ordenes.getPreparadasNoGuiasByIdEmpresa(this.idEmpresa)
+console.log('[DEBUG] Respuesta getPreparadasNoGuiasByIdEmpresa:', response)
         response.forEach(element => {
           element.Fecha = element.Fecha.substr(0, 10)
         })
