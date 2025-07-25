@@ -21,21 +21,37 @@
 
     <!-- LECTOR DE BARCODES -->
     <v-row class="mt-4">
+      <!-- Campo para el código de barras -->
       <v-col cols="6">
         <v-text-field
           ref="barcodeArticulo"
           v-model="barcodeArticulo"
-          label="Barcode artículo"
+          :label="'Barcode ' + (empresaConfig.PART ? '(1/3)' : '')"
           prepend-inner-icon="mdi-barcode-scan"
           @keydown.enter.prevent="barcodeEnter"
           dense
+          :disabled="mostrandoCampoPartida || mostrandoCampoCantidad"
         />
       </v-col>
-      <v-col cols="4" v-if="showCantidad">
+
+      <!-- Campo para la partida (solo si es necesario) -->
+      <v-col cols="4" v-if="mostrandoCampoPartida">
+        <v-text-field
+          ref="partidaArticulo"
+          v-model="partidaArticulo"
+          label="Partida (2/3)"
+          prepend-inner-icon="mdi-tag"
+          @keydown.enter.prevent="partidaEnter"
+          dense
+        />
+      </v-col>
+
+      <!-- Campo para la cantidad -->
+      <v-col cols="4" v-if="mostrandoCampoCantidad">
         <v-text-field
           ref="cantidadArticulo"
           v-model.number="cantidadArticulo"
-          label="Cantidad"
+          :label="'Cantidad' + (empresaConfig.PART ? ' (3/3)' : '')"
           type="number"
           @keydown.enter.prevent="cantidadEnter"
           dense
@@ -139,6 +155,42 @@
       </v-btn>
     </div>
 
+    <!-- Diálogo de confirmación de orden -->
+    <v-dialog v-model="dialog" max-width="500px">
+      <v-card>
+        <v-card-title>Confirmar</v-card-title>
+        <v-card-text>¿Está seguro que desea procesar la orden?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="dialog = false">Cancelar</v-btn>
+          <v-btn color="blue darken-1" text @click="procesarOrden">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo para selección de partidas -->
+    <v-dialog v-model="dialogoPartidas.mostrar" max-width="600px">
+      <v-card>
+        <v-card-title>{{ dialogoPartidas.titulo }}</v-card-title>
+        <v-card-text>
+          <p>{{ dialogoPartidas.mensaje }}</p>
+          <v-radio-group v-model="dialogoPartidas.seleccionado">
+            <v-radio
+              v-for="item in dialogoPartidas.items"
+              :key="item.IdOrdendetalle"
+              :label="`${item.NombreProducto || 'Producto sin nombre'} - Partida: ${item.Partida} (Disponible: ${item.Unidades} ${item.esPartida ? 'de partida' : ''})`"
+              :value="item.IdOrdendetalle"
+            ></v-radio>
+          </v-radio-group>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="dialogoPartidas.mostrar = false">Cancelar</v-btn>
+          <v-btn color="blue darken-1" text @click="confirmarSeleccionPartida">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -152,6 +204,7 @@ import store from '@/store'
 import fechas from 'vue-lsi-util/fechas'
 import excel from 'exceljs'
 import { saveAs } from 'file-saver'
+import { normalizeOrderItem, normalizeSearchValue } from '../../utils/normalize'
 
 export default {
   name: 'PrepararOrden',
@@ -164,9 +217,18 @@ export default {
       usuario: store.state.usuarios.usuarioActual.Nombre,
       fecha: fechas.getHoy(),
       barcodeArticulo: '',
+      partidaArticulo: '',
       cantidadArticulo: 1,
-      showCantidad: false,
+      mostrandoCampoPartida: false,
+      mostrandoCampoCantidad: false,
       selectedItem: null,
+      dialogoPartidas: {
+        mostrar: false,
+        titulo: '',
+        mensaje: '',
+        items: [],
+        seleccionado: null
+      },
       detalle: [],
       pedirCantidadBultos: false,
       cantidadBultos: 0,
@@ -212,23 +274,28 @@ export default {
         }
 
         console.log('Detalle recibido', respuestaDetalle)
-        this.detalle = respuestaDetalle.map(d => {
-          // Conservar las posiciones si vienen en la respuesta
-          const posiciones = d.posiciones || [];
+        
+        // Aplicar normalización y mapeo de datos
+        this.detalle = respuestaDetalle.map(item => {
+          // Normalizar primero el item
+          const normalizedItem = normalizeOrderItem(item);
+          const posiciones = normalizedItem.posiciones || [];
           
           return {
-            ...d,
+            ...normalizedItem,
             validado: false,
             CantidadSalida: 0,
-            NombreProducto: d.Producto?.Nombre || d.NombreProducto || d.Nombre ||
-              d.Descripcion || d.Productos || 'Sin nombre',
-            Barcode: d.Barcode || d.CodeEmpresa,
-            CodeEmpresa: d.CodeEmpresa,
-            Lote: d.Lote || d.lote || null,
-            loteCompleto: d.loteCompleto || d.LoteCompleto || false,
-            // Asegurarse de que las posiciones se conserven
+            NombreProducto: normalizedItem.Producto?.Nombre || 
+                           normalizedItem.NombreProducto || 
+                           normalizedItem.Nombre ||
+                           normalizedItem.Descripcion || 
+                           normalizedItem.Productos || 
+                           'Sin nombre',
+            Barcode: normalizedItem.Barcode || normalizedItem.CodeEmpresa,
+            CodeEmpresa: normalizedItem.CodeEmpresa,
+            Lote: normalizedItem.Lote || normalizedItem.lote || null,
+            loteCompleto: normalizedItem.loteCompleto || normalizedItem.LoteCompleto || false,
             posiciones: posiciones,
-            // Si hay posiciones, usar la primera para mostrar por defecto
             Posicion: posiciones.length > 0 ? posiciones[0].descripcion : null
           };
         });
@@ -254,6 +321,7 @@ let detallePayload = [];
                   Barcode: item.Barcode || item.CodeEmpresa,
                   Lote: item.Lote || item.lote || null,
                   idPartida: item.IdPartida || item.Partida || item.partida,
+                  partida: item.Partida || item.partida, // Asegurarse de enviar el número de partida
                   IdPosicion: pos.idPosicion
                 });
               });
@@ -265,6 +333,7 @@ let detallePayload = [];
                 Barcode: item.Barcode || item.CodeEmpresa,
                 Lote: item.Lote || item.lote || null,
                 idPartida: item.IdPartida || item.Partida || item.partida,
+                Partida: item.Partida || item.partida, // Asegurarse de enviar el número de partida
                 IdPosicion: null
               });
             }
@@ -275,7 +344,9 @@ let detallePayload = [];
             IdProducto: i.IdProducto,
             Cantidad: i.CantidadSalida,
             Barcode: i.Barcode || i.CodeEmpresa,
-            Lote: i.Lote || i.lote || null
+            Lote: i.Lote || i.lote || null,
+            idPartida: i.IdPartida || i.Partida || i.partida || null,
+            partida: i.Partida || i.partida || null
           }));
         }
 
@@ -358,80 +429,186 @@ console.log('Payload que causó el error:', { detallePayload, Cabeceras });
       if (!codigo) return
       console.log('Barcode ingresado:', codigo)
 
-      let item
-      if (this.empresaConfig.PART) {
-        // Búsqueda de códigos teniendo en cuenta las partidas
-        item = this.detalle.find(d => {
-          const partidaEncontrada = d.Partidas?.some(p =>
-            p.Barcode === codigo ||
-            p.CodeEmpresa === codigo ||
-            p.NumeroParte === codigo)
-          return partidaEncontrada ||
-            d.Barcode === codigo ||
-            d.CodeEmpresa === codigo
-        })
-      } else if (this.tieneLote) {
-        // Búsqueda cuando la empresa maneja lotes
-        item = this.detalle.find(d =>
-          d.Barcode === codigo ||
-          d.CodeEmpresa === codigo ||
-          d.Lote === codigo)
-      } else {
-        // Búsqueda estándar por barcode o código de empresa
-        item = this.detalle.find(d =>
-          d.Barcode === codigo ||
-          d.CodeEmpresa === codigo)
-      }
+      const searchCode = normalizeSearchValue(codigo)
+      this.itemsEncontrados = []
 
-      if (item) {
-        console.log('Item encontrado', item)
-
-        // Si se encontró a través de una partida, combinar la información
-        if (this.empresaConfig.PART && item.Partidas) {
-          const partida = item.Partidas.find(p =>
-            p.Barcode === codigo ||
-            p.CodeEmpresa === codigo ||
-            p.NumeroParte === codigo
-          )
-          if (partida) {
-            item = {
-              ...item,
-              ...partida,
-              NombreProducto: item.NombreProducto,
-              Unidades: partida.Cantidad || item.Unidades,
-              CantidadSalida: 0
+      // Buscar coincidencias en el detalle
+      this.detalle.forEach(d => {
+        // Buscar en las partidas del ítem si es necesario
+        if (this.empresaConfig.PART && d.Partidas && d.Partidas.length > 0) {
+          d.Partidas.forEach(partida => {
+            if (normalizeSearchValue(partida.Barcode) === searchCode ||
+                normalizeSearchValue(partida.CodeEmpresa) === searchCode ||
+                normalizeSearchValue(partida.NumeroParte) === searchCode) {
+              this.itemsEncontrados.push({
+                ...d,
+                ...partida,
+                NombreProducto: d.NombreProducto,
+                Unidades: partida.Cantidad || d.Unidades,
+                CantidadSalida: 0,
+                esPartida: true
+              })
             }
-          }
+          })
         }
+        
+        // Buscar en el ítem principal
+        if (normalizeSearchValue(d.Barcode) === searchCode || 
+            normalizeSearchValue(d.CodeEmpresa) === searchCode) {
+          this.itemsEncontrados.push({
+            ...d,
+            CantidadSalida: 0,
+            esPartida: false
+          })
+        }
+      })
 
-        this.selectedItem = item
-        this.showCantidad = true
-        this.cantidadArticulo = 1
-        this.barcodeArticulo = ''
-        this.$nextTick(() => this.$refs.cantidadArticulo?.focus())
-      } else {
-        console.log('Barcode/Partida no encontrado:', codigo)
-        store.dispatch('snackbar/mostrar', `${codigo}: Barcode/Partida no encontrada`, { color: 'error' })
+      if (this.itemsEncontrados.length === 0) {
+        console.log('Barcode no encontrado:', codigo)
+        store.dispatch('snackbar/mostrar', `${codigo}: Barcode no encontrado`, { color: 'error' })
         this.cancelarIngreso()
+        return
       }
+
+      // Si es una orden con partidas, mostrar campo para ingresar partida
+      if (this.empresaConfig.PART) {
+        this.mostrandoCampoPartida = true
+        this.$nextTick(() => this.$refs.partidaArticulo?.focus())
+      } else {
+        // Si no hay partidas, pasar directamente a pedir la cantidad
+        this.mostrandoCampoCantidad = true
+        this.$nextTick(() => this.$refs.cantidadArticulo?.focus())
+      }
+    },
+
+    partidaEnter() {
+      const partida = this.partidaArticulo.trim()
+      if (!partida) return
+      console.log('Partida ingresada:', partida)
+
+      // Buscar el ítem que coincida con el barcode y la partida
+      const itemEncontrado = this.itemsEncontrados.find(item => 
+        normalizeSearchValue(item.Partida) === normalizeSearchValue(partida)
+      )
+
+      if (!itemEncontrado) {
+        store.dispatch('snackbar/mostrar', `No se encontró la partida ${partida} para el código escaneado`, { color: 'error' })
+        this.partidaArticulo = ''
+        return
+      }
+
+      this.selectedItem = itemEncontrado
+      this.mostrandoCampoPartida = false
+      this.mostrandoCampoCantidad = true
+      this.$nextTick(() => this.$refs.cantidadArticulo?.focus())
     },
 
     cantidadEnter () {
       if (!this.selectedItem) return
       let cantidad = Number(this.cantidadArticulo)
       if (!cantidad || cantidad < 0) cantidad = 1
-      if (this.selectedItem.CantidadSalida + cantidad <= this.selectedItem.Unidades) {
-        this.selectedItem.CantidadSalida += cantidad
-        this.actualizarValidacion(this.selectedItem)
-      } else {
-        store.dispatch('snackbar/mostrar', 'Cantidad excedida')
+      
+      // Encontrar el índice del ítem en el array detalle
+      const itemIndex = this.detalle.findIndex(item => {
+        if (this.selectedItem.esPartida) {
+          // Si es una partida, buscar por IdOrdendetalle y Partida
+          return item.IdOrdendetalle === this.selectedItem.IdOrdendetalle &&
+                 item.Partida === this.selectedItem.Partida
+        } else {
+          // Si no es una partida, buscar solo por IdOrdendetalle
+          return item.IdOrdendetalle === this.selectedItem.IdOrdendetalle
+        }
+      })
+
+      if (itemIndex === -1) {
+        store.dispatch('snackbar/mostrar', 'Error: Ítem no encontrado en el detalle', { color: 'error' })
+        this.cancelarIngreso()
+        return
       }
+
+      // Actualizar la cantidad en el ítem seleccionado
+      const nuevaCantidad = this.selectedItem.CantidadSalida + cantidad
+      
+      if (nuevaCantidad <= this.selectedItem.Unidades) {
+        // Actualizar el ítem en el array detalle
+        if (this.selectedItem.esPartida) {
+          // Si es una partida, actualizar en el array de partidas
+          this.detalle = this.detalle.map(item => {
+            if (item.IdOrdendetalle === this.selectedItem.IdOrdendetalle) {
+              const partidasActualizadas = item.Partidas.map(p => 
+                p.Partida === this.selectedItem.Partida 
+                  ? { ...p, CantidadSalida: nuevaCantidad }
+                  : p
+              )
+              return { ...item, Partidas: partidasActualizadas }
+            }
+            return item
+          })
+        } else {
+          // Si no es una partida, actualizar directamente
+          this.detalle = this.detalle.map((item, index) => 
+            index === itemIndex 
+              ? { ...item, CantidadSalida: nuevaCantidad }
+              : item
+          )
+        }
+        
+        // Actualizar validación
+        this.actualizarValidacion(this.detalle[itemIndex])
+      } else {
+        store.dispatch('snackbar/mostrar', 'Cantidad excedida', { color: 'error' })
+      }
+      
       this.cancelarIngreso()
     },
 
+    // Muestra un diálogo para seleccionar entre múltiples partidas
+    mostrarSelectorPartida (items, searchCode) {
+      this.dialogoPartidas = {
+        mostrar: true,
+        titulo: 'Seleccione una partida',
+        mensaje: `Se encontraron ${items.length} partidas para el código ${searchCode}`,
+        items: items,
+        seleccionado: null
+      }
+    },
+
+    // Maneja la selección de una partida del diálogo
+    confirmarSeleccionPartida () {
+      if (!this.dialogoPartidas.seleccionado) {
+        store.dispatch('snackbar/mostrar', 'Debe seleccionar una partida', { color: 'warning' })
+        return
+      }
+      
+      const itemSeleccionado = this.dialogoPartidas.items.find(
+        item => item.IdOrdendetalle === this.dialogoPartidas.seleccionado
+      )
+      
+      if (itemSeleccionado) {
+        this.seleccionarItem(itemSeleccionado)
+      }
+      
+      this.dialogoPartidas.mostrar = false
+    },
+    
+    // Maneja la selección de un ítem
+    seleccionarItem (item) {
+      console.log('Item seleccionado:', item)
+      this.selectedItem = item
+      this.mostrandoCampoCantidad = true
+      this.cantidadArticulo = 1
+      this.$nextTick(() => this.$refs.cantidadArticulo?.focus())
+    },
+
     cancelarIngreso () {
-      this.showCantidad = false
+      this.mostrandoCampoPartida = false
+      this.mostrandoCampoCantidad = false
       this.selectedItem = null
+      this.barcodeArticulo = ''
+      this.partidaArticulo = ''
+      this.cantidadArticulo = 1
+      this.itemsEncontrados = []
+      this.$nextTick(() => this.$refs.barcodeArticulo?.focus())
       this.cantidadArticulo = 1
       this.barcodeArticulo = ''
       this.$nextTick(() => this.$refs.barcodeArticulo && this.$refs.barcodeArticulo.focus())
