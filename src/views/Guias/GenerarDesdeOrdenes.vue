@@ -174,6 +174,7 @@ import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
 import fechas from 'vue-lsi-util/fechas'
 import excel from "exceljs"
 import {saveAs} from "file-saver"
+import emailTemplates from '@/store/emailTemplates'
 
 
 export default {
@@ -220,6 +221,7 @@ export default {
       ],
       mostrarBotonProcesamiento: false,
       mostrarBotonDescartamiento: false,
+      emailPrompt: ''
     }
   },
 
@@ -445,6 +447,14 @@ console.log('[PROCESO] Respuesta de crearFromOrden:', remito)
 if (remito && remito.Id) {
   console.log('[PROCESO] Remito generado, abriendo PDF:', remito.Id)
   window.open(`${process.env.VUE_APP_API_URL}/apiv3/remitos/${remito.Id}/pdf`, '_blank')
+  const remitente = prompt(this.emailPrompt || 'Ingrese email del remitente')
+  if (remitente) {
+    try {
+      await store.dispatch('remitos/enviarMail', { IdRemito: remito.Id, Remitente: remitente })
+    } catch (e) {
+      store.dispatch('snackbar/mostrar', 'Error al enviar mail')
+    }
+  }
 } else {
   console.warn('[PROCESO] No se generó remito para la orden:', unaOrden.Id)
 }
@@ -723,6 +733,9 @@ console.log('[DEBUG] Respuesta getPreparadasNoGuiasByIdEmpresa:', response)
     this.fechaMarcarComoRetiraCliente=fechas.dateToString(fechas.getSumarDiasFecha(0))
     store.dispatch('empresas/cargarListaEmpresas', 'SoloActivas')
     // this.popularListaDeOrdenes()
+    emailTemplates.getByCode('ENVIAR_REMITO').then(t => {
+      if (t && t.length) this.emailPrompt = t[0].CuerpoHtml
+    })
   },
 }
 </script>
