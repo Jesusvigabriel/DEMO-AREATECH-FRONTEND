@@ -480,6 +480,15 @@ export default {
           }
         }
 
+        const emailConfigExists = this.ListaDeMenusSeguridad.some(menu => menu.ruta === '/Seguridad/EmailConfig')
+        if (!emailConfigExists) {
+          this.ListaDeMenusSeguridad.push({
+            nombre: 'Configurar Correos',
+            ruta: '/Seguridad/EmailConfig',
+            modulo: 'seguridad'
+          })
+        }
+
         const todosGrupos = [
           { titulo: "STOCK", items: this.ListaDeMenusStock },
           { titulo: "ÓRDENES", items: this.ListaDeMenusOrdenes },
