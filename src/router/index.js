@@ -50,6 +50,7 @@ const routes = [
   { path: '/ItinerarRuta/:numeroChofer/:fecha/:ventana', name: 'ItinerarRuta', component: () => import('../views/ItinerarRuta.vue'), meta: { tituloPagina: 'Itinerar' } },
   { path: '/Roles', name: 'Roles', component: () => import('../views/Seguridad/Roles.vue'), meta: { tituloPagina: 'Roles' } },
   { path: '/AsignarRoles', name: 'AsignacionDeRoles', component: () => import('../views/Seguridad/AsignarRoles.vue'), meta: { tituloPagina: 'Asignación de Roles' } },
+  { path: '/Seguridad/EmailConfig', name: 'EmailConfig', component: () => import('../views/Seguridad/EmailConfig.vue'), meta: { tituloPagina: 'Configurar Correos' } },
   { path: '/Empresas/ABMEmpresas', name: 'ABMEmpresas', component: () => import('../views/Empresas/ABMEmpresas.vue'), meta: { tituloPagina: 'Empresas - ABM Empresas' } },
   { path: '/Ordenes/OrdenesPendientes', name: 'OrdenesPendientes', component: () => import('../views/Ordenes/OrdenesPendientes.vue'), meta: { tituloPagina: 'Ordenes - Ordenes Pendientes' } },
   { path: '/Ordenes/Ordenes', name: 'Ordenes', component: () => import('../views/Ordenes/Ordenes.vue'), meta: { tituloPagina: 'Ordenes - Ordenes' } },
