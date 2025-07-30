@@ -1,5 +1,6 @@
 {
   "name": "a54gestion",
+  "description": "Frontend with Quill editor for email templates",
   "version": "23.2.101",
   "private": true,
   "scripts": {
