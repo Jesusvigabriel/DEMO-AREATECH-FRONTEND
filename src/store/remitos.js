@@ -61,6 +61,19 @@ const remitos = {
           .catch(err => reject(err))
       })
     }
+
+    ,async enviarMail(_, payload) {
+      return new Promise((resolve, reject) => {
+        API.acceder({
+          Ruta: `/remitos/enviarMail`,
+          Metodo: 'POST',
+          Body: payload,
+          Cartel: 'Enviando remito...'
+        })
+          .then(data => resolve(data))
+          .catch(err => reject(err))
+      })
+    }
   }
 }
 
