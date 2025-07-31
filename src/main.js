@@ -4,6 +4,16 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import axios from 'axios'
+import VueSweetalert2 from 'vue-sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
+
+// Configuración de SweetAlert2
+Vue.use(VueSweetalert2, {
+  confirmButtonColor: '#1976D2', // Color del botón de confirmar
+  cancelButtonColor: '#ff4444',  // Color del botón de cancelar
+  allowOutsideClick: false,       // No permitir cerrar haciendo clic fuera
+  allowEscapeKey: false           // No permitir cerrar con la tecla ESC
+})
 
 // Importar estilos globales
 import './assets/global.css'

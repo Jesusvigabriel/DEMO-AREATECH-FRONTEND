@@ -13,7 +13,7 @@ const emailServers = {
         return new Promise((resolve, reject) => {
             API.acceder({
                 Ruta: `/emailServer/${idEmpresa}`,
-                Metodo: 'PUT',
+                Metodo: 'POST',
                 Body: payload,
             })
                 .then(data => resolve(data))
