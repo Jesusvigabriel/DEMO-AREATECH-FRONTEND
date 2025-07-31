@@ -219,7 +219,6 @@
 import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
 import emailServers from '@/store/emailServers'
 import emailTemplates from '@/store/emailTemplates'
-import { servicecAWS } from '@/helpers/uploadS3'
 import { quillEditor } from 'vue-quill-editor'
 import 'quill/dist/quill.snow.css'
 import { mapGetters } from 'vuex'
@@ -306,11 +305,9 @@ export default {
                 input.onchange = async function() {
                   const file = input.files[0];
                   if (!file) return;
-                  
-                  const nameFile = Date.now() + '_' + file.name;
+
                   try {
-                    await servicecAWS.uploadToS3(file, nameFile);
-                    const url = `https://s3.amazonaws.com/a54-choferes-fotos-documentacion-entrega/${nameFile}`;
+                    const url = await emailTemplates.uploadImage(file);
                     const quill = self.$refs.editor.quill;
                     const range = quill.getSelection(true);
                     quill.insertEmbed(range.index, 'image', url, 'user');
