@@ -6,7 +6,7 @@ const emailTemplates = {
         console.log('[emailTemplates] Obteniendo todas las plantillas')
         try {
             const response = await API.acceder({
-                Ruta: '/apiv3/emailTemplates',
+                Ruta: '/emailTemplates',
                 Metodo: 'GET'
             })
             console.log('[emailTemplates] Plantillas obtenidas:', response)
@@ -25,7 +25,7 @@ const emailTemplates = {
         console.log(`[emailTemplates] Obteniendo plantilla de tipo: ${tipo}`)
         try {
             const response = await API.acceder({
-                Ruta: `/apiv3/emailTemplate/${tipo}`,
+                Ruta: `/emailTemplate/${tipo}`,
                 Metodo: 'GET'
             })
             console.log(`[emailTemplates] Plantilla ${tipo} obtenida:`, response)
@@ -50,7 +50,7 @@ const emailTemplates = {
         console.log(`[emailTemplates] Obteniendo plantillas para la empresa: ${idEmpresa}`)
         try {
             const response = await API.acceder({
-                Ruta: `/apiv3/emailTemplates/byEmpresa/${idEmpresa}`,
+                Ruta: `/emailTemplates/byEmpresa/${idEmpresa}`,
                 Metodo: 'GET'
             })
             console.log(`[emailTemplates] Plantillas de la empresa ${idEmpresa} obtenidas:`, response)
@@ -71,7 +71,7 @@ const emailTemplates = {
         
         try {
             const response = await API.acceder({
-                Ruta: '/apiv3/emailTemplates' + (isUpdate ? `/${template.Id}` : ''),
+                Ruta: '/emailTemplates' + (isUpdate ? `/${template.Id}` : ''),
                 Metodo: isUpdate ? 'PATCH' : 'POST',
                 Body: {
                     Tipo: template.Tipo,
@@ -94,7 +94,7 @@ const emailTemplates = {
         console.log(`[emailTemplates] ${activo ? 'Activando' : 'Desactivando'} plantilla ${id}`)
         try {
             const response = await API.acceder({
-                Ruta: `/apiv3/emailTemplates/${id}/activate/${activo}`,
+                Ruta: `/emailTemplates/${id}/activate/${activo}`,
                 Metodo: 'PATCH'
             })
             console.log(`[emailTemplates] Plantilla ${id} ${activo ? 'activada' : 'desactivada'}`)
@@ -110,7 +110,7 @@ const emailTemplates = {
         console.log(`[emailTemplates] Eliminando plantilla ${id}`)
         try {
             await API.acceder({
-                Ruta: `/apiv3/emailTemplates/${id}`,
+                Ruta: `/emailTemplates/${id}`,
                 Metodo: 'DELETE'
             })
             console.log(`[emailTemplates] Plantilla ${id} eliminada`)
@@ -129,7 +129,7 @@ const emailTemplates = {
 
         try {
             const response = await API.acceder({
-                Ruta: '/apiv3/emailTemplates/upload',
+                Ruta: '/emailTemplates/upload',
                 Metodo: 'POST',
                 Body: formData
             })

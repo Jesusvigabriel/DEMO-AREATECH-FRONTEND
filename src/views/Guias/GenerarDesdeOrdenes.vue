@@ -446,7 +446,7 @@ console.log('[PROCESO] Respuesta de crearDesdeOrden:', response)
 console.log('[PROCESO] Respuesta de crearFromOrden:', remito)
 if (remito && remito.Id) {
   console.log('[PROCESO] Remito generado, abriendo PDF:', remito.Id)
-  window.open(`${process.env.VUE_APP_API_URL}/apiv3/remitos/${remito.Id}/pdf`, '_blank')
+  window.open(`${process.env.VUE_APP_API_URL}/remitos/${remito.Id}/pdf`, '_blank')
   const remitente = prompt(this.emailPrompt || 'Ingrese email del remitente')
   if (remitente) {
     try {
