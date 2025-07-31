@@ -432,7 +432,7 @@ export default {
       try {
         this.loading = true
         const response = await emailTemplates.getAll()
-        this.templates = response.data || []
+        this.templates = response
       } catch (error) {
         console.error('Error al cargar plantillas:', error)
         this.$toast.error('Error al cargar las plantillas')

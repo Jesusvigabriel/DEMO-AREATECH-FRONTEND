@@ -10,6 +10,9 @@ const emailTemplates = {
                 Metodo: 'GET'
             })
             console.log('[emailTemplates] Plantillas obtenidas:', response)
+            if (Array.isArray(response)) {
+                return response
+            }
             return response.data || []
         } catch (error) {
             console.error('[emailTemplates] Error al obtener plantillas:', error)
