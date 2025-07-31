@@ -121,6 +121,27 @@ const emailTemplates = {
         }
     },
 
+    // Subir imagen y obtener URL
+    async uploadImage(file) {
+        console.log('[emailTemplates] Subiendo imagen:', file)
+        const formData = new FormData()
+        formData.append('image', file)
+
+        try {
+            const response = await API.acceder({
+                Ruta: '/apiv3/emailTemplates/upload',
+                Metodo: 'POST',
+                Body: formData
+            })
+            const url = response.url || (response.data && response.data.url)
+            console.log('[emailTemplates] Imagen subida. URL:', url)
+            return url
+        } catch (error) {
+            console.error('[emailTemplates] Error al subir imagen:', error)
+            throw error
+        }
+    },
+
     // Enviar correo de prueba
     async sendTestEmail(serverConfig, destinatario) {
         console.log('[emailTemplates] Enviando correo de prueba a:', destinatario)

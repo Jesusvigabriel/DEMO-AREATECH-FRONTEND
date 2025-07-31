@@ -1,3 +1,6 @@
+// DEPRECATED: este helper se utilizaba para subir imágenes a AWS S3.
+// Las plantillas de correo ahora usan el endpoint /apiv3/emailTemplates/upload
+// para subir y servir imágenes desde el backend.
 const AWS = require('aws-sdk')
 import store from "../store"
 
