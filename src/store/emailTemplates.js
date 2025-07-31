@@ -140,57 +140,6 @@ const emailTemplates = {
             console.error('[emailTemplates] Error al subir imagen:', error)
             throw error
         }
-    },
-
-    // Enviar correo de prueba
-    async sendTestEmail(serverConfig, destinatario) {
-        console.log('[emailTemplates] Enviando correo de prueba a:', destinatario)
-        console.log('Configuración del servidor:', {
-            ...serverConfig,
-            Password: '***' // No registrar la contraseña en los logs
-        })
-        
-        const testEmail = {
-            to: destinatario,
-            subject: 'Prueba de envío de correo',
-            text: 'Este es un correo de prueba enviado desde el panel de configuración.',
-            html: `
-                <h2>¡Prueba de envío exitosa!</h2>
-                <p>Este es un correo de prueba enviado desde el panel de configuración.</p>
-                <p>Configuración del servidor:</p>
-                <ul>
-                    <li><strong>Servidor:</strong> ${serverConfig.Host}:${serverConfig.Port}</li>
-                    <li><strong>Usuario:</strong> ${serverConfig.Username}</li>
-                    <li><strong>SSL/TLS:</strong> ${serverConfig.Secure ? 'Habilitado' : 'Deshabilitado'}</li>
-                </ul>
-                <p>Si recibes este correo, la configuración SMTP es correcta.</p>
-            `,
-            serverConfig: {
-                host: serverConfig.Host,
-                port: serverConfig.Port,
-                secure: serverConfig.Secure,
-                auth: {
-                    user: serverConfig.Username,
-                    pass: serverConfig.Password
-                }
-            }
-        }
-
-        return new Promise((resolve, reject) => {
-            API.acceder({
-                Ruta: '/emailTemplate/test',
-                Metodo: 'POST',
-                Body: testEmail,
-            })
-            .then(data => {
-                console.log('[emailTemplates] Correo de prueba enviado con éxito:', data)
-                resolve(data)
-            })
-            .catch(err => {
-                console.error('[emailTemplates] Error al enviar correo de prueba:', err)
-                reject(err)
-            })
-        })
     }
 }
 
