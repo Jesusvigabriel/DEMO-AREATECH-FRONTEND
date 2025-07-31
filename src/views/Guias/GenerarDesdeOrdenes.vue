@@ -734,7 +734,7 @@ console.log('[DEBUG] Respuesta getPreparadasNoGuiasByIdEmpresa:', response)
     store.dispatch('empresas/cargarListaEmpresas', 'SoloActivas')
     // this.popularListaDeOrdenes()
     emailTemplates.getByCode('ENVIAR_REMITO').then(t => {
-      if (t && t.length) this.emailPrompt = t[0].CuerpoHtml
+      if (t && t.length) this.emailPrompt = t[0].Cuerpo
     })
   },
 }
