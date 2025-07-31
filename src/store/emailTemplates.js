@@ -2,36 +2,40 @@ import API from 'vue-lsi-util/APIAccesoV2'
 
 const emailTemplates = {
     async getAll() {
-        const logPrefix = '[emailTemplates] [getAll]';
-        console.group(`${logPrefix} Iniciando`);
+        const logPrefix = '[GET] emailTemplates';
+        const start = Date.now();
+        console.group(logPrefix);
         try {
-            const url = '/apiv3/emailTemplates';
-            console.log(`${logPrefix} GET:`, url);
+            // GET /emailTemplates/byEmpresa/:idEmpresa (plural para listados)
+            const url = '/emailTemplates/byEmpresa/0'; // 0 o el ID de empresa si está disponible
+            console.log('📡 URL:', url);
             const response = await API.acceder({ Ruta: url, Metodo: 'GET' });
             const result = Array.isArray(response) ? response : (response?.data || []);
-            console.log(`${logPrefix} OK:`, result.length, 'plantillas');
+            console.log(`✅ ${result.length} plantillas (${Date.now() - start}ms)`);
             console.groupEnd();
             return result;
         } catch (error) {
-            console.error(`${logPrefix} Error:`, error.response?.data || error.message);
+            console.error('❌ Error:', error.response?.data || error.message);
             console.groupEnd();
             throw error;
         }
     },
 
     async getByType(tipo) {
-        const logPrefix = `[emailTemplates] [getByType:${tipo}]`;
+        const logPrefix = `[GET] emailTemplate/${tipo}`;
+        const start = Date.now();
         console.group(logPrefix);
         try {
-            const url = `/apiv3/emailTemplate/${tipo}`;
-            console.log(`${logPrefix} GET:`, url);
+            const url = `/emailTemplate/${tipo}`;
+            console.log('🔍 Buscando plantilla...');
             const response = await API.acceder({ Ruta: url, Metodo: 'GET' });
             const result = response?.data || response;
-            console.log(`${logPrefix} OK:`, result ? 'Encontrada' : 'No encontrada');
+            const status = result ? '✅ Encontrada' : '⚠️ No encontrada';
+            console.log(`${status} (${Date.now() - start}ms)`);
             console.groupEnd();
             return result;
         } catch (error) {
-            console.error(`${logPrefix} Error:`, error.response?.data || error.message);
+            console.error('❌ Error:', error.response?.data || error.message);
             console.groupEnd();
             if (error.response?.status === 404) return null;
             throw error;
@@ -44,14 +48,16 @@ const emailTemplates = {
     },
 
     async getByEmpresa(idEmpresa) {
-        const logPrefix = `[emailTemplates] [getByEmpresa:${idEmpresa}]`;
+        const logPrefix = `[GET] emailTemplates/empresa/${idEmpresa}`;
+        const start = Date.now();
         console.group(logPrefix);
         try {
-            const url = `/apiv3/emailTemplates/byEmpresa/${idEmpresa}`;
-            console.log(`${logPrefix} GET:`, url);
+            // GET /emailTemplates/byEmpresa/:idEmpresa (plural para listados)
+            const url = `/emailTemplates/byEmpresa/${idEmpresa}`;
+            console.log('🏢 Buscando plantillas...');
             const response = await API.acceder({ Ruta: url, Metodo: 'GET' });
             const result = response?.data || [];
-            console.log(`${logPrefix} OK:`, result.length, 'plantillas');
+            console.log(`✅ ${result.length} plantillas (${Date.now() - start}ms)`);
             console.groupEnd();
             return result;
         } catch (error) {
@@ -67,7 +73,7 @@ const emailTemplates = {
         const logPrefix = `[emailTemplates] [${isUpdate ? 'update' : 'create'}]`;
         console.group(logPrefix);
         try {
-            const url = `/apiv3/emailTemplates${isUpdate ? `/${template.Id}` : ''}`;
+            const url = `/emailTemplate${isUpdate ? `/${template.Id}` : ''}`;
             const method = isUpdate ? 'PATCH' : 'POST';
             const requestData = {
                 Tipo: template.Tipo,
@@ -101,7 +107,8 @@ const emailTemplates = {
         const log = `[emailTemplates] [setActive] ${activo ? 'Activando' : 'Desactivando'} ${id}`;
         console.log(log);
         const response = await API.acceder({
-            Ruta: `/apiv3/emailTemplates/${id}/activate/${activo}`,
+                // PUT /emailTemplate/activate/:id/:activo
+                Ruta: `/emailTemplate/activate/${id}/${activo}`,
             Metodo: 'PATCH'
         });
         return response?.data || response;
@@ -110,7 +117,7 @@ const emailTemplates = {
     async delete(id) {
         console.log(`[emailTemplates] [delete] Eliminando ${id}`);
         await API.acceder({
-            Ruta: `/apiv3/emailTemplates/${id}`,
+                Ruta: `/emailTemplate/${id}`,
             Metodo: 'DELETE'
         });
         return true;
@@ -123,7 +130,7 @@ const emailTemplates = {
         formData.append('file', file);
         
         const response = await API.acceder({
-            Ruta: '/apiv3/upload',
+            Ruta: '/upload',
             Metodo: 'POST',
             Body: formData,
             Headers: { 'Content-Type': 'multipart/form-data' }
