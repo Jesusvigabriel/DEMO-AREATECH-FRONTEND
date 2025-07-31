@@ -41,6 +41,61 @@ if (!apiUrl) {
   axios.defaults.baseURL = apiUrl.replace(/^http:/, 'https:')
 }
 
+// Interceptor para registrar peticiones
+axios.interceptors.request.use(
+  config => {
+    // No registrar peticiones de autenticación para no exponer credenciales
+    if (!config.url.includes('auth') && !config.url.includes('login')) {
+      console.group('📤 Petición HTTP')
+      console.log('URL:', config.url)
+      console.log('Método:', config.method.toUpperCase())
+      if (config.params) console.log('Parámetros:', config.params)
+      if (config.data) console.log('Datos enviados:', config.data)
+      console.groupEnd()
+    }
+    return config
+  },
+  error => {
+    console.error('❌ Error en la petición:', error)
+    return Promise.reject(error)
+  }
+)
+
+// Interceptor para registrar respuestas
+axios.interceptors.response.use(
+  response => {
+    // No registrar respuestas de autenticación para no exponer tokens
+    if (!response.config.url.includes('auth') && !response.config.url.includes('login')) {
+      console.group('📥 Respuesta HTTP')
+      console.log('URL:', response.config.url)
+      console.log('Estado:', response.status, response.statusText)
+      console.log('Datos recibidos:', response.data)
+      console.groupEnd()
+    }
+    return response
+  },
+  error => {
+    if (error.response) {
+      // La petición fue hecha y el servidor respondió con un código de estado
+      // que está fuera del rango 2xx
+      console.group('❌ Error en la respuesta')
+      console.log('URL:', error.config.url)
+      console.log('Método:', error.config.method.toUpperCase())
+      console.log('Estado:', error.response.status, error.response.statusText)
+      console.log('Datos de error:', error.response.data)
+      console.log('Headers:', error.response.headers)
+      console.groupEnd()
+    } else if (error.request) {
+      // La petición fue hecha pero no se recibió respuesta
+      console.error('❌ No se recibió respuesta del servidor:', error.request)
+    } else {
+      // Algo ocurrió en la configuración de la petición que generó el error
+      console.error('❌ Error al configurar la petición:', error.message)
+    }
+    return Promise.reject(error)
+  }
+)
+
 new Vue({
   router,
   store,
