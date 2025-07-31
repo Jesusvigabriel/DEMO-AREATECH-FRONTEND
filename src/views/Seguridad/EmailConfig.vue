@@ -137,13 +137,13 @@
               <quill-editor
                 v-if="!showHtmlView"
                 ref="editor"
-                v-model="template.CuerpoHtml"
+                v-model="template.Cuerpo"
                 :options="editorOptions"
                 class="mt-4"
               />
               <v-textarea
                 v-else
-                v-model="template.CuerpoHtml"
+                v-model="template.Cuerpo"
                 label="HTML"
                 outlined
                 auto-grow
@@ -265,7 +265,8 @@ export default {
         Id: null,
         Tipo: '',       // Reemplaza a Codigo
         Titulo: '',     // Reemplaza a Asunto
-        Cuerpo: '',     // Reemplaza a CuerpoHtml
+        Cuerpo: '',     // Contenido HTML
+        CuerpoHtml: '', // Compatibilidad con versiones previas
         Activo: true
       },
       availableVariables: {
@@ -343,7 +344,7 @@ export default {
   computed: {
     previewContent() {
       // Reemplazar variables de ejemplo con datos reales para la vista previa
-      let content = this.template.CuerpoHtml || ''
+      let content = this.template.Cuerpo || ''
       const previewData = {
         '{{nombreCliente}}': 'Juan Pérez',
         '{{emailCliente}}': 'juan.perez@ejemplo.com',
@@ -402,7 +403,7 @@ export default {
         const before = text.substring(0, start)
         const after = text.substring(end, text.length)
         
-        this.template.CuerpoHtml = before + variable + after
+        this.template.Cuerpo = before + variable + after
         
         // Mover el cursor después de la variable insertada
         this.$nextTick(() => {
@@ -495,6 +496,7 @@ export default {
         Tipo: '',
         Titulo: '',
         Cuerpo: '',
+        CuerpoHtml: '',
         Activo: true
       }
     },
@@ -505,13 +507,14 @@ export default {
         Tipo: '',
         Titulo: '',
         Cuerpo: '',
+        CuerpoHtml: '',
         Activo: true
       }
       this.templateDialog = true
     },
     
     editTemplate(template) {
-      this.template = { ...template }
+      this.template = { ...template, CuerpoHtml: template.Cuerpo }
       this.templateDialog = true
     },
     
@@ -1055,28 +1058,6 @@ export default {
           confirmButtonText: 'Entendido',
           width: 600
         })
-      }
-    },
-    createTemplate () {
-      this.template = { Id: null, Codigo: '', Asunto: '', CuerpoHtml: '' }
-      this.templateDialog = true
-    },
-    editTemplate (item) {
-      this.template = { ...item }
-      this.templateDialog = true
-    },
-    closeTemplate () {
-      this.templateDialog = false
-    },
-    async saveTemplate () {
-      try {
-        await emailTemplates.save(this.template)
-        this.templateDialog = false
-        this.loadTemplates()
-        this.$toast.success('Plantilla guardada correctamente')
-      } catch (error) {
-        console.error('Error al guardar la plantilla:', error)
-        this.$toast.error('Error al guardar la plantilla: ' + (error.response?.data?.message || error.message))
       }
     }
   }
