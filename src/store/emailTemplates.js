@@ -25,7 +25,7 @@ const emailTemplates = {
         console.log(`[emailTemplates] Obteniendo plantilla de tipo: ${tipo}`)
         try {
             const response = await API.acceder({
-                Ruta: `/apiv3/emailTemplates/${tipo}`,
+                Ruta: `/apiv3/emailTemplate/${tipo}`,
                 Metodo: 'GET'
             })
             console.log(`[emailTemplates] Plantilla ${tipo} obtenida:`, response)
@@ -38,6 +38,11 @@ const emailTemplates = {
             }
             throw error
         }
+    },
+
+    // Mantener compatibilidad con componentes existentes
+    async getByCode(codigo) {
+        return this.getByType(codigo)
     },
 
     // Obtener plantillas por empresa
