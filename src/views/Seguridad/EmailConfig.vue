@@ -615,17 +615,11 @@ export default {
       
       // Cargar plantillas
       try {
-        // Verificar si el método getByCode existe antes de llamarlo
-        if (emailTemplates.getByCode && typeof emailTemplates.getByCode === 'function') {
-          console.log('Cargando plantillas para la empresa...')
-          console.time('getTemplates')
-          this.templates = await emailTemplates.getByCode(id)
-          console.timeEnd('getTemplates')
-          console.log('Plantillas cargadas:', this.templates)
-        } else {
-          console.warn('emailTemplates.getByCode no es una función, omitiendo carga de plantillas')
-          this.templates = []
-        }
+        console.log('Cargando plantillas para la empresa...')
+        console.time('getTemplates')
+        this.templates = await emailTemplates.getByEmpresa(id)
+        console.timeEnd('getTemplates')
+        console.log('Plantillas cargadas:', this.templates)
       } catch (error) {
         console.error('Error al cargar plantillas:', error)
         this.templates = []

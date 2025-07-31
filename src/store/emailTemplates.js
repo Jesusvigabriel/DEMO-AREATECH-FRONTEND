@@ -40,6 +40,25 @@ const emailTemplates = {
         }
     },
 
+    // Obtener plantillas por empresa
+    async getByEmpresa(idEmpresa) {
+        console.log(`[emailTemplates] Obteniendo plantillas para la empresa: ${idEmpresa}`)
+        try {
+            const response = await API.acceder({
+                Ruta: `/apiv3/emailTemplates/byEmpresa/${idEmpresa}`,
+                Metodo: 'GET'
+            })
+            console.log(`[emailTemplates] Plantillas de la empresa ${idEmpresa} obtenidas:`, response)
+            if (Array.isArray(response)) {
+                return response
+            }
+            return response.data || []
+        } catch (error) {
+            console.error(`[emailTemplates] Error al obtener plantillas para la empresa ${idEmpresa}:`, error)
+            throw error
+        }
+    },
+
     // Crear o actualizar plantilla
     async save(template) {
         const isUpdate = !!template.Id
