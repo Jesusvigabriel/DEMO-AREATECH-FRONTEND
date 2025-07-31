@@ -58,3 +58,16 @@ npm run serve
 Vue CLI will load `.env.development` automatically and API requests will be
 sent to `http://localhost:8128`.
 
+## AWS S3 uploads
+
+Some optional features upload files directly to Amazon S3. Provide your AWS
+credentials through environment variables in any `.env` file loaded by Vue CLI:
+
+```bash
+VUE_APP_AWS_ACCESS_KEY="YOUR_ACCESS_KEY"
+VUE_APP_AWS_SECRET="YOUR_SECRET_KEY"
+```
+
+The helper `src/helpers/uploadS3.js` reads these values via `process.env` when
+uploading files.
+

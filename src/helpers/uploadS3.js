@@ -12,8 +12,10 @@ async function uploadToS3(fileItem, nameFile) {
   console.group('Inicio cargado AWS',fileItem,nameFile)
 
 
-  const credentials = new AWS.Credentials('AKIA4UL5BS455UXSIPRO', '1reT5pqpYsi/3RmM2Zf++d8NHofWWTW6Q+zUjKQp')
-  //const credentials = new AWS.Credentials('AKIAQCQRB7JT2PCRY4SH', 'SQybrpqz8Xw+PbckbOe03nA+2nSYRElqAVgKhsgU')
+  const credentials = new AWS.Credentials(
+    process.env.VUE_APP_AWS_ACCESS_KEY,
+    process.env.VUE_APP_AWS_SECRET
+  )
 
   const S3 = new AWS.S3({credentials})
   console.log('Credential Ok !',)
