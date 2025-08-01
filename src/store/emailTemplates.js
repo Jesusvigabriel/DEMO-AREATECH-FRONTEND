@@ -10,8 +10,21 @@ const emailTemplates = {
             const url = '/emailTemplates/byEmpresa/0'; // 0 o el ID de empresa si está disponible
             console.log('📡 URL:', url);
             const response = await API.acceder({ Ruta: url, Metodo: 'GET' });
-            const result = Array.isArray(response) ? response : (response?.data || []);
-            console.log(`✅ ${result.length} plantillas (${Date.now() - start}ms)`);
+            
+            // Manejar la respuesta del servidor
+            let result = [];
+            if (response && typeof response === 'object') {
+                // Si la respuesta tiene un campo 'data' (formato {status, data, errors})
+                if (Array.isArray(response.data)) {
+                    result = response.data;
+                } 
+                // Si la respuesta es directamente un array
+                else if (Array.isArray(response)) {
+                    result = response;
+                }
+            }
+            
+            console.log(`✅ ${result.length} plantillas (${Date.now() - start}ms)`, result);
             console.groupEnd();
             return result;
         } catch (error) {
@@ -26,12 +39,25 @@ const emailTemplates = {
         const start = Date.now();
         console.group(logPrefix);
         try {
-            const url = `/emailTemplate/${tipo}`;
+            const url = `/emailTemplates/${tipo}`;
             console.log('🔍 Buscando plantilla...');
             const response = await API.acceder({ Ruta: url, Metodo: 'GET' });
-            const result = response?.data || response;
+            
+            // Manejar la respuesta del servidor
+            let result = null;
+            if (response && typeof response === 'object') {
+                // Si la respuesta tiene un campo 'data' (formato {status, data, errors})
+                if (response.data && typeof response.data === 'object') {
+                    result = response.data;
+                } 
+                // Si la respuesta es directamente el objeto de plantilla
+                else if (response.Id) {
+                    result = response;
+                }
+            }
+            
             const status = result ? '✅ Encontrada' : '⚠️ No encontrada';
-            console.log(`${status} (${Date.now() - start}ms)`);
+            console.log(`${status} (${Date.now() - start}ms)`, result);
             console.groupEnd();
             return result;
         } catch (error) {
@@ -56,8 +82,21 @@ const emailTemplates = {
             const url = `/emailTemplates/byEmpresa/${idEmpresa}`;
             console.log('🏢 Buscando plantillas...');
             const response = await API.acceder({ Ruta: url, Metodo: 'GET' });
-            const result = response?.data || [];
-            console.log(`✅ ${result.length} plantillas (${Date.now() - start}ms)`);
+            
+            // Manejar la respuesta del servidor
+            let result = [];
+            if (response && typeof response === 'object') {
+                // Si la respuesta tiene un campo 'data' (formato {status, data, errors})
+                if (Array.isArray(response.data)) {
+                    result = response.data;
+                } 
+                // Si la respuesta es directamente un array
+                else if (Array.isArray(response)) {
+                    result = response;
+                }
+            }
+            
+            console.log(`✅ ${result.length} plantillas (${Date.now() - start}ms)`, result);
             console.groupEnd();
             return result;
         } catch (error) {
@@ -73,7 +112,7 @@ const emailTemplates = {
         const logPrefix = `[emailTemplates] [${isUpdate ? 'update' : 'create'}]`;
         console.group(logPrefix);
         try {
-            const url = `/emailTemplate${isUpdate ? `/${template.Id}` : ''}`;
+            const url = `/emailTemplates${isUpdate ? `/${template.Id}` : ''}`;
             const method = isUpdate ? 'PATCH' : 'POST';
             const requestData = {
                 Tipo: template.Tipo,
@@ -108,7 +147,7 @@ const emailTemplates = {
         console.log(log);
         const response = await API.acceder({
                 // PUT /emailTemplate/activate/:id/:activo
-                Ruta: `/emailTemplate/activate/${id}/${activo}`,
+                Ruta: `/emailTemplates/activate/${id}/${activo}`,
             Metodo: 'PATCH'
         });
         return response?.data || response;
@@ -117,7 +156,7 @@ const emailTemplates = {
     async delete(id) {
         console.log(`[emailTemplates] [delete] Eliminando ${id}`);
         await API.acceder({
-                Ruta: `/emailTemplate/${id}`,
+                Ruta: `/emailTemplates/${id}`,
             Metodo: 'DELETE'
         });
         return true;

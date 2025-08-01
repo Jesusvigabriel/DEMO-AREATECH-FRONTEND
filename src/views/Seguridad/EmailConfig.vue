@@ -51,16 +51,99 @@
 
     <v-row class="mt-8">
       <v-col cols="12">
-        <v-data-table :headers="templateHeaders" :items="templates" class="elevation-3">
-          <template v-slot:top>
-            <v-toolbar flat>
-              <v-btn color="primary" @click="createTemplate">Nueva plantilla</v-btn>
-            </v-toolbar>
-          </template>
-          <template v-slot:item.acciones="{ item }">
-            <v-icon small class="mr-2" @click="editTemplate(item)">mdi-pencil</v-icon>
-          </template>
-        </v-data-table>
+        <v-card class="elevation-3">
+          <v-card-title class="d-flex align-center">
+            <span>Plantillas de Correo</span>
+            <v-spacer></v-spacer>
+            <v-btn 
+              color="primary" 
+              @click="createTemplate"
+              class="ml-2"
+              :disabled="!selectedEmpresa"
+            >
+              <v-icon left>mdi-plus</v-icon>
+              Nueva Plantilla
+            </v-btn>
+          </v-card-title>
+          
+          <v-card-text>
+            <v-row>
+              <v-col cols="12" md="8">
+                <v-select
+                  v-model="selectedTemplate"
+                  :items="templates"
+                  item-text="Titulo"
+                  item-value="Id"
+                  label="Seleccionar Plantilla"
+                  :loading="loadingTemplates"
+                  :disabled="!templates.length"
+                  return-object
+                  outlined
+                  dense
+                  clearable
+                  hide-details
+                  @change="onTemplateSelected"
+                >
+                  <template v-slot:selection="{ item }">
+                    <v-list-item class="pa-0">
+                      <v-list-item-content class="py-0">
+                        <v-list-item-title>{{ item.Titulo }}</v-list-item-title>
+                        <v-list-item-subtitle class="caption">
+                          {{ item.Tipo }} • {{ item.Activo ? 'Activa' : 'Inactiva' }}
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </template>
+                  
+                  <template v-slot:item="{ item }">
+                    <v-list-item-content>
+                      <v-list-item-title>{{ item.Titulo }}</v-list-item-title>
+                      <v-list-item-subtitle class="caption">
+                        {{ item.Tipo }} • {{ item.Activo ? 'Activa' : 'Inactiva' }}
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-icon @click.stop="editTemplate(item)">mdi-pencil</v-icon>
+                    </v-list-item-action>
+                  </template>
+                </v-select>
+              </v-col>
+              
+              <v-col cols="12" md="4" class="d-flex align-center">
+                <v-btn 
+                  color="primary" 
+                  outlined 
+                  class="mr-2" 
+                  :disabled="!selectedTemplate"
+                  @click="editTemplate(selectedTemplate)"
+                >
+                  <v-icon left>mdi-pencil</v-icon>
+                  Editar
+                </v-btn>
+                <v-btn 
+                  color="primary" 
+                  outlined 
+                  :disabled="!selectedTemplate"
+                  @click.stop="previewTemplate()"
+                  :loading="loadingPreview"
+                >
+                  <v-icon left>mdi-eye</v-icon>
+                  Vista Previa
+                </v-btn>
+              </v-col>
+            </v-row>
+            
+            <v-alert
+              v-if="!loadingTemplates && !templates.length"
+              type="info"
+              class="mt-4"
+              outlined
+              dense
+            >
+              No hay plantillas disponibles para esta empresa. Crea una nueva plantilla para comenzar.
+            </v-alert>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -246,6 +329,9 @@ export default {
   data () {
     return {
       selectedEmpresa: null,
+      selectedTemplate: null,
+      loadingTemplates: false,
+      previewContent: '', // Nueva propiedad reactiva para la vista previa
       fecha: new Date().toLocaleDateString(),
       nombreDestino: 'Usuario',
       emailServer: defaultEmailServerConfig(),
@@ -258,6 +344,8 @@ export default {
       ],
       templateDialog: false,
       savingTemplate: false,
+      loadingTemplates: false,
+      loadingPreview: false,
       activeTab: 0,
       showHtmlView: false,
       template: {
@@ -386,8 +474,96 @@ export default {
       this.showHtmlView = !this.showHtmlView
     },
     
-    previewTemplate() {
-      this.activeTab = 1 // Cambiar a la pestaña de vista previa
+    async previewTemplate(templateToPreview = null) {
+      console.log('=== previewTemplate ===');
+      console.log('templateToPreview:', templateToPreview);
+      
+      try {
+        this.loadingPreview = true;
+        
+        // Si no hay plantilla para previsualizar y no hay una seleccionada, mostrar error
+        if (!templateToPreview && !this.selectedTemplate) {
+          this.$toast.warning('No hay plantilla seleccionada para previsualizar');
+          return;
+        }
+        
+        // Obtener la plantilla a previsualizar
+        const template = templateToPreview || this.selectedTemplate;
+        
+        if (!template) {
+          console.warn('No hay plantilla disponible para previsualizar');
+          this.$toast.warning('No se pudo cargar la plantilla para previsualizar');
+          return;
+        }
+        
+        console.log('Usando plantilla para vista previa:', { 
+          id: template.Id, 
+          titulo: template.Titulo,
+          tieneCuerpo: !!template.Cuerpo,
+          tieneCuerpoHtml: !!template.CuerpoHtml
+        });
+        
+        // Copiar la plantilla al template de edición
+        this.template = { ...template };
+        
+        // Abrir el diálogo si no está abierto
+        if (!this.templateDialog) {
+          this.templateDialog = true;
+          // Esperar a que el diálogo se abra completamente
+          await this.$nextTick();
+        }
+        
+        // Obtener el contenido para la vista previa
+        let content = template.Cuerpo || template.CuerpoHtml || '';
+        
+        // Reemplazar variables en el contenido
+        const previewData = {
+          '{{nombreCliente}}': 'Juan Pérez',
+          '{{emailCliente}}': 'juan.perez@ejemplo.com',
+          '{{fechaActual}}': new Date().toLocaleDateString(),
+          '{{numeroPedido}}': 'PED-' + Math.floor(1000 + Math.random() * 9000),
+          '{{totalPedido}}': '$1,234.56',
+          '{{listaProductos}}': `
+            <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+              <tr style="background-color: #f5f5f5;">
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Producto</th>
+                <th style="padding: 8px; text-align: right; border: 1px solid #ddd;">Cantidad</th>
+                <th style="padding: 8px; text-align: right; border: 1px solid #ddd;">Precio</th>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;">Producto de Ejemplo</td>
+                <td style="padding: 8px; text-align: right; border: 1px solid #ddd;">2</td>
+                <td style="padding: 8px; text-align: right; border: 1px solid #ddd;">$500.00</td>
+              </tr>
+            </table>
+          `,
+          '{{enlaceSeguimiento}}': '<a href="#" style="color: #1976d2; text-decoration: none;">Seguir mi pedido</a>',
+          '{{direccionEnvio}}': 'Av. Siempreviva 123, Piso 4, CABA, Argentina'
+        };
+        
+        Object.entries(previewData).forEach(([key, value]) => {
+          const regex = new RegExp(this.escapeRegExp(key), 'g');
+          content = content.replace(regex, value);
+        });
+        
+        console.log('Contenido procesado para vista previa:', content.substring(0, 100) + '...');
+        
+        // Actualizar el contenido de la vista previa
+        this.previewContent = content;
+        
+        // Cambiar a la pestaña de vista previa
+        this.activeTab = 1;
+        console.log('Vista previa actualizada, activeTab:', this.activeTab);
+        
+        // Forzar actualización del componente de pestañas
+        await this.$nextTick();
+        
+      } catch (error) {
+        console.error('Error al generar la vista previa:', error);
+        this.$toast.error('Error al generar la vista previa');
+      } finally {
+        this.loadingPreview = false;
+      }
     },
     
     insertVariable(variable) {
@@ -425,17 +601,61 @@ export default {
     },
     
     async loadTemplates() {
-      if (!this.selectedEmpresa) return
+      console.log('=== loadTemplates ===');
+      
+      if (!this.selectedEmpresa) {
+        console.log('No hay empresa seleccionada');
+        this.templates = [];
+        this.selectedTemplate = null;
+        this.previewContent = '';
+        return;
+      }
       
       try {
-        this.loading = true
-        const response = await emailTemplates.getAll()
-        this.templates = response
+        this.loadingTemplates = true;
+        console.log('Cargando plantillas para la empresa:', this.selectedEmpresa);
+        
+        const response = await emailTemplates.getByEmpresa(this.selectedEmpresa);
+        console.log('Plantillas recibidas del servidor:', response);
+        
+        // Asegurarse de que response es un array
+        this.templates = Array.isArray(response) ? response : [];
+        
+        // Si hay plantillas, seleccionar la primera por defecto
+        if (this.templates.length > 0) {
+          console.log(`Se encontraron ${this.templates.length} plantillas`);
+          this.selectedTemplate = this.templates[0];
+          console.log('Primera plantilla seleccionada:', this.selectedTemplate.Titulo);
+          
+          // Llamar a previewTemplate para procesar la vista previa
+          this.previewTemplate(this.selectedTemplate);
+        } else {
+          console.log('No se encontraron plantillas');
+          this.selectedTemplate = null;
+          this.previewContent = '';
+        }
+        
       } catch (error) {
-        console.error('Error al cargar plantillas:', error)
-        this.$toast.error('Error al cargar las plantillas')
+        console.error('Error al cargar plantillas:', error);
+        this.$toast.error('Error al cargar las plantillas');
+        this.templates = [];
+        this.selectedTemplate = null;
+        this.previewContent = '';
       } finally {
-        this.loading = false
+        this.loadingTemplates = false;
+      }
+    },
+    
+    onTemplateSelected(template) {
+      console.log('=== onTemplateSelected ===');
+      console.log('Plantilla seleccionada:', template);
+      
+      if (template) {
+        this.selectedTemplate = template;
+        this.previewTemplate(template);
+      } else {
+        this.selectedTemplate = null;
+        this.previewContent = '';
       }
     },
     
@@ -490,6 +710,7 @@ export default {
       // Resetear el formulario
       this.template = {
         Id: null,
+        IdEmpresa: null,
         Tipo: '',
         Titulo: '',
         Cuerpo: '',
@@ -499,20 +720,35 @@ export default {
     },
     
     createTemplate() {
+      if (!this.selectedEmpresa) {
+        this.$toast.warning('Por favor, seleccione una empresa primero');
+        return;
+      }
+      
       this.template = {
         Id: null,
+        IdEmpresa: this.selectedEmpresa,
         Tipo: '',
         Titulo: '',
         Cuerpo: '',
         CuerpoHtml: '',
         Activo: true
-      }
-      this.templateDialog = true
+      };
+      this.templateDialog = true;
+      this.activeTab = 0; // Mostrar el editor por defecto
     },
     
     editTemplate(template) {
-      this.template = { ...template, CuerpoHtml: template.Cuerpo }
-      this.templateDialog = true
+      if (!template) return;
+      
+      this.template = { ...template };
+      this.templateDialog = true;
+      this.activeTab = 0; // Mostrar el editor por defecto
+      
+      // Si la plantilla tiene CuerpoHtml pero no Cuerpo, usamos CuerpoHtml
+      if (this.template.CuerpoHtml && !this.template.Cuerpo) {
+        this.template.Cuerpo = this.template.CuerpoHtml;
+      }
     },
     
     async saveTemplate() {
