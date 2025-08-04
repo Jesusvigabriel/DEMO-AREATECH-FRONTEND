@@ -295,11 +295,22 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Sección de reglas automáticas -->
+    <EmailProcesoConfigSection
+      v-if="selectedEmpresa"
+      :id-empresa="selectedEmpresa"
+      :servidores="emailServer && emailServer.Id ? [emailServer] : []"
+      :plantillas="templates"
+      :procesos="procesosPredefinidos"
+      class="mt-8"
+    />
   </v-container>
 </template>
 
 <script>
 import SelectorEmpresa from '@/components/SelectorEmpresa.vue'
+import EmailProcesoConfigSection from '@/components/EmailProcesoConfigSection.vue'
 import emailServers from '@/store/emailServers'
 import emailTemplates from '@/store/emailTemplates'
 import { quillEditor } from 'vue-quill-editor'
@@ -322,12 +333,19 @@ export default {
   name: 'EmailConfig',
   components: { 
     SelectorEmpresa, 
+    EmailProcesoConfigSection,
     quillEditor,
     // Asegúrate de que LSIDialog esté importado y registrado correctamente
     // LSIDialog: () => import('@/components/LSIDialog.vue')
   },
   data () {
     return {
+      procesosPredefinidos: [
+        { text: 'ENVIO_REMITO', value: 'ENVIO_REMITO' },
+        { text: 'GUIA_TRACKING', value: 'GUIA_TRACKING' },
+        { text: 'ORDEN_ETIQUETA', value: 'ORDEN_ETIQUETA' },
+        { text: 'INGRESO_STOCK', value: 'INGRESO_STOCK' },
+      ],
       selectedEmpresa: null,
       selectedTemplate: null,
       loadingTemplates: false,
@@ -821,6 +839,7 @@ export default {
         const useSSL = port === 465 // Solo SSL: true para puerto 465
         
         const mappedConfig = {
+          Id: serverData.Id || serverData.ID || 1,
           Nombre: serverData.Nombre || 'Configuración de correo',
           Host: serverData.Host || '',
           Puerto: String(port),

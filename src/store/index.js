@@ -10,6 +10,7 @@ import snackbar from 'vue-lsi-util/snackbar'
 import loading from 'vue-lsi-util/loading'
 import alertDialog from 'vue-lsi-util/alertDialog'
 import sonidos from 'vue-lsi-util/sonidos'
+import emailProcesoConfig from './emailProcesoConfig'
 
 Vue.use(Vuex)
 
@@ -25,8 +26,8 @@ export default new Vuex.Store({
     snackbar,
     loading,
     alertDialog,
-    sonidos
-
+    sonidos,
+    emailProcesoConfig
   },
   state: {
     TituloPrincipal: null,

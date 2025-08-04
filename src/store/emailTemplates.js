@@ -39,7 +39,7 @@ const emailTemplates = {
         const start = Date.now();
         console.group(logPrefix);
         try {
-            const url = `/emailTemplates/${tipo}`;
+            const url = `/apiv3/emailTemplate/${tipo}`;
             console.log('🔍 Buscando plantilla...');
             const response = await API.acceder({ Ruta: url, Metodo: 'GET' });
             
@@ -112,7 +112,7 @@ const emailTemplates = {
         const logPrefix = `[emailTemplates] [${isUpdate ? 'update' : 'create'}]`;
         console.group(logPrefix);
         try {
-            const url = `/emailTemplates${isUpdate ? `/${template.Id}` : ''}`;
+            const url = `/apiv3/emailTemplates${isUpdate ? `/${template.Id}` : ''}`;
             const method = isUpdate ? 'PATCH' : 'POST';
             const requestData = {
                 Tipo: template.Tipo,
@@ -147,7 +147,7 @@ const emailTemplates = {
         console.log(log);
         const response = await API.acceder({
                 // PUT /emailTemplate/activate/:id/:activo
-                Ruta: `/emailTemplates/activate/${id}/${activo}`,
+                Ruta: `/apiv3/emailTemplates/activate/${id}/${activo}`,
             Metodo: 'PATCH'
         });
         return response?.data || response;
@@ -156,7 +156,7 @@ const emailTemplates = {
     async delete(id) {
         console.log(`[emailTemplates] [delete] Eliminando ${id}`);
         await API.acceder({
-                Ruta: `/emailTemplates/${id}`,
+                Ruta: `/apiv3/emailTemplates/${id}`,
             Metodo: 'DELETE'
         });
         return true;
